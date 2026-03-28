@@ -1,24 +1,25 @@
-/**
- * router/index.ts
- *
- * Manual routes for ./src/pages/*.vue
- */
-
-// Composables
+import AdminLayout from "@/layouts/AdminLayout.vue";
 import { createRouter, createWebHistory } from "vue-router";
-import Index from "@/pages/index.vue";
-import Login from "@/pages/login.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
-      component: Index,
+      component: AdminLayout, // Layout membungkus rute di bawahnya
+      children: [
+        {
+          path: "", // Diakses via /dashboard
+          name: "Dashboard",
+          component: () => import("@/pages/index.vue"),
+        },
+
+        // Tambahkan halaman lain di sini
+      ],
     },
     {
       path: "/login",
-      component: Login,
+      component: import("@/pages/login.vue"),
     },
   ],
 });

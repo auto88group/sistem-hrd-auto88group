@@ -1,7 +1,11 @@
 <template>
-  <HelloWorld />
+  <div class="grid grid-cols-1 gap-6">
+    <card-statistik-karyawan />
+    <card-statistik-agama />
+  </div>
 </template>
 
-<script lang="ts" setup>
-import HelloWorld from "@/components/HelloWorld.vue";
+<script setup lang="ts">
+import CardStatistikAgama from "@/components/CardStatistikAgama.vue";
+import CardStatistikKaryawan from "@/components/CardStatistikKaryawan.vue";
 </script>

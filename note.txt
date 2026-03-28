@@ -1,26 +1,26 @@
 src/
 │
 ├── api/                # Semua konfigurasi & endpoint API
-│   ├── axios.js       # Instance axios (base config)
-│   ├── endpoints.js   # List endpoint (optional)
+│   ├── axios.ts       # Instance axios (base config)
+│   ├── endpoints.ts   # List endpoint (optional)
 │   └── modules/       # API per fitur
-│       ├── auth.api.js
-│       ├── user.api.js
-│       └── car.api.js
+│       ├── auth.api.ts
+│       ├── user.api.ts
+│       └── car.api.ts
 │
 ├── stores/             # Pinia store
-│   ├── auth.store.js
-│   ├── user.store.js
-│   └── car.store.js
+│   ├── auth.store.ts
+│   ├── user.store.ts
+│   └── car.store.ts
 │
 ├── services/           # Logic penghubung store ↔ API (optional tapi bagus)
-│   ├── auth.service.js
-│   ├── user.service.js
-│   └── car.service.js
+│   ├── auth.service.ts
+│   ├── user.service.ts
+│   └── car.service.ts
 │
 ├── composables/        # reusable logic (Composition API)
-│   ├── useAuth.js
-│   └── useFetch.js
+│   ├── useAuth.ts
+│   └── useFetch.ts
 │
 ├── pages/              # View / halaman
 │   ├── Login.vue
@@ -32,13 +32,13 @@ src/
 │   └── ui/
 │
 ├── router/
-│   └── index.js
+│   └── index.ts
 │
 ├── plugins/            # Vuetify, dll
-│   └── vuetify.js
+│   └── vuetify.ts
 │
 ├── utils/              # helper function
-│   └── formatter.js
+│   └── formatter.ts
 │
 ├── App.vue
-└── main.js
+└── main.ts
