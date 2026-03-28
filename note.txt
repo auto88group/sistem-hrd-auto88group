@@ -1,0 +1,44 @@
+src/
+│
+├── api/                # Semua konfigurasi & endpoint API
+│   ├── axios.js       # Instance axios (base config)
+│   ├── endpoints.js   # List endpoint (optional)
+│   └── modules/       # API per fitur
+│       ├── auth.api.js
+│       ├── user.api.js
+│       └── car.api.js
+│
+├── stores/             # Pinia store
+│   ├── auth.store.js
+│   ├── user.store.js
+│   └── car.store.js
+│
+├── services/           # Logic penghubung store ↔ API (optional tapi bagus)
+│   ├── auth.service.js
+│   ├── user.service.js
+│   └── car.service.js
+│
+├── composables/        # reusable logic (Composition API)
+│   ├── useAuth.js
+│   └── useFetch.js
+│
+├── pages/              # View / halaman
+│   ├── Login.vue
+│   ├── Dashboard.vue
+│   └── Cars.vue
+│
+├── components/         # Komponen kecil reusable
+│   ├── base/
+│   └── ui/
+│
+├── router/
+│   └── index.js
+│
+├── plugins/            # Vuetify, dll
+│   └── vuetify.js
+│
+├── utils/              # helper function
+│   └── formatter.js
+│
+├── App.vue
+└── main.js
