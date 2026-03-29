@@ -365,17 +365,30 @@
         </v-container>
       </v-main>
     </div>
+    <v-fade-transition>
+      <v-btn
+        v-show="showScrollTop"
+        icon="mdi-chevron-up"
+        color="bg-blue-300 dark:bg-blue-800"
+        elevation="4"
+        class="fixed"
+        style="bottom: 20px; right: 20px; z-index: 99"
+        @click="scrollToTop"
+      >
+      </v-btn>
+    </v-fade-transition>
   </v-app>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useDisplay, useTheme } from "vuetify";
 
 const theme = useTheme();
 const { mdAndUp } = useDisplay();
 const drawer = ref(false);
 const activeGroup = ref("dashboard");
+const showScrollTop = ref(false);
 
 const menuItems = [
   { value: "dashboard", label: "Dashboard", icon: "mdi-view-dashboard" },
@@ -383,6 +396,18 @@ const menuItems = [
   { value: "pengaturan", label: "Pengaturan", icon: "mdi-cog" },
   { value: "kelola", label: "Kelola Absensi", icon: "mdi-calendar-check" },
 ];
+
+const handleScroll = () => {
+  // Tombol muncul jika scroll lebih dari 300px
+  showScrollTop.value = window.scrollY > 300;
+};
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
 
 onMounted(() => {
   const savedTheme = localStorage.getItem("user-theme");
@@ -398,6 +423,11 @@ onMounted(() => {
   }
 
   theme.global.name.value = targetTheme;
+  window.addEventListener("scroll", handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
 });
 
 const toggleTheme = () => {
