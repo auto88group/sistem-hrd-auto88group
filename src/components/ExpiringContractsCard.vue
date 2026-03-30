@@ -2,7 +2,6 @@
   <v-card
     class="w-full !rounded-[24px] !p-3 border border-slate-100 dark:border-slate-900 transition-all duration-300 hover:shadow-xl shadow-md"
     variant="flat"
-    height="500"
   >
     <div class="flex items-center justify-between">
       <h2 class="text-md tracking-tight">
@@ -44,7 +43,7 @@
       </div>
     </v-expand-transition>
     <div
-      class="overflow-scroll h-[65%] md:h-[75%] flex-grow custom-scrollbar space-y-3 pb-20"
+      class="overflow-scroll h-[400px] md:h-[400px] custom-scrollbar space-y-3 pb-20"
     >
       <div
         v-for="employee in filteredEmployees"

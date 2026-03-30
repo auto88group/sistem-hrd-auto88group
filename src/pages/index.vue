@@ -8,12 +8,14 @@
     </div>
     <total-employees-card />
     <expiring-contracts-card />
+    <join-termination-card />
   </div>
 </template>
 
 <script setup lang="ts">
 import ExpiringContractsCard from "@/components/ExpiringContractsCard.vue";
 import GenderStatisticsCard from "@/components/GenderStatisticsCard.vue";
+import JoinTerminationCard from "@/components/JoinTerminationCard.vue";
 import ReligionStatisticsCard from "@/components/ReligionStatisticsCard.vue";
 import TotalEmployeesCard from "@/components/TotalEmployeesCard.vue";
 </script>

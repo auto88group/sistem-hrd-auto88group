@@ -7,7 +7,7 @@
       <h2
         class="text-md font-bold text-slate-800 dark:text-slate-200 tracking-tight"
       >
-        Join Vs Termination
+        Join VS Termination
       </h2>
       <button
         @click="showFilter = !showFilter"
@@ -26,10 +26,7 @@
     </div>
 
     <v-expand-transition>
-      <div
-        v-if="showFilter"
-        class="mb-4 px-1 grid grid-cols-1 md:grid-cols-3 gap-3 mt-4"
-      >
+      <div v-if="showFilter" class="mb-4 px-1 flex gap-3">
         <v-select
           v-model="filters.tahun"
           :items="[2024, 2025, 2026]"
@@ -52,22 +49,12 @@
           hide-details
           rounded="xl"
         ></v-select>
-        <v-select
-          v-model="filters.departemen"
-          :items="['Semua Departemen', 'Sales', 'Service', 'Admin']"
-          label="Departemen"
-          variant="outlined"
-          density="compact"
-          hide-details
-          rounded="xl"
-        ></v-select>
       </div>
     </v-expand-transition>
-
     <div class="mt-2 w-full">
       <apexchart
         type="bar"
-        height="400"
+        height="430"
         :options="chartOptions"
         :series="series"
       ></apexchart>
@@ -79,20 +66,21 @@
 import { computed, ref } from "vue";
 import VueApexCharts from "vue3-apexcharts";
 import type { ApexOptions } from "apexcharts";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const apexchart = VueApexCharts;
 
 const showFilter = ref(false);
 
-// Filter sesuai struktur JSON baru
 const filters = ref({
   tahun: 2026,
   cabang: "Semua Cabang",
-  departemen: "Semua Departemen",
 });
 
 const rawData = [
-  { bulan: "Jan", join: 13, termination: 0 },
+  { bulan: "Jan", join: 13, termination: 10 },
   { bulan: "Feb", join: 7, termination: 0 },
   { bulan: "Mar", join: 8, termination: 0 },
   { bulan: "Apr", join: 0, termination: 0 },
@@ -125,6 +113,9 @@ const chartOptions = computed<ApexOptions>(() => ({
     fontFamily: "Inter, sans-serif",
     stacked: false, // Set true jika ingin grafik bertumpuk
   },
+  theme: {
+    mode: theme.global.current.value.dark ? "dark" : "light",
+  },
   plotOptions: {
     bar: {
       borderRadius: 4,
@@ -132,8 +123,7 @@ const chartOptions = computed<ApexOptions>(() => ({
       dataLabels: { position: "top" },
     },
   },
-  // Urutan warna: Join (Biru), Termination (Abu-abu) sesuai legend request
-  colors: ["#3b82f6", "#94a3b8"],
+  colors: ["#4f46e5", "#94a3b8"],
   stroke: {
     show: true,
     width: 2,
@@ -151,18 +141,24 @@ const chartOptions = computed<ApexOptions>(() => ({
     position: "top",
     horizontalAlign: "left",
     fontWeight: 600,
+    labels: {
+      colors: theme.global.current.value.dark ? "#f8fafc" : "#64748b",
+    },
   },
   xaxis: {
     categories: rawData.map((item) => item.bulan),
     axisBorder: { show: false },
     axisTicks: { show: false },
     labels: {
-      style: { colors: "#94a3b8", fontSize: "12px" },
+      style: {
+        colors: theme.global.current.value.dark ? "#94a3b8" : "#64748b",
+        fontSize: "12px",
+      },
     },
   },
   yaxis: {
     labels: {
-      style: { colors: "#94a3b8" },
+      style: { colors: "#64748b" },
     },
   },
   grid: {

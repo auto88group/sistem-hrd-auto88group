@@ -2,7 +2,6 @@
   <v-card
     class="w-full !rounded-[24px] !p-3 border border-slate-100 dark:border-slate-900 transition-all duration-300 hover:shadow-xl shadow-md"
     variant="flat"
-    max-height="500"
   >
     <div class="flex items-center justify-between">
       <h2
@@ -40,10 +39,10 @@
         ></v-select>
       </div>
     </v-expand-transition>
-    <div class="mt-2 w-full h-100">
+    <div class="mt-2 w-full">
       <apexchart
         type="bar"
-        height="100%"
+        height="430"
         :options="chartOptions"
         :series="series"
       ></apexchart>
