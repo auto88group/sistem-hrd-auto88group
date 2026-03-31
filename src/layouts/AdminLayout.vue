@@ -111,7 +111,7 @@
               variant="text"
               size="small"
               prepend-icon="mdi-clock-check"
-              to="/dashboard"
+              to="/dashboard/attendance"
               class="btn-nav-custom"
               >Absensi</v-btn
             >
@@ -151,7 +151,7 @@
               >Shift</v-btn
             >
             <v-btn
-              to="/absensi"
+              to="/master/employee"
               variant="text"
               size="small"
               prepend-icon="mdi-account-group"
@@ -285,8 +285,8 @@
               <v-list-item
                 v-bind="props"
                 :class="{
-                  'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600':
-                    $route.path.includes('dashboard') || $route.path === '/',
+                  'bg-indigo-50 dark:bg-indigo-100 dark:text-[#695de7]':
+                    $route.path.includes('dashboard'),
                 }"
               >
                 <template v-slot:prepend>
@@ -302,20 +302,26 @@
 
             <v-list-item
               title="Absensi"
-              to="/dashboard"
-              active-class="text-indigo-600"
+              to="/dashboard/attendance"
+              active-class="text-indigo-600 dark:text-indigo-200"
             ></v-list-item>
 
             <v-list-item
               title="Kepegawaian"
               to="/dashboard/personnel"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
             ></v-list-item>
           </v-list-group>
 
           <v-list-group value="master">
             <template v-slot:activator="{ props }">
-              <v-list-item v-bind="props">
+              <v-list-item
+                v-bind="props"
+                :class="{
+                  'bg-indigo-50 dark:bg-indigo-100 dark:text-[#695de7]':
+                    $route.path.includes('master'),
+                }"
+              >
                 <template v-slot:prepend>
                   <v-icon
                     icon="mdi-database"
@@ -329,33 +335,40 @@
             <v-list-item
               title="Lokasi"
               value="lokasi"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
             ></v-list-item>
             <v-list-item
               title="Jenis Izin"
               value="jenis-izin"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
             ></v-list-item>
             <v-list-item
               title="Shift"
               value="shift"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
             ></v-list-item>
             <v-list-item
+              to="/master/employee"
               title="Karyawan"
               value="karyawan"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
             ></v-list-item>
             <v-list-item
               title="Saldo Cuti"
               value="saldo-cuti"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
             ></v-list-item>
           </v-list-group>
 
           <v-list-group value="pengaturan">
             <template v-slot:activator="{ props }">
-              <v-list-item v-bind="props">
+              <v-list-item
+                v-bind="props"
+                :class="{
+                  'bg-indigo-50 dark:bg-indigo-100 dark:text-[#695de7]':
+                    $route.path.includes('setting'),
+                }"
+              >
                 <template v-slot:prepend>
                   <v-icon
                     icon="mdi-cog"
@@ -368,41 +381,41 @@
             </template>
             <v-list-item
               title="Admin"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
               value="admin"
             ></v-list-item>
             <v-list-item
               title="Umum"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
               value="umum"
             ></v-list-item>
             <v-list-item
               title="Jam Kerja"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
               value="jam-kerja"
             ></v-list-item>
             <v-list-item
               title="Hari Libur"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
               value="hari-libur"
             ></v-list-item>
             <v-list-item
               title="Kepala Cabang"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
               value="kpcab"
             ></v-list-item>
             <v-list-item
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
               title="Kepala Departemen"
               value="kep-dept"
             ></v-list-item>
             <v-list-item
               title="Approval"
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
               value="approval"
             ></v-list-item>
             <v-list-item
-              active-class="text-indigo-600"
+              active-class="text-indigo-600 dark:text-indigo-200"
               title="Jadwal Shift"
               value="jadwal-shift"
             ></v-list-item>
@@ -470,8 +483,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useDisplay, useTheme } from "vuetify";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
 
 const theme = useTheme();
 const { mdAndUp } = useDisplay();
@@ -498,6 +514,18 @@ const scrollToTop = () => {
   });
 };
 
+const syncTabWithRoute = () => {
+  const currentPath = route.path;
+  if (route.path.startsWith("/dashboard")) {
+    activeGroup.value = "dashboard";
+  } else if (route.path.startsWith("/master")) {
+    activeGroup.value = "master";
+  } else if (route.path.startsWith("/pengaturan")) {
+    activeGroup.value = "pengaturan";
+  } else if (route.path.startsWith("/kelola")) {
+    activeGroup.value = "kelola";
+  }
+};
 onMounted(() => {
   const savedTheme = localStorage.getItem("user-theme");
   let targetTheme: "light" | "dark";
@@ -513,7 +541,14 @@ onMounted(() => {
 
   theme.global.name.value = targetTheme;
   window.addEventListener("scroll", handleScroll);
+  syncTabWithRoute();
 });
+watch(
+  () => route.path,
+  () => {
+    syncTabWithRoute();
+  },
+);
 
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);

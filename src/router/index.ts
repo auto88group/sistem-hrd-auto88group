@@ -9,19 +9,31 @@ const router = createRouter({
       component: AdminLayout, // Layout membungkus rute di bawahnya
       children: [
         {
+          path: "/dashboard",
+          redirect: "/dashboard/attendance",
+        },
+        {
           path: "/dashboard/personnel", // Diakses via /dashboard
           name: "Dashboard Kepegawaian",
           component: () => import("@/pages/dashboard/personnel.vue"),
           meta: { requiresAuth: true },
         },
         {
-          path: "/dashboard/", // Diakses via /dashboard
+          path: "/dashboard/attendance", // Diakses via /dashboard
           name: "Dashboard Absensi",
           component: () => import("@/pages/dashboard/attendance.vue"),
           meta: { requiresAuth: true },
         },
-
-        // Tambahkan halaman lain di sini
+        {
+          path: "/master",
+          redirect: "/master/employee",
+        },
+        {
+          path: "/master/employee",
+          name: "Master Karyawan",
+          component: () => import("@/pages/master/employee.vue"),
+          meta: { requiresAuth: true },
+        },
       ],
     },
     {
@@ -37,7 +49,7 @@ router.beforeEach((to, _from, next) => {
 
   if (to.path === "/") {
     // Redirect dari root berdasarkan status login
-    return isAuthenticated ? next("/dashboard/") : next("/login");
+    return isAuthenticated ? next("/dashboard/attendance") : next("/login");
   }
 
   if (to.meta.requiresAuth && !isAuthenticated) {
@@ -47,7 +59,7 @@ router.beforeEach((to, _from, next) => {
 
   if (to.path === "/login" && isAuthenticated) {
     // Sudah login tapi mau ke login → redirect ke dashboard
-    return next("/dashboard/");
+    return next("/dashboard/attendance");
   }
 
   next();

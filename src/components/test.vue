@@ -1,225 +1,172 @@
 <template>
   <v-card
-    class="w-full !rounded-[24px] !p-3 border border-slate-100 dark:border-slate-900 transition-all duration-300 hover:shadow-xl shadow-md"
     variant="flat"
+    class="border border-slate-200 rounded-xl overflow-hidden"
   >
-    <div class="flex items-center justify-between">
-      <h2
-        class="text-md font-bold text-slate-800 dark:text-slate-200 tracking-tight"
-      >
-        Rekap Absensi Hari Ini
-      </h2>
-      <button
-        @click="showFilter = !showFilter"
-        :class="
-          showFilter
-            ? 'bg-indigo-600 text-white'
-            : 'bg-indigo-50 text-indigo-600'
-        "
-        class="flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
-      >
-        <v-icon size="18">{{
-          showFilter ? "mdi-close" : "mdi-filter-variant"
-        }}</v-icon>
-        Filter
-      </button>
+    <div class="bg-slate-50 px-5 py-3 border-b border-slate-200">
+      <h3 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+        <v-icon size="small" color="primary">mdi-account-edit</v-icon>
+        Informasi Karyawan
+      </h3>
     </div>
 
-    <v-expand-transition>
+    <div class="pa-5">
       <div
-        v-if="showFilter"
-        class="mb-4 px-1 space-y-4 md:space-y-0 md:flex gap-2"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-0"
       >
-        <v-select
-          v-model="selectedBranch"
-          :items="branchOptions"
-          label="Pilih Cabang"
-          variant="outlined"
-          density="compact"
-          hide-details
-          rounded="xl"
-        ></v-select>
+        <div class="field-container">
+          <label class="input-label">Nama Karyawan</label>
+          <v-autocomplete
+            v-model="form.nama"
+            :items="listKaryawan"
+            prepend-inner-icon="mdi-account"
+            placeholder="Cari nama..."
+            variant="outlined"
+            density="compact"
+            color="primary"
+            class="custom-input"
+            hide-details="auto"
+            clearable
+          ></v-autocomplete>
+        </div>
 
-        <v-select
-          v-model="selectedShift"
-          :items="shiftOptions"
-          label="Jam Kerja"
-          variant="outlined"
-          density="compact"
-          hide-details
-          rounded="xl"
+        <div class="field-container">
+          <label class="input-label">Jabatan</label>
+          <v-autocomplete
+            v-model="form.jabatan"
+            :items="listJabatan"
+            prepend-inner-icon="mdi-briefcase-outline"
+            placeholder="Pilih jabatan"
+            variant="outlined"
+            density="compact"
+            color="primary"
+            class="custom-input"
+            hide-details="auto"
+          ></v-autocomplete>
+        </div>
+
+        <div class="field-container">
+          <label class="input-label">Cabang</label>
+          <v-autocomplete
+            v-model="form.cabang"
+            :items="listCabang"
+            prepend-inner-icon="mdi-map-marker-outline"
+            placeholder="Lokasi cabang"
+            variant="outlined"
+            density="compact"
+            color="primary"
+            class="custom-input"
+            hide-details="auto"
+          ></v-autocomplete>
+        </div>
+
+        <div class="field-container">
+          <label class="input-label">Status</label>
+          <v-autocomplete
+            v-model="form.status"
+            :items="['Aktif', 'Non-Aktif', 'Cuti']"
+            prepend-inner-icon="mdi-check-circle-outline"
+            variant="outlined"
+            density="compact"
+            color="primary"
+            class="custom-input"
+            hide-details="auto"
+          >
+            <template v-slot:selection="{ item }">
+              <v-chip
+                size="x-small"
+                :color="item.title === 'Aktif' ? 'success' : 'warning'"
+                variant="tonal"
+              >
+                {{ item.title }}
+              </v-chip>
+            </template>
+          </v-autocomplete>
+        </div>
+
+        <div class="field-container">
+          <label class="input-label">Jenis Kelamin</label>
+          <v-autocomplete
+            v-model="form.gender"
+            :items="['Laki-laki', 'Perempuan']"
+            prepend-inner-icon="mdi-gender-male-female"
+            variant="outlined"
+            density="compact"
+            color="primary"
+            class="custom-input"
+            hide-details="auto"
+          ></v-autocomplete>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end gap-2">
+        <v-btn
+          variant="text"
+          color="grey-darken-1"
+          size="small"
+          class="text-none"
+          >Batal</v-btn
         >
-          <template v-slot:prepend-inner>
-            <v-icon size="small" class="mr-1">mdi-clock-outline</v-icon>
-          </template>
-        </v-select>
-      </div>
-    </v-expand-transition>
-
-    <div class="space-y-3 w-full md:flex md:space-y-0">
-      <div class="w-full">
-        <apexchart
-          width="100%"
-          height="320"
-          type="donut"
-          :options="chartOptions as any"
-          :series="series"
-        ></apexchart>
-      </div>
-      <div
-        class="py-3 w-full h-70 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:hover:bg-indigo-500"
-      >
-        <table class="w-full text-left">
-          <thead>
-            <tr
-              class="text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-800"
-            >
-              <th class="pb-2 font-semibold">Status</th>
-              <th class="pb-2 font-semibold text-right">Jumlah</th>
-              <th class="pb-2 font-semibold text-right text-indigo-500">%</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-50 dark:divide-slate-900">
-            <tr
-              v-for="(item, index) in tableData"
-              :key="index"
-              class="group even:bg-slate-50/50 dark:even:bg-slate-800/30"
-            >
-              <td class="pl-2 py-2.5 flex items-center gap-3">
-                <div
-                  class="w-3 h-3 rounded-full shrink-0"
-                  :style="{ backgroundColor: chartColors[index] }"
-                ></div>
-                <span
-                  class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 transition-colors capitalize"
-                >
-                  {{ item.name.replace("_", " ") }}
-                </span>
-              </td>
-              <td
-                class="py-2.5 text-sm font-bold text-slate-800 dark:text-slate-200 text-right"
-              >
-                {{ item.value }}
-              </td>
-              <td
-                class="pr-2 py-2.5 text-xs font-medium text-slate-400 dark:text-slate-500 text-right"
-              >
-                {{ calculatePercentage(item.value) }}%
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <v-btn
+          color="primary"
+          elevation="0"
+          size="small"
+          class="text-none px-6"
+          prepend-icon="mdi-content-save"
+        >
+          Simpan Data
+        </v-btn>
       </div>
     </div>
   </v-card>
 </template>
 
-<script setup lang="ts">
-import { computed, ref } from "vue";
-import VueApexCharts from "vue3-apexcharts";
-import { useTheme } from "vuetify";
+<style scoped>
+/* Utility tambahan untuk menjaga ukuran tetap kecil dan rapi */
+.input-label {
+  display: block;
+  font-size: 0.75rem; /* text-xs */
+  font-weight: 600;
+  color: #64748b; /* slate-500 */
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
 
-const theme = useTheme();
-const apexchart = VueApexCharts;
+.field-container {
+  margin-bottom: 16px;
+}
 
-const showFilter = ref(false);
-const selectedBranch = ref("Semua Cabang");
-const branchOptions = [
-  "Semua Cabang",
-  "Autoplaza 88 (Pontianak)",
-  "Auto 88 Kuburaya",
-  "Auto 88 Sintang",
-];
+/* Mengecilkan tinggi default Vuetify input sedikit lagi */
+:deep(.v-field__input) {
+  min-height: 36px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 0.875rem !important;
+}
 
-const selectedShift = ref("Semua Jam Kerja");
-const shiftOptions = ["Semua Jam Kerja", "Reguler", "Piket"];
+:deep(.v-field__outline) {
+  --v-field-border-opacity: 0.15;
+}
+</style>
 
-// Data Absensi Terbaru
-const rawData = {
-  hadir: 32,
-  terlambat: 2,
-  belum_absen: 0,
-  cuti: 0,
-  izin: 0,
-  sakit: 0,
-};
+<script setup>
+import { ref } from "vue";
 
-// Warna yang disesuaikan dengan status (Hadir=Hijau, Terlambat=Kuning, Belum=Abu, dsb)
-const chartColors = [
-  "#10b981", // hadir (Emerald)
-  "#f59e0b", // terlambat (Amber)
-  "#94a3b8", // belum_absen (Slate)
-  "#6366f1", // cuti (Indigo)
-  "#8b5cf6", // izin (Violet)
-  "#f43f5e", // sakit (Rose)
-];
-
-const series = computed(() => Object.values(rawData));
-const labels = computed(() =>
-  Object.keys(rawData).map((key) => key.replace("_", " ").toUpperCase()),
-);
-const totalData = computed(() => series.value.reduce((a, b) => a + b, 0));
-
-const tableData = computed(() => {
-  return Object.keys(rawData).map((key, index) => ({
-    name: key,
-    value: series.value[index],
-  }));
+const form = ref({
+  nama: null,
+  jabatan: null,
+  cabang: null,
+  status: null,
+  gender: null,
 });
 
-const calculatePercentage = (value: number) => {
-  if (totalData.value === 0) return 0;
-  return ((value / totalData.value) * 100).toFixed(1);
-};
-
-const chartOptions = computed(() => {
-  const isDark = theme.global.name.value === "dark";
-
-  return {
-    chart: {
-      type: "donut",
-      fontFamily: "Inter, sans-serif",
-    },
-    labels: labels.value,
-    colors: chartColors,
-    stroke: {
-      show: true,
-      width: 2,
-      colors: [isDark ? "#0f172a" : "#ffffff"],
-    },
-    plotOptions: {
-      pie: {
-        donut: {
-          size: "75%",
-          labels: {
-            show: true,
-            total: {
-              show: true,
-              label: "Total Staff",
-              fontSize: "14px",
-              fontWeight: 600,
-              color: isDark ? "#94a3b8" : "#64748b",
-              formatter: () => totalData.value,
-            },
-            value: {
-              show: true,
-              fontSize: "24px",
-              fontWeight: 700,
-              color: isDark ? "#f8fafc" : "#1e293b",
-              offsetY: 4,
-            },
-          },
-        },
-      },
-    },
-    dataLabels: { enabled: false },
-    legend: { show: false }, // Dimatikan karena sudah ada tabel di samping
-    tooltip: {
-      theme: isDark ? "dark" : "light",
-      y: {
-        formatter: (val: number) => `${val} Orang`,
-      },
-    },
-  };
-});
+const listKaryawan = [
+  "Budi Santoso",
+  "Siti Aminah",
+  "Andi Wijaya",
+  "Dewi Lestari",
+];
+const listJabatan = ["Manager", "Supervisor", "Staff Admin", "IT Support"];
+const listCabang = ["Jakarta", "Surabaya", "Bandung", "Medan"];
 </script>
