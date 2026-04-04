@@ -39,6 +39,12 @@
         </v-avatar>
       </template>
 
+      <template #[`item.employee_id`]="{ item }">
+        <div class="d-flex flex-column">
+          <span class="font-weight-bold">{{ item.employee_id ?? "-" }}</span>
+        </div>
+      </template>
+
       <template #[`item.karyawan`]="{ item }">
         <div class="flex flex-col">
           <span
@@ -55,10 +61,10 @@
       <template #[`item.cabang`]="{ item }">
         <div class="flex flex-col whitespace-nowrap">
           <span class="font-bold">
-            {{ item.branch.alias }} ({{ item.branch.code }})
+            {{ item.branch?.alias }} ({{ item.branch?.code }})
           </span>
           <span class="text-sm text-gray-500 dark:text-gray-300">{{
-            item.branch.name
+            item.branch?.name
           }}</span>
         </div>
       </template>
@@ -220,6 +226,7 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
 const headers = [
   { title: "No", key: "no", sortable: false, width: "60px" },
   { title: "Foto", key: "foto", sortable: false },
+  { title: "ID", key: "employee_id", sortable: false },
   { title: "Karyawan", key: "karyawan", sortable: false },
   { title: "Cabang", key: "cabang", sortable: false },
   { title: "Jabatan", key: "position", sortable: false },
@@ -271,7 +278,6 @@ function goToDetail(item: any) {
   router.push({
     name: "Master Detail Karyawan",
     params: { id: item.id },
-    state: { employee: JSON.parse(JSON.stringify(item)) },
   });
 }
 </script>

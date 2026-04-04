@@ -28,7 +28,6 @@
 import { ref } from "vue";
 import PreviewDetailUser from "./PreviewDetailUser.vue";
 import EditDetailUser from "./EditDetailUser.vue";
-
 const subTabPersonal = ref("verification");
 const isEditing = ref(false);
 </script>

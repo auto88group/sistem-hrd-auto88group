@@ -11,7 +11,7 @@ export interface PositionDataResponse {
 export interface Position {
   id: number;
   name: string;
-  level: string;
+  level_name: string;
 }
 
 export const positionApi = {

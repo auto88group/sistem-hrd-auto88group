@@ -31,13 +31,13 @@ const router = createRouter({
         {
           path: "/master/employee",
           name: "Master Karyawan",
-          component: () => import("@/pages/master/employee.vue"),
+          component: () => import("@/pages/master/employee/index.vue"),
           meta: { requiresAuth: true },
         },
         {
           path: "/master/employee/detail/:id",
           name: "Master Detail Karyawan",
-          component: () => import("@/pages/master/employee-detail.vue"),
+          component: () => import("@/pages/master/employee/detail.vue"),
           meta: { requiresAuth: true },
         },
       ],

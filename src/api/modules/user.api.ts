@@ -16,6 +16,63 @@ export interface UserDataParams {
   branch_id?: number;
 }
 
+export interface UserUpdateParams {
+  // required
+  employee_id: number;
+  full_name: string;
+  name: string;
+  email: string;
+  branch_id: number;
+  master_position_id: number;
+  position: string;
+  level: string;
+
+  // optional
+  nik?: string;
+  password?: string;
+  image?: File;
+  phone_number?: string;
+  initial?: string;
+  sequence?: number;
+
+  // personal
+  gender?: "M" | "F";
+  birth_place?: string;
+  birth_date?: string; // format: dd-mm-yyyy
+  front_title?: string;
+  back_title?: string;
+
+  // address
+  current_address?: string;
+  address_id_card?: string;
+  zip_code?: string;
+  neighborhood_unit?: string;
+  community_unit?: string;
+  master_area_province_id?: number;
+  master_area_regency_id?: number;
+  master_area_district_id?: number;
+  master_area_village_id?: number;
+
+  // HRD
+  hrd_master_religion_id?: number;
+  hrd_master_education_id?: number;
+  hrd_master_blood_type_id?: number;
+  hrd_master_marital_status_id?: number;
+  bpjs_health_number?: string;
+  bpjs_employment_number?: string;
+  number_of_children?: number;
+
+  // emergency
+  emergency_contact_name?: string;
+  emergency_phone_number?: string;
+
+  // employment
+  status_id?: number;
+  join_date?: string; // format: dd-mm-yyyy
+  effective_start_date?: string; // format: dd-mm-yyyy
+  effective_end_date?: string; // format: dd-mm-yyyy
+  remaining_leave?: number;
+}
 export interface UserSelectedParams {
   id?: string;
 }
@@ -35,6 +92,12 @@ export interface UserDataResponse {
 export interface UserSelectedResponse {
   success: boolean;
   data: User; // single object, bukan array
+}
+
+export interface UserUpdateResponse {
+  success: boolean;
+  message: string;
+  data: User;
 }
 
 export interface User {
@@ -72,8 +135,10 @@ export interface User {
   email: string;
   emergency_contact_name: string;
   emergency_phone_number: string;
+  employee_id: number;
   face_id: string;
   front_title: string;
+  full_name: string;
   gender: "M" | "F";
   hrd_master_blood_type_id: string;
   hrd_master_education_id: string;
@@ -105,15 +170,12 @@ export interface User {
   master_area_village_id: number;
   hrd_master_marital_status_id: number;
   master_position_id: number;
+  position: string;
   name: string;
   neighborhood_unit: string;
   nik: string;
   number_of_children: number;
   phone_number: string;
-  position: {
-    code: string;
-    name: string;
-  };
   province: {
     id: number;
     name: string;
@@ -155,5 +217,27 @@ export const userApi = {
 
   getSelected(params: UserSelectedParams): Promise<UserSelectedResponse> {
     return api.get(`/hrd/users/${params.id}`).then((res) => res.data);
+  },
+
+  updateUser(
+    id: number,
+    params: UserUpdateParams,
+  ): Promise<UserUpdateResponse> {
+    const formData = new FormData();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null) return;
+      if (value instanceof File) {
+        formData.append(key, value);
+      } else {
+        formData.append(key, String(value));
+      }
+    });
+
+    return api
+      .post(`/hrd/users/${id}?_method=POST`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((res) => res.data);
   },
 };

@@ -1,7 +1,6 @@
 import api from "../axios";
 export interface ProvinceParams {
   search?: string;
-  branch_id?: number;
 }
 export interface ProvinceResponse {
   success: boolean;
@@ -9,7 +8,7 @@ export interface ProvinceResponse {
 }
 
 export interface Province {
-  id: number;
+  id: string;
   name: string;
 }
 

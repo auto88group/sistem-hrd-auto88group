@@ -40,10 +40,16 @@
               {{ userStore.usersSelected?.nik ?? "-" }}
             </div>
           </v-col>
-          <v-col cols="12" md="6">
-            <div class="text-gray-500 text-sm">Nama Lengkap</div>
+          <v-col cols="12" md="3">
+            <div class="text-gray-500 text-sm">Nickname</div>
             <div class="font-bold text-sm">
               {{ userStore.usersSelected?.name ?? "-" }}
+            </div>
+          </v-col>
+          <v-col cols="12" md="3">
+            <div class="text-gray-500 text-sm">Nama Lengkap</div>
+            <div class="font-bold text-sm">
+              {{ userStore.usersSelected?.full_name ?? "-" }}
             </div>
           </v-col>
 
@@ -262,6 +268,40 @@
         </v-card-title>
         <v-divider class="mb-6"></v-divider>
         <v-row gap="15">
+          <v-col cols="12" md="12">
+            <div class="text-gray-500 text-sm">ID Karyawan</div>
+            <div class="font-bold text-sm">
+              {{ userStore.usersSelected?.employee_id ?? "-" }}
+            </div>
+          </v-col>
+          <v-col
+            cols="12"
+            md="6"
+            v-if="
+              userStore.usersSelected?.telemarketing &&
+              userStore.usersSelected.level === 'telemarketing'
+            "
+          >
+            <div class="text-gray-500 text-sm">Inisial</div>
+            <div class="font-bold text-sm">
+              {{ userStore.usersSelected?.telemarketing?.inisial ?? "-" }}
+            </div>
+          </v-col>
+
+          <v-col
+            cols="12"
+            md="6"
+            v-if="
+              userStore.usersSelected?.telemarketing &&
+              (userStore.usersSelected.level === 'telemarketing' ||
+                userStore.usersSelected.level === 'admin_telemarketing')
+            "
+          >
+            <div class="text-gray-500 text-sm">Urutan</div>
+            <div class="font-bold text-sm">
+              {{ userStore.usersSelected?.telemarketing?.urutan ?? "-" }}
+            </div>
+          </v-col>
           <v-col cols="12" md="6">
             <div class="text-gray-500 text-sm">Jabatan</div>
             <div class="font-bold text-sm">
@@ -370,18 +410,15 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user.store";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useEmployeeStatus } from "@/composables/UseEmployeeStatus";
 
 const { toDayMonthYear } = useDateFormatter();
 const { statusLabel, statusColor } = useEmployeeStatus();
 const userStore = useUserStore();
-userStore.usersSelected = history.state.employee ?? null;
-
 const route = useRoute();
 const employeeId = route.params.id;
-
 const apiUrl = import.meta.env.VITE_API_URL;
 
 defineEmits(["edit"]);
@@ -389,7 +426,6 @@ onMounted(async () => {
   if (!userStore.usersSelected) {
     userStore.userSelectedParams.id = employeeId as string;
     await userStore.fetchUsersSelected();
-    console.log(userStore.usersSelected);
   }
 });
 </script>

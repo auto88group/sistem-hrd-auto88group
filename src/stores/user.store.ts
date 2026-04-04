@@ -6,6 +6,7 @@ import {
   type UserDataParams,
   type UserDatatablesParams,
   type UserSelectedParams,
+  type UserUpdateParams,
 } from "@/api/modules/user.api";
 
 export const useUserStore = defineStore("user", () => {
@@ -15,7 +16,9 @@ export const useUserStore = defineStore("user", () => {
   const isLoading = ref(false);
   const isLoadingData = ref(false);
   const isLoadingSelected = ref(false);
+  const isLoadingUpdate = ref(false);
   const totalRecords = ref(0);
+  const updateError = ref<string | null>(null);
 
   const params = reactive<UserDatatablesParams>({
     draw: 1,
@@ -61,9 +64,29 @@ export const useUserStore = defineStore("user", () => {
     isLoadingSelected.value = true;
     try {
       const res = await userApi.getSelected({ ...userSelectedParams });
+      console.log(res);
       usersSelected.value = res.data;
     } finally {
       isLoadingSelected.value = false;
+    }
+  }
+  async function updateUser(id: number, params: UserUpdateParams) {
+    isLoadingUpdate.value = true;
+    updateError.value = null;
+    try {
+      const res = await userApi.updateUser(id, params);
+      // update data di list jika ada
+      const index = users.value.findIndex((u) => u.id === id);
+      if (index !== -1) users.value[index] = res.data;
+      // update selected jika sedang dibuka
+      if (usersSelected.value?.id === id) usersSelected.value = res.data;
+      return res;
+    } catch (err: any) {
+      updateError.value =
+        err?.response?.data?.message ?? "Gagal mengupdate user";
+      throw err;
+    } finally {
+      isLoadingUpdate.value = false;
     }
   }
 
@@ -80,13 +103,16 @@ export const useUserStore = defineStore("user", () => {
     isLoading,
     isLoadingData,
     isLoadingSelected,
+    isLoadingUpdate,
     totalRecords,
     params,
     userDataParams,
     userSelectedParams,
+    updateError,
     fetchUsers,
     fetchUsersData,
     toggleShowDeleted,
     fetchUsersSelected,
+    updateUser,
   };
 });

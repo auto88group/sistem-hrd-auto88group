@@ -34,7 +34,7 @@
     </div>
     <div v-if="isVisible('back')">
       <v-btn
-        to="/master/employee"
+        @click="handleBack"
         prepend-icon="mdi-keyboard-backspace"
         variant="flat"
         class="bg-gray-500 dark:bg-gray-500 text-sm text-white"
@@ -45,6 +45,11 @@
 </template>
 
 <script setup lang="ts">
+import { useUserStore } from "@/stores/user.store";
+import { useRouter } from "vue-router";
+const router = useRouter();
+const userStore = useUserStore();
+
 const items = [
   { title: "Master", disabled: false, href: "/master" },
   { title: "Karyawan", disabled: true, href: "/master/karyawan" },
@@ -56,6 +61,10 @@ const props = defineProps({
   },
 });
 const isVisible = (fieldName: string) => !props.hideFields.includes(fieldName);
+const handleBack = () => {
+  userStore.usersSelected = null;
+  router.push("/master/employee");
+};
 </script>
 
 <style scoped>
