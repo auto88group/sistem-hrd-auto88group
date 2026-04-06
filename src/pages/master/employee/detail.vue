@@ -34,6 +34,10 @@
           <v-tabs-window-item value="education">
             <detail-education />
           </v-tabs-window-item>
+
+          <v-tabs-window-item value="work-experience">
+            <detail-work-experience />
+          </v-tabs-window-item>
         </v-tabs-window>
       </div>
     </v-card>
@@ -46,6 +50,7 @@ import DetailEducation from "@/components/employee/DetailEducation.vue";
 import DetailUser from "@/components/employee/DetailUser.vue";
 import HeaderEmployee from "@/components/employee/HeaderEmployee.vue";
 import { ref } from "vue";
+import DetailWorkExperience from "@/components/employee/DetailWorkExperience.vue";
 const tab = ref("personal");
 </script>
 <style scoped>

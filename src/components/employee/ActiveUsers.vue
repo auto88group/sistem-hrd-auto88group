@@ -1,6 +1,7 @@
 <template>
   <div class="space-y-10">
-    <filter-users :hide-fields="['pendidikan', 'status']" @filter="onFilter" />
+    <!-- <filter-users :hide-fields="['pendidikan', 'status']" @filter="onFilter" /> -->
+    <filter-users @filter="onFilter" />
     <v-data-table-server
       :headers="headers as any"
       :items="karyawan"

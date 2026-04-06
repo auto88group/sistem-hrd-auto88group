@@ -38,7 +38,7 @@
       <v-autocomplete
         v-model="form.master_position_id"
         :items="listPosition"
-        :loading="positioinStore.isLoadingData"
+        :loading="positionStore.isLoadingData"
         item-title="title"
         item-value="value"
         prepend-inner-icon="mdi-briefcase-outline"
@@ -178,12 +178,16 @@ import { useFormatName } from "@/composables/useFormatName";
 
 const { formatName } = useFormatName();
 const userStore = useUserStore();
-const positioinStore = usePositionStore();
+const positionStore = usePositionStore();
 const branchStore = useBranchStore();
 const educationStore = useEducationStore();
 
 const isSelecting = ref(false);
 const selectedUserText = ref<string>("");
+const searchPosition = ref("");
+const searchBranch = ref("");
+const searchEducation = ref("");
+
 const listUser = computed(() =>
   userStore.usersData.map((user) => ({
     name: user.name,
@@ -192,25 +196,48 @@ const listUser = computed(() =>
     value: user.id,
   })),
 );
-const listPosition = computed(() =>
-  positioinStore.positionData.map((user) => ({
-    title: user.name,
-    value: user.id,
-  })),
-);
-const listBranch = computed(() =>
-  branchStore.branchData.map((branch) => ({
-    title: branch.name,
-    alias: branch.alias,
-    value: branch.id,
-  })),
-);
-const listEducation = computed(() =>
-  educationStore.educationData.map((education) => ({
-    title: education.name,
-    value: education.id,
-  })),
-);
+const listPosition = computed(() => {
+  const keyword = searchPosition.value.toLowerCase();
+
+  return positionStore.positionData
+    .filter((position) =>
+      keyword ? position.name.toLowerCase().includes(keyword) : true,
+    )
+    .map((position) => ({
+      title: position.name,
+      value: position.id,
+      level_name: position.level_name,
+    }));
+});
+const listBranch = computed(() => {
+  const keyword = searchBranch.value.toLowerCase();
+  return branchStore.branchData
+    .filter((branch) => {
+      if (!keyword) return true;
+
+      return (
+        branch.name.toLowerCase().includes(keyword) ||
+        branch.alias.toLowerCase().includes(keyword)
+      );
+    })
+    .map((branch) => ({
+      title: branch.name,
+      alias: branch.alias,
+      value: branch.id,
+    }));
+});
+const listEducation = computed(() => {
+  const keyword = searchEducation.value.toLowerCase();
+
+  return educationStore.educationData
+    .filter((education) =>
+      keyword ? education.name.toLowerCase().includes(keyword) : true,
+    )
+    .map((education) => ({
+      title: education.name,
+      value: education.id,
+    }));
+});
 const listStatus = [
   { value: 1, title: "Kontrak" },
   { value: 2, title: "Tetap" },
@@ -244,22 +271,19 @@ function onSelectUser(value: number | null) {
     isSelecting.value = false;
   }, 500);
 }
-const onSearchPosition = useDebounceFn((val: string) => {
-  positioinStore.positionDataParams.search = val ?? "";
-  positioinStore.fetchPositionData();
-}, 400);
-const onSearchBranch = useDebounceFn((val: string) => {
-  branchStore.branchDataParams.search = val ?? "";
-  branchStore.fetchBranchData();
-}, 400);
-const onSearchEducation = useDebounceFn((val: string) => {
-  educationStore.educationDataParams.search = val ?? "";
-  educationStore.fetchEducationData();
-}, 400);
+const onSearchPosition = (val: any) => {
+  searchPosition.value = val ?? "";
+};
+const onSearchBranch = (val: any) => {
+  searchBranch.value = val ?? "";
+};
+const onSearchEducation = (val: any) => {
+  searchEducation.value = val ?? "";
+};
 
 onMounted(() => {
   userStore.fetchUsersData();
-  positioinStore.fetchPositionData();
+  positionStore.fetchPositionData();
   branchStore.fetchBranchData();
   educationStore.fetchEducationData();
 });

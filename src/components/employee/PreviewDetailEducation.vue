@@ -272,7 +272,7 @@
 
       <v-card-text class="px-6 py-4">
         <v-form ref="formRef">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-3 md:space-y-0 md:grid grid-cols-2 gap-4">
             <div class="md:col-span-2">
               <v-autocomplete
                 id="hrd_master_education_id"
