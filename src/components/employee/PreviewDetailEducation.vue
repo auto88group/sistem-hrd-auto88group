@@ -23,6 +23,8 @@
       </v-btn>
     </div>
 
+    <confirm-dialog />
+
     <!-- ───── Snackbar Error ───── -->
     <v-snackbar
       v-model="showErrorSnackbar"
@@ -96,7 +98,7 @@
                 color="text-red-600"
                 size="small"
                 :loading="hrdEducationStore.isLoadingDestroy"
-                @click="deleteEducation(item.id)"
+                @click="handleDelete(item.id)"
               ></v-btn>
             </div>
           </div>
@@ -493,13 +495,16 @@ import {
   onBeforeUnmount,
 } from "vue";
 import { useRoute } from "vue-router";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import ConfirmDialog from "../ConfirmDialog.vue";
 
 // ─────────────────────────────────────────────────────────────
-// 1. STORES & ROUTE
+// 1. STORES, COMPOSSABLE & ROUTE
 // ─────────────────────────────────────────────────────────────
 const hrdEducationStore = useHrdEducationStore();
 const educationStore = useEducationStore();
 const route = useRoute();
+const { ask } = useConfirmDialog();
 
 const userId = route.params.id;
 const apiUrl = import.meta.env.VITE_API_URL ?? "";
@@ -857,6 +862,15 @@ async function submitForm() {
 // ─────────────────────────────────────────────────────────────
 // 11. CRUD ACTIONS
 // ─────────────────────────────────────────────────────────────
+async function handleDelete(id: number) {
+  const confirmed = await ask({
+    title: "Hapus Pendidikan",
+    message: "Data ini akan dihapus. Lanjutkan?",
+    confirmText: "Ya, Hapus",
+    color: "red-darken-1",
+  });
+  if (confirmed) deleteEducation(id);
+}
 async function deleteEducation(id: number) {
   try {
     await hrdEducationStore.destroyHrdEducation(id);

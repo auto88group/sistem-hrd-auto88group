@@ -10,21 +10,47 @@
           class="text-sm border-r-1 border-gray-200 dark:border-gray-600"
         >
           <v-tab text="Data Diri" value="detail-user"></v-tab>
-          <v-tab text="Data Keluarga" value="family"></v-tab>
-          <v-tab text="Data Pendidikan" value="education"></v-tab>
-          <v-tab text="Data Pengalaman Kerja" value="work-experience"></v-tab>
-          <v-tab text="Data Karir Pekerjaan" value="career-job"></v-tab>
           <v-tab
+            :disabled="isCreate"
+            text="Data Keluarga"
+            value="family"
+          ></v-tab>
+          <v-tab
+            :disabled="isCreate"
+            text="Data Pendidikan"
+            value="education"
+          ></v-tab>
+          <v-tab
+            :disabled="isCreate"
+            text="Data Pengalaman Kerja"
+            value="work-experience"
+          ></v-tab>
+          <v-tab
+            :disabled="isCreate"
+            text="Data Karir Pekerjaan"
+            value="job-career"
+          ></v-tab>
+          <v-tab
+            :disabled="isCreate"
             text="Sertifikat/Pelatihan"
             value="training-certificate"
           ></v-tab>
-          <v-tab text="Akses Akun" value="account-access"></v-tab>
-          <v-tab text="Kelengkapan File" value="completement-file"></v-tab>
+          <v-tab
+            :disabled="isCreate"
+            text="Akses Akun"
+            value="account-access"
+          ></v-tab>
+          <v-tab
+            :disabled="isCreate"
+            text="Kelengkapan File"
+            value="completement-file"
+          ></v-tab>
         </v-tabs>
 
         <v-tabs-window v-model="tab" class="w-full">
           <v-tabs-window-item value="detail-user" class="w-full">
-            <detail-user />
+            <create-user v-if="isCreate" />
+            <detail-user v-else />
           </v-tabs-window-item>
 
           <v-tabs-window-item value="family">
@@ -38,6 +64,10 @@
           <v-tabs-window-item value="work-experience">
             <detail-work-experience />
           </v-tabs-window-item>
+
+          <v-tabs-window-item value="job-career">
+            <detail-job-career />
+          </v-tabs-window-item>
         </v-tabs-window>
       </div>
     </v-card>
@@ -49,9 +79,17 @@ import DetailFamily from "@/components/employee/DetailFamily.vue";
 import DetailEducation from "@/components/employee/DetailEducation.vue";
 import DetailUser from "@/components/employee/DetailUser.vue";
 import HeaderEmployee from "@/components/employee/HeaderEmployee.vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import DetailWorkExperience from "@/components/employee/DetailWorkExperience.vue";
-const tab = ref("personal");
+import { useRoute } from "vue-router";
+import CreateUser from "@/components/employee/CreateUser.vue";
+import DetailJobCareer from "@/components/employee/DetailJobCareer.vue";
+
+const tab = ref("detail-user");
+const route = useRoute();
+
+const isCreate = computed(() => route.path === "/master/employee/create");
+console.log(isCreate);
 </script>
 <style scoped>
 /* Memastikan tab yang aktif memiliki teks yang kontras */

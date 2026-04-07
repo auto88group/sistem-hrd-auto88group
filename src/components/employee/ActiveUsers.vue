@@ -1,7 +1,52 @@
 <template>
   <div class="space-y-10">
-    <!-- <filter-users :hide-fields="['pendidikan', 'status']" @filter="onFilter" /> -->
-    <filter-users @filter="onFilter" />
+    <confirm-dialog />
+
+    <!-- ───── Snackbar Error ───── -->
+    <v-snackbar
+      v-model="showErrorSnackbar"
+      color="bg-red-500"
+      elevation="24"
+      location="top"
+      timeout="4000"
+      rounded="lg"
+    >
+      <div class="d-flex align-center">
+        <v-icon icon="mdi-alert-circle" class="me-3"></v-icon>
+        <span class="font-weight-medium">{{ snackbarMessage }}</span>
+      </div>
+      <template v-slot:actions>
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="showErrorSnackbar = false"
+        ></v-btn>
+      </template>
+    </v-snackbar>
+
+    <!-- ───── Snackbar Success ───── -->
+    <v-snackbar
+      v-model="showSuccessSnackbar"
+      color="bg-green-500"
+      elevation="24"
+      location="top"
+      timeout="4000"
+      rounded="lg"
+    >
+      <div class="d-flex align-center">
+        <v-icon icon="mdi-check-circle" class="me-3"></v-icon>
+        <span class="font-weight-medium">{{ successMessage }}</span>
+      </div>
+      <template v-slot:actions>
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="showSuccessSnackbar = false"
+        ></v-btn>
+      </template>
+    </v-snackbar>
+    <filter-users :hide-fields="['pendidikan', 'status']" @filter="onFilter" />
+
     <v-data-table-server
       :headers="headers as any"
       :items="karyawan"
@@ -125,6 +170,7 @@
       <template #[`item.actions`]="{ item }">
         <div class="ms-auto flex items-center gap-1">
           <v-btn
+            @click="goToDetail(item)"
             icon="mdi-information-outline"
             variant="text"
             density="comfortable"
@@ -132,6 +178,8 @@
           />
 
           <v-btn
+            :loading="store.isLoadingDestroy"
+            @click="handleDelete(item.id)"
             icon="mdi-delete-outline"
             variant="text"
             density="comfortable"
@@ -195,6 +243,8 @@
             color="bg-indigo-200 dark:bg-indigo-800 text-indigo-500 dark:text-indigo-200 font-bold"
             text="Ya, Ubah"
             variant="flat"
+            @loading="store.isLoadingProspect"
+            @click="handleConfirmStatus"
           ></v-btn>
         </v-card-actions>
       </v-card>
@@ -210,6 +260,8 @@ import type { UserDatatablesParams } from "@/api/modules/user.api";
 import { useRouter } from "vue-router";
 import { useEmployeeStatus } from "@/composables/UseEmployeeStatus";
 import { useFormatName } from "@/composables/useFormatName";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import ConfirmDialog from "../ConfirmDialog.vue";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const { formatName } = useFormatName();
@@ -217,6 +269,7 @@ const store = useUserStore();
 const karyawan = computed(() => store.users);
 const router = useRouter();
 const { statusLabel, statusColor } = useEmployeeStatus();
+const { ask } = useConfirmDialog();
 
 onMounted(() => store.fetchUsers());
 
@@ -225,6 +278,11 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
   store.params.start = (options.page - 1) * options.itemsPerPage;
   store.fetchUsers();
 }
+
+const showErrorSnackbar = ref(false);
+const snackbarMessage = ref("");
+const showSuccessSnackbar = ref(false);
+const successMessage = ref("");
 
 const headers = [
   { title: "No", key: "no", sortable: false, width: "60px" },
@@ -238,6 +296,16 @@ const headers = [
   { title: "Prospek", key: "prospect", sortable: false, align: "center" },
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];
+
+function showError(message: string) {
+  snackbarMessage.value = message;
+  showErrorSnackbar.value = true;
+}
+
+function showSuccess(message: string) {
+  successMessage.value = message;
+  showSuccessSnackbar.value = true;
+}
 
 function onFilter(filterValues: Partial<UserDatatablesParams>) {
   store.params.start = 0;
@@ -283,6 +351,51 @@ function goToDetail(item: any) {
     params: { id: item.id },
   });
 }
+
+async function handleDelete(id: number) {
+  const confirmed = await ask({
+    title: "Hapus User",
+    message: "Data ini akan dihapus. Lanjutkan?",
+    confirmText: "Ya, Hapus",
+    color: "red-darken-1",
+  });
+  if (confirmed) deleteUser(id);
+}
+
+async function deleteUser(id: number) {
+  try {
+    await store.destroyUser(id);
+    showSuccess("Data pengalaman kerja berhasil dihapus.");
+  } catch (err: any) {
+    showError(err?.message ?? "Gagal menghapus data pengalaman kerja.");
+  }
+}
+
+const handleConfirmStatus = async () => {
+  const currentDisabled =
+    targetProspect.value?.level === "telemarketing"
+      ? targetProspect.value?.telemarketing?.disabled
+      : targetProspect.value?.disabled;
+
+  const id = targetProspect.value?.id;
+
+  store.userProspectParams.action =
+    currentDisabled === 0 ? "disable" : "enable";
+
+  try {
+    let result = await store.updateUserProspect(id);
+    if (result.success) {
+      showSuccess(result.message);
+      store.fetchUsers();
+    } else {
+      showError(result.message ?? "Gagal mengupdate prospek");
+    }
+  } catch (err: any) {
+    showError(err?.message ?? "Gagal mengupdate prospek");
+  } finally {
+    isDialogProspectOpen.value = false;
+  }
+};
 </script>
 <style scoped>
 /* Gunakan deep selector agar tembus ke dalam komponen Vuetify */

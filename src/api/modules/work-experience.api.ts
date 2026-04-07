@@ -12,7 +12,17 @@ export interface WorkExperienceDatatablesResponse {
   recordsFiltered: number;
   data: WorkExperience[];
 }
+export interface WorkExperienceCreateUpdateResponse {
+  success: boolean;
+  message: string;
+  data: WorkExperience;
+}
+export interface WorkExperienceDestroyResponse {
+  success: boolean;
+  message: string;
+}
 export interface WorkExperience {
+  id: number;
   DT_RowIndex: number;
   user_id: number;
   slug: string;
@@ -35,5 +45,30 @@ export const workExperienceApi = {
     params: WorkExperienceDatatablesParams,
   ): Promise<WorkExperienceDatatablesResponse> {
     return api.get("/hrd/work-experience", { params }).then((res) => res.data);
+  },
+
+  updateWorkExperience(
+    id: number,
+    params: FormData,
+  ): Promise<WorkExperienceCreateUpdateResponse> {
+    return api
+      .post(`/hrd/work-experience/${id}?_method=POST`, params, {
+        headers: { "Content-Type": "multipart/form-data" },
+        transformRequest: [(data) => data],
+      })
+      .then((res) => res.data);
+  },
+  createWorkExperience(
+    params: FormData,
+  ): Promise<WorkExperienceCreateUpdateResponse> {
+    return api
+      .post(`/hrd/work-experience?_method=POST`, params, {
+        headers: { "Content-Type": "multipart/form-data" },
+        transformRequest: [(data) => data],
+      })
+      .then((res) => res.data);
+  },
+  destroyWorkExperience(id: number): Promise<WorkExperienceDestroyResponse> {
+    return api.delete(`/hrd/work-experience/${id}`).then((res) => res.data);
   },
 };

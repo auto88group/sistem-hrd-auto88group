@@ -14,9 +14,10 @@ export interface UserDatatablesParams {
 export interface UserDataParams {
   search?: string;
   branch_id?: number;
+  not_user_id?: number | number[];
 }
 
-export interface UserUpdateParams {
+export interface UserCreateUpdateParams {
   // required
   employee_id: number;
   full_name: string;
@@ -30,6 +31,7 @@ export interface UserUpdateParams {
   // optional
   nik?: string;
   password?: string;
+  password_confirmation?: string;
   image?: File;
   phone_number?: string;
   initial?: string;
@@ -67,6 +69,8 @@ export interface UserUpdateParams {
   emergency_phone_number?: string;
 
   // employment
+  primary_approver_id?: number;
+  secondary_approver_id?: number;
   status_id?: number;
   join_date?: string; // format: dd-mm-yyyy
   effective_start_date?: string; // format: dd-mm-yyyy
@@ -75,6 +79,10 @@ export interface UserUpdateParams {
 }
 export interface UserSelectedParams {
   id?: string;
+}
+
+export interface UserProspectParams {
+  action: string;
 }
 
 export interface UserDatatablesResponse {
@@ -98,6 +106,11 @@ export interface UserUpdateResponse {
   success: boolean;
   message: string;
   data: User;
+}
+
+export interface UserDefaultResponse {
+  success: boolean;
+  message: string;
 }
 
 export interface User {
@@ -143,6 +156,20 @@ export interface User {
   hrd_master_blood_type_id: string;
   hrd_master_education_id: string;
   hrd_master_religion_id: string;
+  primary_approver_id: number;
+  secondary_approver_id: number;
+  primary_approver: {
+    id: number;
+    name: string;
+    full_name: string;
+    email: string;
+  };
+  secondary_approver: {
+    id: number;
+    name: string;
+    full_name: string;
+    email: string;
+  };
   id: number;
   image: string;
   join_date: string;
@@ -211,7 +238,7 @@ export const userApi = {
     return api.get("/hrd/users", { params }).then((res) => res.data);
   },
 
-  getData(params: UserDataParams): Promise<UserDataResponse> {
+  getData(params: URLSearchParams | UserDataParams) {
     return api.get("/hrd/users/data", { params }).then((res) => res.data);
   },
 
@@ -219,9 +246,28 @@ export const userApi = {
     return api.get(`/hrd/users/${params.id}`).then((res) => res.data);
   },
 
+  createUser(params: UserCreateUpdateParams): Promise<UserUpdateResponse> {
+    const formData = new FormData();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null) return;
+      if (value instanceof File) {
+        formData.append(key, value);
+      } else {
+        formData.append(key, String(value));
+      }
+    });
+
+    return api
+      .post(`/hrd/users`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((res) => res.data);
+  },
+
   updateUser(
     id: number,
-    params: UserUpdateParams,
+    params: UserCreateUpdateParams,
   ): Promise<UserUpdateResponse> {
     const formData = new FormData();
 
@@ -238,6 +284,19 @@ export const userApi = {
       .post(`/hrd/users/${id}?_method=POST`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
+      .then((res) => res.data);
+  },
+
+  destroyUser(id: number): Promise<UserDefaultResponse> {
+    return api.delete(`/hrd/users/${id}`).then((res) => res.data);
+  },
+
+  updateUserProspect(
+    id: number,
+    params: UserProspectParams,
+  ): Promise<UserDefaultResponse> {
+    return api
+      .put(`/hrd/users/status-prospect/${id}`, params)
       .then((res) => res.data);
   },
 };

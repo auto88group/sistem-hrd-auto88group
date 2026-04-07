@@ -26,6 +26,7 @@
         >Import Data Karyawan</v-btn
       >
       <v-btn
+        to="/master/employee/create"
         prepend-icon="mdi-plus"
         variant="flat"
         class="bg-sky-500 dark:bg-sky-500 text-sm text-white"

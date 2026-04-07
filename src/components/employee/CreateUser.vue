@@ -1,40 +1,46 @@
 <template>
-  <div v-if="userStore.isLoadingSelected">
-    <v-card v-for="n in 3" :key="n" flat class="p-3">
-      <v-skeleton-loader
-        type="heading, divider, list-item-two-line@3"
-        elevation="0"
-      ></v-skeleton-loader>
-    </v-card>
-  </div>
-  <v-card v-else flat class="p-3">
-    <div class="flex justify-end w-full gap-2">
-      <v-btn
-        color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
-        prepend-icon="mdi-close"
-        variant="flat"
-        @click="emit('cancel')"
-      >
-        Batal
-      </v-btn>
-      <v-btn
-        color="indigo"
-        prepend-icon="mdi-content-save"
-        variant="flat"
-        :loading="isSaving"
-        @click="handleSubmit"
-      >
-        Simpan
-      </v-btn>
-    </div>
-
+  <v-card flat class="p-3">
     <v-snackbar
       v-model="showErrorSnackbar"
-      color="text-red-500"
-      timeout="4000"
+      color="bg-red-500"
+      elevation="24"
       location="top"
+      timeout="4000"
+      rounded="lg"
     >
-      {{ snackbarMessage }}
+      <div class="d-flex align-center">
+        <v-icon icon="mdi-alert-circle" class="me-3"></v-icon>
+        <span class="font-weight-medium">{{ snackbarMessage }}</span>
+      </div>
+      <template v-slot:actions>
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="showErrorSnackbar = false"
+        ></v-btn>
+      </template>
+    </v-snackbar>
+
+    <!-- ───── Snackbar Success ───── -->
+    <v-snackbar
+      v-model="showSuccessSnackbar"
+      color="bg-green-500"
+      elevation="24"
+      location="top"
+      timeout="4000"
+      rounded="lg"
+    >
+      <div class="d-flex align-center">
+        <v-icon icon="mdi-check-circle" class="me-3"></v-icon>
+        <span class="font-weight-medium">{{ successMessage }}</span>
+      </div>
+      <template v-slot:actions>
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="showSuccessSnackbar = false"
+        ></v-btn>
+      </template>
     </v-snackbar>
 
     <v-form ref="formRef" validate-on="submit lazy">
@@ -152,8 +158,49 @@
               >
                 <template v-slot:label>
                   Email <span class="text-red-500">*</span>
-                </template></v-text-field
+                </template>
+              </v-text-field>
+            </v-col>
+
+            <v-col cols="12" md="6">
+              <v-text-field
+                id="field-password"
+                v-model="form.password"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                :type="showPassword ? 'text' : 'password'"
+                :rules="[rules.required, rules.password]"
+                :error-messages="serverErrors.password"
+                :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                @click:append-inner="showPassword = !showPassword"
               >
+                <template v-slot:label>
+                  Password <span class="text-red-500">*</span>
+                </template>
+              </v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                id="field-password_confirmation"
+                v-model="form.password_confirmation"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                :type="showPasswordConfirmation ? 'text' : 'password'"
+                :rules="[rules.required, rules.passwordConfirmation]"
+                :error-messages="serverErrors.password_confirmation"
+                :append-inner-icon="
+                  showPasswordConfirmation ? 'mdi-eye-off' : 'mdi-eye'
+                "
+                @click:append-inner="
+                  showPasswordConfirmation = !showPasswordConfirmation
+                "
+              >
+                <template v-slot:label>
+                  Konfirmasi Password <span class="text-red-500">*</span>
+                </template>
+              </v-text-field>
             </v-col>
 
             <v-col cols="12" md="6">
@@ -312,16 +359,9 @@
           </v-card-title>
           <v-divider class="mb-4"></v-divider>
           <div class="flex flex-col gap-3">
-            <div v-if="imagePreview || userStore.usersSelected?.image">
+            <div v-if="imagePreview">
               <v-img
-                :src="
-                  imagePreview ??
-                  apiUrl +
-                    '/image/user-profile/' +
-                    userStore.usersSelected?.id +
-                    '/' +
-                    userStore.usersSelected?.image
-                "
+                :src="imagePreview"
                 max-width="200"
                 aspect-ratio="1/1"
                 class="rounded-lg bg-grey-lighten-2 mb-3"
@@ -540,7 +580,7 @@
                 :error-messages="serverErrors.primary_approver_id"
               >
                 <template v-slot:label>
-                  Atasan 1<span class="text-red-500">*</span>
+                  Atasan 1 <span class="text-red-500">*</span>
                 </template>
                 <template v-slot:item="{ props, item }">
                   <v-list-item
@@ -554,6 +594,7 @@
                 </template>
               </v-autocomplete>
             </v-col>
+
             <v-col cols="12" md="6">
               <v-autocomplete
                 label="Atasan 2"
@@ -586,6 +627,7 @@
                 </template>
               </v-autocomplete>
             </v-col>
+
             <v-col cols="12" md="6" v-if="form.level === 'telemarketing'">
               <v-text-field
                 v-model.number="form.initial"
@@ -678,6 +720,7 @@
                 </template>
               </v-text-field>
             </v-col>
+
             <v-col cols="12" md="6">
               <v-autocomplete
                 v-model="form.branch_id"
@@ -787,7 +830,7 @@
                   :rules="[rules.required]"
                 >
                   <template v-slot:label>
-                    Tanggal Ditetapkan<span class="text-red-500">*</span>
+                    Tanggal Ditetapkan <span class="text-red-500">*</span>
                   </template>
                 </app-date-picker>
               </v-col>
@@ -839,7 +882,7 @@
                 :rules="[rules.required]"
               >
                 <template v-slot:label>
-                  Join Date<span class="text-red-500">*</span>
+                  Join Date <span class="text-red-500">*</span>
                 </template>
               </app-date-picker>
             </v-col>
@@ -850,14 +893,6 @@
 
     <!-- Bottom action bar -->
     <div class="flex justify-end w-full gap-2 mt-6">
-      <v-btn
-        color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
-        prepend-icon="mdi-close"
-        variant="flat"
-        @click="emit('cancel')"
-      >
-        Batal
-      </v-btn>
       <v-btn
         color="indigo"
         prepend-icon="mdi-content-save"
@@ -888,6 +923,7 @@ import { usePositionStore } from "@/stores/position.store";
 import { useBranchStore } from "@/stores/branch.store";
 import { useSalesOfficialStore } from "@/stores/sales-official.store";
 import { useFormatName } from "@/composables/useFormatName";
+import { useRouter } from "vue-router";
 
 const { formatName } = useFormatName();
 const serverErrors = reactive<Record<string, string>>({});
@@ -905,15 +941,14 @@ const salesOfficialStore = useSalesOfficialStore();
 const userStore = useUserStore();
 const primaryApproverResults = ref<typeof userStore.usersData>([]);
 const secondaryApproverResults = ref<typeof userStore.usersData>([]);
+const router = useRouter();
 
-const showErrorSnackbar = ref(false);
-const snackbarMessage = ref("");
-const apiUrl = import.meta.env.VITE_API_URL;
 const formRef = ref();
 const isSaving = ref(false);
 const imagePreview = ref<string | null>(null);
+const showPassword = ref(false);
+const showPasswordConfirmation = ref(false);
 
-userStore.userDataParams.not_user_id = userStore.usersSelected?.id;
 const isSelectingPrimaryApprover = ref(false);
 const selectedPrimaryApproverText = ref<string>("");
 const isSelectingSecondaryApprover = ref(false);
@@ -930,188 +965,129 @@ const searchRegency = ref("");
 const searchDistrict = ref("");
 const searchVillage = ref("");
 
-const listPrimaryApprover = computed(() => {
-  const users = primaryApproverResults.value.map((u) => ({
+const showErrorSnackbar = ref(false);
+const snackbarMessage = ref("");
+const showSuccessSnackbar = ref(false);
+const successMessage = ref("");
+
+// ── Computed lists ────────────────────────────────────────────────────────────
+const listPrimaryApprover = computed(() =>
+  primaryApproverResults.value.map((u) => ({
     value: u.id,
     name: u.name,
     full_name: u.full_name,
     email: u.email,
-  }));
+  })),
+);
 
-  if (
-    form.primary_approver_id &&
-    userStore.usersSelected?.primary_approver?.name
-  ) {
-    const exists = users.some((u) => u.value === form.primary_approver_id);
-    if (!exists) {
-      users.unshift({
-        value: form.primary_approver_id,
-        name: userStore.usersSelected?.primary_approver?.name ?? "",
-        full_name: userStore.usersSelected?.primary_approver?.full_name ?? "",
-        email: userStore.usersSelected?.primary_approver?.email ?? "",
-      });
-    }
-  }
-  return users;
-});
-
-// Update listSecondaryApprover computed
-const listSecondaryApprover = computed(() => {
-  const users = secondaryApproverResults.value.map((u) => ({
+const listSecondaryApprover = computed(() =>
+  secondaryApproverResults.value.map((u) => ({
     value: u.id,
     name: u.name,
     full_name: u.full_name,
     email: u.email,
-  }));
-
-  if (
-    form.secondary_approver_id &&
-    userStore.usersSelected?.secondary_approver?.name
-  ) {
-    const exists = users.some((u) => u.value === form.secondary_approver_id);
-    if (!exists) {
-      users.unshift({
-        value: form.secondary_approver_id,
-        name: userStore.usersSelected?.secondary_approver?.name ?? "",
-        full_name: userStore.usersSelected?.secondary_approver?.full_name ?? "",
-        email: userStore.usersSelected?.secondary_approver?.email ?? "",
-      });
-    }
-  }
-  return users;
-});
+  })),
+);
 
 const listEducation = computed(() => {
   const keyword = searchEducation.value.toLowerCase();
-
   return educationStore.educationData
-    .filter((education) =>
-      keyword ? education.name.toLowerCase().includes(keyword) : true,
-    )
-    .map((education) => ({
-      title: education.name,
-      value: education.id,
-    }));
+    .filter((e) => (keyword ? e.name.toLowerCase().includes(keyword) : true))
+    .map((e) => ({ title: e.name, value: e.id }));
 });
+
 const listMaritalStatus = computed(() => {
   const keyword = searchMaritalStatus.value.toLowerCase();
-
   return maritalStatusStore.maritalStatusData
-    .filter((maritalStatus) =>
-      keyword ? maritalStatus.name.toLowerCase().includes(keyword) : true,
-    )
-    .map((maritalStatus) => ({
-      title: maritalStatus.name,
-      value: maritalStatus.id,
-    }));
+    .filter((m) => (keyword ? m.name.toLowerCase().includes(keyword) : true))
+    .map((m) => ({ title: m.name, value: m.id }));
 });
+
 const listPosition = computed(() => {
   const keyword = searchPosition.value.toLowerCase();
-
   return positionStore.positionData
-    .filter((position) =>
-      keyword ? position.name.toLowerCase().includes(keyword) : true,
-    )
-    .map((position) => ({
-      title: position.name,
-      value: position.id,
-      level_name: position.level_name,
-    }));
+    .filter((p) => (keyword ? p.name.toLowerCase().includes(keyword) : true))
+    .map((p) => ({ title: p.name, value: p.id, level_name: p.level_name }));
 });
+
 const listBranch = computed(() => {
   const keyword = searchBranch.value.toLowerCase();
   return branchStore.branchData
-    .filter((branch) => {
-      if (!keyword) return true;
-
-      return (
-        branch.name.toLowerCase().includes(keyword) ||
-        branch.alias.toLowerCase().includes(keyword)
-      );
-    })
-    .map((branch) => ({
-      title: branch.name,
-      alias: branch.alias,
-      value: branch.id,
-    }));
+    .filter((b) =>
+      keyword
+        ? b.name.toLowerCase().includes(keyword) ||
+          b.alias.toLowerCase().includes(keyword)
+        : true,
+    )
+    .map((b) => ({ title: b.name, alias: b.alias, value: b.id }));
 });
+
 const listBloodType = computed(() => {
   const keyword = searchBloodType.value.toLowerCase();
   return bloodTypeStore.bloodTypeData
-    .filter((bloodType) => {
-      if (!keyword) return true;
-      return bloodType.name.toLowerCase().includes(keyword);
-    })
-    .map((bloodType) => ({
-      title: bloodType.name,
-      value: bloodType.id,
-    }));
+    .filter((b) => (keyword ? b.name.toLowerCase().includes(keyword) : true))
+    .map((b) => ({ title: b.name, value: b.id }));
 });
+
 const listReligion = computed(() => {
   const keyword = searchReligion.value.toLowerCase();
   return religionStore.religionData
-    .filter((religion) => {
-      if (!keyword) return true;
-      return religion.name.toLowerCase().includes(keyword);
-    })
-    .map((religion) => ({
-      title: religion.name,
-      value: religion.id,
-    }));
+    .filter((r) => (keyword ? r.name.toLowerCase().includes(keyword) : true))
+    .map((r) => ({ title: r.name, value: r.id }));
 });
+
 const listProvince = computed(() => {
   const keyword = searchProvince.value.toLowerCase();
   return provinceStore.province
-    .filter((province) => {
-      if (!keyword) return true;
-      return province.name.toLowerCase().includes(keyword);
-    })
-    .map((province) => ({
-      title: province.name,
-      value: province.id,
-    }));
+    .filter((p) => (keyword ? p.name.toLowerCase().includes(keyword) : true))
+    .map((p) => ({ title: p.name, value: p.id }));
 });
+
 const listRegency = computed(() => {
   const keyword = searchRegency.value.toLowerCase();
   return regencyStore.regency
-    .filter((regency) => {
-      if (!keyword) return true;
-      return regency.name.toLowerCase().includes(keyword);
-    })
-    .map((regency) => ({
-      title: regency.name,
-      value: regency.id,
-    }));
+    .filter((r) => (keyword ? r.name.toLowerCase().includes(keyword) : true))
+    .map((r) => ({ title: r.name, value: r.id }));
 });
+
 const listDistrict = computed(() => {
   const keyword = searchDistrict.value.toLowerCase();
   return districtStore.district
-    .filter((district) => {
-      if (!keyword) return true;
-      return district.name.toLowerCase().includes(keyword);
-    })
-    .map((district) => ({
-      title: district.name,
-      value: district.id,
-    }));
+    .filter((d) => (keyword ? d.name.toLowerCase().includes(keyword) : true))
+    .map((d) => ({ title: d.name, value: d.id }));
 });
+
 const listVillage = computed(() => {
   const keyword = searchVillage.value.toLowerCase();
   return villageStore.village
-    .filter((village) => {
-      if (!keyword) return true;
-      return village.name.toLowerCase().includes(keyword);
-    })
-    .map((village) => ({
-      title: village.name,
-      value: village.id,
-    }));
+    .filter((v) => (keyword ? v.name.toLowerCase().includes(keyword) : true))
+    .map((v) => ({ title: v.name, value: v.id }));
 });
+
 const listGender = [
   { label: "Laki-Laki", value: "M" },
   { label: "Perempuan", value: "F" },
 ];
 
+const employeeStatusOptions = [
+  { label: "Kontrak", value: 1 },
+  { label: "Tetap", value: 2 },
+  { label: "Resign", value: 3 },
+  { label: "Dikeluarkan", value: 4 },
+  { label: "Pensiun", value: 5 },
+];
+
+function showError(message: string) {
+  snackbarMessage.value = message;
+  showErrorSnackbar.value = true;
+}
+
+function showSuccess(message: string) {
+  successMessage.value = message;
+  showSuccessSnackbar.value = true;
+}
+
+// ── Search handlers ───────────────────────────────────────────────────────────
 const onSearchPrimaryApprover = useDebounceFn(async (val: string) => {
   if (isSelectingPrimaryApprover.value) return;
   if (val === selectedPrimaryApproverText.value) return;
@@ -1132,7 +1108,7 @@ const onSearchEducation = (val: any) => {
   searchEducation.value = val ?? "";
 };
 const onSearchMaritalStatus = (val: any) => {
-  searchEducation.value = val ?? "";
+  searchMaritalStatus.value = val ?? "";
 };
 const onSearchPosition = (val: any) => {
   searchPosition.value = val ?? "";
@@ -1158,13 +1134,16 @@ const onSearchDistrict = (val: any) => {
 const onSearchVillage = (val: any) => {
   searchVillage.value = val ?? "";
 };
-// ── Form state ──────────────────────────────────────────────────────────────
+
+// ── Form state ────────────────────────────────────────────────────────────────
 const form = reactive({
   nik: "",
   name: "",
   full_name: "",
+  password: "",
+  password_confirmation: "",
   hrd_master_education_id: null as number | null,
-  employee_id: 0 as number,
+  employee_id: null as number | null,
   front_title: "",
   back_title: "",
   phone_number: "",
@@ -1205,13 +1184,12 @@ const form = reactive({
   join_date: "",
 });
 
-// ── Validation rules ─────────────────────────────────────────────────────────
+// ── Validation rules ──────────────────────────────────────────────────────────
 const rules = {
   nik: (v: string) => {
     if (!v) return true;
     const isNumeric = /^\d+$/.test(v);
     const is16Digits = v.length === 16;
-
     if (!isNumeric) return "NIK harus berupa angka";
     if (!is16Digits) return "NIK harus berjumlah 16 karakter";
     return true;
@@ -1219,6 +1197,9 @@ const rules = {
   required: (v: any) =>
     (v !== null && v !== undefined && v !== "") || "Wajib diisi",
   email: (v: string) => /.+@.+\..+/.test(v) || "Format email tidak valid",
+  password: (v: string) => v.length >= 8 || "Password minimal 8 karakter",
+  passwordConfirmation: (v: string) =>
+    v === form.password || "Konfirmasi password tidak cocok",
   imageSize: (v: File | File[]) => {
     if (!v) return true;
     const file = Array.isArray(v) ? v[0] : v;
@@ -1226,14 +1207,6 @@ const rules = {
     return file.size <= 2 * 1024 * 1024 || "Ukuran file maksimal 2MB";
   },
 };
-
-const employeeStatusOptions = [
-  { label: "Kontrak", value: 1 },
-  { label: "Tetap", value: 2 },
-  { label: "Resign", value: 3 },
-  { label: "Dikeluarkan", value: 4 },
-  { label: "Pensiun", value: 5 },
-];
 
 // ── Cascading address handlers ────────────────────────────────────────────────
 function onProvinceChange() {
@@ -1252,7 +1225,6 @@ function onRegencyChange() {
   form.master_area_village_id = null;
   districtStore.district = [];
   districtStore.districtParams.regency_id = form.master_area_regency_id ?? "";
-  districtStore.district = [];
   villageStore.village = [];
   districtStore.fetchDistrict();
 }
@@ -1265,21 +1237,18 @@ function onDistrictChange() {
 
 function onPositionChange(value: number | null) {
   const selectedItem = listPosition.value.find((item) => item.value === value);
-  const title = selectedItem?.title;
-  const oldValue = form.position;
-  form.position = title ?? oldValue;
+  form.position = selectedItem?.title ?? "";
   form.level = selectedItem?.level_name ?? "";
-  console.log(selectedItem?.level_name);
   form.sequence = null;
 }
 
 function onStatusChange(value: number | null) {
-  if (value == 2) {
+  if (value === 2) {
     form.effective_end_date = "";
   }
 }
 
-// ── Image preview ────────────────────────────────────────────────────────────
+// ── Image preview ─────────────────────────────────────────────────────────────
 function onImageChange(files: File | File[]) {
   const file = Array.isArray(files) ? files[0] : files;
   if (file) {
@@ -1289,34 +1258,15 @@ function onImageChange(files: File | File[]) {
   }
 }
 
-function loadFirstTimeMaserArea() {
-  if (form.master_area_province_id) {
-    regencyStore.regencyParams.province_id = form.master_area_province_id;
-    regencyStore.fetchRegency();
-  }
-
-  if (form.master_area_regency_id) {
-    districtStore.districtParams.regency_id = form.master_area_regency_id;
-    districtStore.fetchDistrict();
-  }
-
-  if (form.master_area_district_id) {
-    villageStore.villageParams.district_id = form.master_area_district_id;
-    villageStore.fetchVillage();
-  }
-}
-
+// ── Generate helpers ──────────────────────────────────────────────────────────
 function generateInitial() {
   const name = form.full_name || form.name || "";
   const words = name.trim().split(/\s+/).filter(Boolean);
-
-  let initial;
+  let initial: string;
 
   if (words.length === 1) {
-    // 1 kata → ambil 2 huruf pertama
     initial = words[0].substring(0, 2).toUpperCase();
   } else if (words.length >= 4) {
-    // 4 kata ke atas → ambil 3 (awal, tengah, akhir)
     const taken = [
       words[0],
       words[Math.floor(words.length / 2)],
@@ -1324,7 +1274,6 @@ function generateInitial() {
     ];
     initial = taken.map((w) => w[0].toUpperCase()).join("");
   } else {
-    // 2-3 kata → ambil huruf pertama tiap kata
     initial = words.map((w) => w[0].toUpperCase()).join("");
   }
 
@@ -1332,73 +1281,23 @@ function generateInitial() {
 }
 
 async function generateSequence() {
-  // Set level dari user yang sedang diedit
   salesOfficialStore.lastSequenceSalesParams.level = form.level ?? "";
-
   await salesOfficialStore.fetchLastSequence();
-
-  // Assign hasil ke form.sequence
   form.sequence = salesOfficialStore.lastSequenceSales;
 }
 
-// ── Populate form from store ─────────────────────────────────────────────────
-function populateForm() {
-  const u = userStore.usersSelected;
-  if (!u) return;
-  form.nik = u.nik ?? "";
-  form.name = u.name ?? "";
-  form.full_name = u.full_name ?? "";
-  form.hrd_master_education_id = u.education?.id ?? null;
-  form.front_title = u.front_title ?? "";
-  form.back_title = u.back_title ?? "";
-  form.phone_number = u.phone_number ?? "";
-  form.employee_id = u.employee_id ?? null;
-  form.email = u.email ?? "";
-  form.gender = u.gender;
-  form.primary_approver_id = u.primary_approver_id ?? null;
-  form.secondary_approver_id = u.secondary_approver_id ?? null;
-  form.hrd_master_marital_status_id = u.marital_status?.id ?? null;
-  form.hrd_master_blood_type_id = u.blood_type?.id ?? null;
-  form.birth_place = u.birth_place ?? "";
-  form.birth_date = u.birth_date ?? "";
-  form.hrd_master_religion_id = u.religion?.id ?? null;
-  form.bpjs_health_number = u.bpjs_health_number ?? "";
-  form.bpjs_employment_number = u.bpjs_employment_number ?? "";
-  form.number_of_children = u.number_of_children ?? null;
-  form.emergency_phone_number = u.emergency_phone_number ?? "";
-  form.emergency_contact_name = u.emergency_contact_name ?? "";
-  form.address_id_card = u.address_id_card ? String(u.address_id_card) : "";
-  form.master_area_province_id = u.province?.id.toString() ?? null;
-  form.master_area_regency_id = u.regency?.id.toString() ?? null;
-  form.master_area_district_id = u.disctrict?.id.toString() ?? null; // note: typo in original "disctrict"
-  form.master_area_village_id = u.village?.id.toString() ?? null;
-  form.level = u.level ?? null;
-  form.initial = u.telemarketing?.inisial ?? null;
-  form.sequence = u.telemarketing?.urutan ?? null;
-  form.neighborhood_unit = u.neighborhood_unit ?? "";
-  form.community_unit = u.community_unit ?? "";
-  form.current_address = u.current_address ?? "";
-  form.zip_code = u.zip_code ?? "";
-  form.master_position_id = u.master_position_id ?? null;
-  form.position = u.position ?? "";
-  form.branch_id = u.branch?.id ?? null;
-  form.remaining_leave = u.remaining_leave ?? 0;
-  form.status_id = u.status_id ?? null;
-  form.effective_start_date = u.effective_start_date ?? "";
-  form.effective_end_date = u.effective_end_date ?? "";
-  form.join_date = u.join_date ?? "";
-
-  console.log(form.primary_approver_id);
-}
-const emit = defineEmits<{
-  cancel: [];
-  saved: [];
-}>();
+// ── Scroll to error ───────────────────────────────────────────────────────────
+const priorityFields = [
+  "name",
+  "full_name",
+  "gender",
+  "email",
+  "password",
+  "password_confirmation",
+  "image",
+];
 
 function scrollToFirstError(serverErr?: Record<string, string>) {
-  const priorityFields = ["name", "full_name", "gender", "gender", "image"];
-
-  // Cek apakah ada server error di salah satu field prioritas
   if (serverErr) {
     for (const field of priorityFields) {
       if (serverErr[field]) {
@@ -1409,11 +1308,9 @@ function scrollToFirstError(serverErr?: Record<string, string>) {
     }
   }
 
-  // Cek apakah ada error validasi front-end di salah satu field prioritas
   for (const field of priorityFields) {
     const el = document.getElementById(`field-${field}`);
     if (el) {
-      // Vuetify meletakkan class 'v-field--error' pada wrapper terdekat
       const wrapper = el.closest(".v-input");
       if (wrapper?.classList.contains("v-input--error")) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1423,34 +1320,36 @@ function scrollToFirstError(serverErr?: Record<string, string>) {
   }
 }
 
+// ── Emit ──────────────────────────────────────────────────────────────────────
+
 // ── Submit ────────────────────────────────────────────────────────────────────
 async function handleSubmit() {
   const { valid } = await formRef.value.validate();
   if (!valid) {
-    scrollToFirstError(); // ← frontend validation error
+    scrollToFirstError();
     return;
   }
 
-  // reset server errors sebelum submit
   Object.keys(serverErrors).forEach((key) => delete serverErrors[key]);
 
   isSaving.value = true;
   try {
-    const userId = userStore.usersSelected!.id;
     const imageFile = Array.isArray(form.imageFile)
       ? form.imageFile[0]
       : form.imageFile;
 
-    await userStore.updateUser(userId, {
+    let result = await userStore.createUser({
       // required
-      employee_id: form.employee_id,
+      employee_id: form.employee_id!,
       full_name: form.full_name,
       name: form.name,
       email: form.email,
+      password: form.password,
+      password_confirmation: form.password_confirmation,
       branch_id: form.branch_id!,
       master_position_id: form.master_position_id!,
       position: form.position,
-      level: userStore.usersSelected!.level,
+      level: form.level ?? "",
 
       // personal
       nik: form.nik || undefined,
@@ -1514,8 +1413,12 @@ async function handleSubmit() {
       effective_end_date: form.effective_end_date || undefined,
       remaining_leave: form.remaining_leave ?? undefined,
     });
-
-    emit("saved");
+    if (result.success) {
+      showSuccess(result.message);
+      router.push("/master/employee");
+    } else {
+      showError(result.message ?? "Gagal membuat user baru");
+    }
   } catch (err: any) {
     if (err?.status === 422) {
       const errors = err.errors as Record<string, string[]>;
@@ -1523,24 +1426,20 @@ async function handleSubmit() {
         Object.entries(errors).forEach(([field, messages]) => {
           serverErrors[field] = messages[0];
         });
-        // Tunggu DOM update dulu sebelum scroll
         await nextTick();
         scrollToFirstError(serverErrors);
       }
     } else {
-      snackbarMessage.value = err?.message ?? "Terjadi kesalahan, coba lagi.";
-      showErrorSnackbar.value = true;
+      showError(err?.message ?? "Terjadi kesalahan, coba lagi.");
     }
   } finally {
     isSaving.value = false;
   }
 }
 
-// ── Lifecycle ────────────────────────────────────────────────────────────────
+// ── Lifecycle ─────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  populateForm();
   provinceStore.fetchProvince();
-  loadFirstTimeMaserArea();
   educationStore.fetchEducationData();
   branchStore.fetchBranchData();
   maritalStatusStore.fetchMaritalStatusData();

@@ -302,7 +302,7 @@
         </v-card-title>
         <v-divider class="mb-6"></v-divider>
         <v-row gap="15">
-          <v-col cols="12" md="12">
+          <v-col cols="12" md="6">
             <div class="text-gray-500 text-sm dark:text-gray-300">
               ID Karyawan
             </div>
@@ -310,6 +310,45 @@
               {{ userStore.usersSelected?.employee_id ?? "-" }}
             </div>
           </v-col>
+          <!-- Jika salah satu atau keduanya ada -->
+          <template
+            v-if="
+              userStore.usersSelected?.primary_approver ||
+              userStore.usersSelected?.secondary_approver
+            "
+          >
+            <!-- Jika hanya atasan 1 saja (atasan 2 tidak ada) -->
+            <template v-if="!userStore.usersSelected?.secondary_approver">
+              <v-col cols="12" md="6">
+                <div class="text-gray-500 text-sm dark:text-gray-300">
+                  Atasan
+                </div>
+                <div class="font-bold text-sm">
+                  {{ userStore.usersSelected?.primary_approver?.name ?? "-" }}
+                </div>
+              </v-col>
+            </template>
+
+            <!-- Jika keduanya ada -->
+            <template v-else>
+              <v-col cols="12" md="6">
+                <div class="text-gray-500 text-sm dark:text-gray-300">
+                  Atasan 1
+                </div>
+                <div class="font-bold text-sm">
+                  {{ userStore.usersSelected?.primary_approver?.name }}
+                </div>
+              </v-col>
+              <v-col cols="12" md="6">
+                <div class="text-gray-500 text-sm dark:text-gray-300">
+                  Atasan 2
+                </div>
+                <div class="font-bold text-sm">
+                  {{ userStore.usersSelected?.secondary_approver?.name }}
+                </div>
+              </v-col>
+            </template>
+          </template>
           <v-col
             cols="12"
             md="6"

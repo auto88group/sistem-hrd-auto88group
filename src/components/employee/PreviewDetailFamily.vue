@@ -17,6 +17,7 @@
         >Tambah Data</v-btn
       >
     </div>
+    <confirm-dialog />
 
     <v-snackbar
       v-model="showErrorSnackbar"
@@ -90,7 +91,7 @@
                 color="text-red-600"
                 size="small"
                 :loading="familyStore.isLoadingDestroy"
-                @click="deleteFamily(item.id)"
+                @click="handleDelete(item.id)"
               ></v-btn>
             </div>
           </div>
@@ -514,6 +515,8 @@ import { useReligionStore } from "@/stores/religion.store";
 import { useJobStore } from "@/stores/job.store";
 import { useMaritalStatusStore } from "@/stores/maritall-status.store";
 import { useEducationStore } from "@/stores/education.store";
+import ConfirmDialog from "../ConfirmDialog.vue";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
 
 const employeeRelationStore = useEmployeeRelationStore();
 const jobStore = useJobStore();
@@ -524,6 +527,8 @@ const familyStore = useFamilyStore();
 const route = useRoute();
 const { toFullDate } = useDateFormatter();
 const userId = route.params.id;
+
+const { ask } = useConfirmDialog();
 
 const serverErrors = reactive<Record<string, string>>({});
 const showErrorSnackbar = ref(false);
@@ -828,6 +833,16 @@ async function submitForm() {
       }
     }
   }
+}
+
+async function handleDelete(id: number) {
+  const confirmed = await ask({
+    title: "Hapus Data Keluarga",
+    message: "Data ini akan dihapus. Lanjutkan?",
+    confirmText: "Ya, Hapus",
+    color: "red-darken-1",
+  });
+  if (confirmed) deleteFamily(id);
 }
 
 async function deleteFamily(id: number) {
