@@ -65,8 +65,20 @@ const router = createRouter({
         },
         {
           path: "/setting/working-hour",
-          name: "Shift",
+          name: "Jam Kerja",
           component: () => import("@/pages/setting/working-hour/index.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "/setting/holiday",
+          name: "Hari Libur",
+          component: () => import("@/pages/setting/holiday/index.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "/setting/shift-schedule",
+          name: "Penjadwalan Shift",
+          component: () => import("@/pages/setting/shift-schedule/index.vue"),
           meta: { requiresAuth: true },
         },
       ],

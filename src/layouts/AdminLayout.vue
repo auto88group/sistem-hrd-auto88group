@@ -198,7 +198,8 @@
               >Jam Kerja</v-btn
             >
             <v-btn
-              to="/absensi"
+              to="/setting/holiday"
+              :active="$route.path.startsWith('/setting/holiday')"
               variant="text"
               size="small"
               prepend-icon="mdi-calendar-remove"
@@ -230,7 +231,8 @@
               >Approval</v-btn
             >
             <v-btn
-              to="/absensi"
+              to="/setting/shift-schedule"
+              :active="$route.path.startsWith('/setting/shift-schedule')"
               variant="text"
               size="small"
               prepend-icon="mdi-calendar-clock"
@@ -406,6 +408,8 @@
               value="jam-kerja"
             ></v-list-item>
             <v-list-item
+              to="/setting/holiday"
+              :active="$route.path.startsWith('/setting/holiday')"
               title="Hari Libur"
               active-class="text-indigo-600 dark:text-indigo-200"
               value="hari-libur"
@@ -426,6 +430,8 @@
               value="approval"
             ></v-list-item>
             <v-list-item
+              to="/setting/shift-schedule"
+              :active="$route.path.startsWith('/setting/shift-schedule')"
               active-class="text-indigo-600 dark:text-indigo-200"
               title="Jadwal Shift"
               value="jadwal-shift"
