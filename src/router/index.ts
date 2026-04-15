@@ -92,6 +92,13 @@ const router = createRouter({
           component: () => import("@/pages/setting/shift-schedule/index.vue"),
           meta: { requiresAuth: true },
         },
+        {
+          path: "/manage-attendance/leave-request",
+          name: "Pengajuan Izin",
+          component: () =>
+            import("@/pages/manage-attendance/leave-request/index.vue"),
+          meta: { requiresAuth: true },
+        },
       ],
     },
     {

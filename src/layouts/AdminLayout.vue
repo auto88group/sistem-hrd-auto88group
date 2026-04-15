@@ -242,7 +242,10 @@
             >
           </div>
 
-          <div v-if="activeGroup === 'kelola'" class="d-flex flex-wrap">
+          <div
+            v-if="activeGroup === 'manage-attendance'"
+            class="d-flex flex-wrap"
+          >
             <v-btn
               to="/absensi"
               variant="text"
@@ -268,7 +271,10 @@
               >Pengajuan Lembur</v-btn
             >
             <v-btn
-              to="/absensi"
+              to="/manage-attendance/leave-request"
+              :active="
+                $route.path.startsWith('/manage-attendance/leave-request')
+              "
               variant="text"
               size="small"
               prepend-icon="mdi-email-outline"
@@ -441,7 +447,7 @@
             ></v-list-item>
           </v-list-group>
 
-          <v-list-group value="kelola-absensi">
+          <v-list-group value="manage-attendance">
             <template v-slot:activator="{ props }">
               <v-list-item v-bind="props">
                 <template v-slot:prepend>
@@ -470,6 +476,10 @@
               value="lembur"
             ></v-list-item>
             <v-list-item
+              to="/manage-attendance/leave-request"
+              :active="
+                $route.path.startsWith('/manage-attendance/leave-request')
+              "
               title="Pengajuan Izin"
               active-class="text-indigo-600"
               value="izin"
@@ -519,7 +529,11 @@ const menuItems = [
   { value: "dashboard", label: "Dashboard", icon: "mdi-view-dashboard" },
   { value: "master", label: "Master Data", icon: "mdi-database" },
   { value: "setting", label: "Pengaturan", icon: "mdi-cog" },
-  { value: "kelola", label: "Kelola Absensi", icon: "mdi-calendar-check" },
+  {
+    value: "manage-attendance",
+    label: "Kelola Absensi",
+    icon: "mdi-calendar-check",
+  },
 ];
 
 const handleScroll = () => {
@@ -542,8 +556,8 @@ const syncTabWithRoute = () => {
     activeGroup.value = "master";
   } else if (route.path.startsWith("/setting")) {
     activeGroup.value = "setting";
-  } else if (route.path.startsWith("/kelola")) {
-    activeGroup.value = "kelola";
+  } else if (route.path.startsWith("/manage-attendance")) {
+    activeGroup.value = "manage-attendance";
   }
 };
 onMounted(() => {

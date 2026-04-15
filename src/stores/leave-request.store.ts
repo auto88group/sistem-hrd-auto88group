@@ -9,6 +9,7 @@ import { ref, reactive } from "vue";
 export const useLeaveRequestStore = defineStore("leaveRequest", () => {
   const leaveRequest = ref<LeaveRequest[]>([]);
   const isLoading = ref(false);
+  const isLoadingDestroy = ref(false);
   const totalRecords = ref(0);
 
   const params = reactive<LeaveRequestDatatablesParams>({
@@ -37,6 +38,7 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
   return {
     leaveRequest,
     isLoading,
+    isLoadingDestroy,
     totalRecords,
     params,
     fetchLeaveRequest,

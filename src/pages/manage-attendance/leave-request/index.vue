@@ -43,14 +43,34 @@
         ></v-btn>
       </template>
     </v-snackbar>
+    <table-leave-request
+      :show-error="showError"
+      :show-success="showSuccess"
+      :ask="ask"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import TableLeaveRequest from "@/components/leave-request/TableLeaveRequest.vue";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { ref } from "vue";
 const showErrorSnackbar = ref(false);
 const snackbarMessage = ref("");
 const showSuccessSnackbar = ref(false);
 const successMessage = ref("");
+
+const { ask } = useConfirmDialog();
+
+function showError(message: string) {
+  console.log(message);
+  snackbarMessage.value = message;
+  showErrorSnackbar.value = true;
+}
+
+function showSuccess(message: string) {
+  successMessage.value = message;
+  showSuccessSnackbar.value = true;
+}
 </script>

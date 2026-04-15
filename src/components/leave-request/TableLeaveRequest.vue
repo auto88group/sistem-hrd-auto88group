@@ -8,41 +8,63 @@
     class="elevation-1 custom-header-table"
     @update:options="onTableOptionsChange"
   >
+    <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
+      <tr>
+        <th rowspan="2">No</th>
+        <th rowspan="2">Nama</th>
+        <th rowspan="2">Jenis</th>
+        <th rowspan="2">Tanggal Pengajuan</th>
+        <th rowspan="2">Periode</th>
+        <th rowspan="2">Keterangan</th>
+        <th colspan="3" class="text-center">APPROVAL</th>
+        <th rowspan="2" class="text-end">Aksi</th>
+      </tr>
+      <tr>
+        <th class="text-center">Approval 1</th>
+        <th class="text-center">Approval 2</th>
+        <th class="text-center">Approval HRD</th>
+      </tr>
+    </template>
+
     <template #[`item.no`]="{ index }">
       {{ (leaveRequestStore.params.start ?? 0) + index + 1 }}
     </template>
-    <template #[`item.code`]="{ item }">
-      <span class="font-bold">{{ item.code }}</span>
+    <template #[`item.user_name`]="{ item }">
+      <ul class="list-none p-0">
+        <li class="font-bold">
+          {{
+            formatName({
+              name: item.user_name,
+              full_name: item.user_full_name,
+            })
+          }}
+        </li>
+        <li class="text-gray-600">
+          {{ item.user_employee_id }}
+        </li>
+      </ul>
     </template>
-    <template #[`item.is_full_day`]="{ item }">
-      <div
-        class="font-bold text-sm inline-block px-2 py-0.5 rounded w-fit"
-        :class="statusYesOrNoColor(item.is_full_day)"
-      >
-        {{ statusYesOrNoLabel(item.is_full_day) }}
-      </div>
+    <template #[`item.created_at`]="{ item }">
+      {{ toFullDateWithDay(item.created_at) }}
     </template>
-    <template #[`item.max_hour`]="{ item }">
-      {{ item.max_hour ?? "-" }}
+    <template #[`item.start_date`]="{ item }">
+      <span v-if="item.start_date === item.end_date">
+        {{ toFullDate(item.start_date) }}
+      </span>
+      <span v-else>
+        {{ toFullDate(item.start_date) }} - {{ toFullDate(item.end_date) }}
+      </span>
     </template>
-    <template #[`item.max_day`]="{ item }">
-      {{ item.max_day ?? "-" }}
+
+    <template #[`item.approved_by`]="{ item }">
+      <span v-if="item.approved_by"> </span>
+      <span v-else>
+        {{ item.primary_approver_name }}
+      </span>
     </template>
-    <template #[`item.file_upload`]="{ item }">
-      <div
-        class="font-bold text-sm inline-block px-2 py-0.5 rounded w-fit"
-        :class="statusYesOrNoColor(item.file_upload)"
-      >
-        {{ statusYesOrNoLabel(item.file_upload) }}
-      </div>
-    </template>
-    <template #[`item.deduct_leave`]="{ item }">
-      <div
-        class="font-bold text-sm inline-block px-2 py-0.5 rounded w-fit"
-        :class="statusYesOrNoColor(item.deduct_leave)"
-      >
-        {{ statusYesOrNoLabel(item.deduct_leave) }}
-      </div>
+
+    <template #[`item.created_at`]="{ item }">
+      {{ toFullDateWithDay(item.created_at) }}
     </template>
 
     <template #[`item.actions`]="{ item }">
@@ -56,7 +78,6 @@
         />
 
         <v-btn
-          v-if="item.can_delete"
           icon="mdi-delete-outline"
           variant="text"
           density="comfortable"
@@ -72,9 +93,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useLeaveRequestStore } from "@/stores/leave-request.store";
+import { useFormatName } from "@/composables/useFormatName";
+import { useDateFormatter } from "@/composables/UseDateFormatter";
 
+const { formatName } = useFormatName();
 const leaveRequestStore = useLeaveRequestStore();
 const leaveRequest = computed(() => leaveRequestStore.leaveRequest);
+
+const { toFullDateWithDay, toFullDate } = useDateFormatter();
 
 const props = defineProps<{
   showError: (message: string) => void;
@@ -89,11 +115,11 @@ const headers = [
   { title: "Nama", key: "user_name", sortable: false },
   { title: "Jenis", key: "leave_type_name", sortable: false },
   { title: "Tanggal Pengajuan", key: "created_at", sortable: false },
-  { title: "Max Izin (Jam)", key: "max_hour", sortable: false },
-  { title: "Max Izin (Hari)", key: "max_day", sortable: false },
-  { title: "Back Date", key: "back_date", sortable: false },
-  { title: "File Upload", key: "file_upload", sortable: false },
-  { title: "Mengurangi Cuti", key: "deduct_leave", sortable: false },
+  { title: "Periode", key: "start_date", sortable: false },
+  { title: "Keterangan", key: "reason", sortable: false },
+  { title: "Approval 1", key: "approved_by", sortable: false },
+  { title: "Approval 2", key: "approved_by_2", sortable: false },
+  { title: "Approval HRD", key: "approved_by_hrd", sortable: false },
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];
 
@@ -130,22 +156,22 @@ onMounted(() => leaveRequestStore.fetchLeaveRequest());
 </script>
 <style scoped>
 /* Gunakan deep selector agar tembus ke dalam komponen Vuetify */
-:deep(.custom-header-table thead) {
-  background-color: #e3f2fd; /* Blue lighten-5 (sangat lembut) */
+:deep(.v-data-table__thead) {
+  background-color: #e3f2fd;
 }
 
 /* Penyesuaian untuk Dark Theme */
-:deep(.v-theme--dark .custom-header-table thead) {
+:deep(.v-theme--dark thead.v-data-table__thead) {
   background-color: #1a237e; /* Biru gelap yang lembut untuk mata */
 }
 
-:deep(.custom-header-table thead th) {
+:deep(thead.v-data-table__thead th) {
   font-weight: bold !important;
   /* Jika ingin warna teks biru tua di light mode */
   color: #1976d2 !important;
 }
 
-:deep(.v-theme--dark .custom-header-table thead th) {
+:deep(.v-theme--dark thead.v-data-table__thead th) {
   color: #bbdefb !important;
 }
 </style>
