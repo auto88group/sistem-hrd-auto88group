@@ -11,4 +11,5 @@ export interface LoginResponse {
   email: string;
   level: string;
   image: string;
+  id: string;
 }

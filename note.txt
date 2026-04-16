@@ -42,3 +42,8 @@ src/
 │
 ├── App.vue
 └── main.ts
+
+
+NOTE: 
+- perbaiki simpan password atau update password
+- saat user pindah cabang, maka pindahkan juga data prospect dan data telemarketing

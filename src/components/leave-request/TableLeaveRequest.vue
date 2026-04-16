@@ -56,11 +56,155 @@
       </span>
     </template>
 
-    <template #[`item.approved_by`]="{ item }">
-      <span v-if="item.approved_by"> </span>
-      <span v-else>
-        {{ item.primary_approver_name }}
-      </span>
+    <template #[`item.status`]="{ item }">
+      <div v-if="item.status == 'pending'">
+        <!-- Kalau user adalah approver -->
+        <div v-if="item.primary_approver_id == authStore.id">
+          <v-btn
+            elevation="0"
+            variant="tonal"
+            color="text-green-700"
+            size="small"
+            class="me-2"
+            @click="approve(item)"
+          >
+            Approve
+          </v-btn>
+          <v-btn
+            color="text-red-700"
+            elevation="0"
+            variant="tonal"
+            size="small"
+            @click="reject(item)"
+          >
+            Reject
+          </v-btn>
+        </div>
+
+        <!-- Kalau bukan approver -->
+        <v-chip v-else-if="item.status === 'pending'">
+          Menunggu Persetujuan:
+          <span class="font-bold ms-1">
+            {{
+              formatName({
+                name: item.primary_approver_name,
+                full_name: item.primary_approver_full_name,
+              })
+            }}
+          </span>
+        </v-chip>
+      </div>
+      <v-chip
+        v-else-if="item.status == 'approved'"
+        color="text-green-600"
+        variant="tonal"
+      >
+        Disetujui:
+        <span class="font-bold ms-1">
+          {{
+            formatName({
+              name: item.approver_name,
+              full_name: item.approver_full_name,
+            })
+          }}
+        </span>
+      </v-chip>
+      <v-chip
+        v-else-if="item.status == 'rejected'"
+        color="text-red-600"
+        variant="tonal"
+      >
+        Ditolak:
+        <span class="font-bold ms-1">
+          {{
+            formatName({
+              name: item.approver_name,
+              full_name: item.approver_full_name,
+            })
+          }}
+        </span>
+      </v-chip>
+    </template>
+
+    <template #[`item.status_2`]="{ item }">
+      <v-chip v-if="item.status_2 == 'pending'">
+        Menunggu Persetujuan:
+        <span class="font-bold ms-1">
+          {{
+            formatName({
+              name: item.secondary_approver_name,
+              full_name: item.secondary_approver_full_name,
+            })
+          }}
+        </span>
+      </v-chip>
+      <v-chip
+        v-else-if="item.status_2 == 'approved'"
+        color="text-green-600"
+        variant="tonal"
+      >
+        Disetujui:
+        <span class="font-bold ms-1">
+          {{
+            formatName({
+              name: item.approver_2_name,
+              full_name: item.approver_2_full_name,
+            })
+          }}
+        </span>
+      </v-chip>
+      <v-chip
+        v-else-if="item.status_2 == 'rejected'"
+        color="text-red-600"
+        variant="tonal"
+      >
+        Ditolak:
+        <span class="font-bold ms-1">
+          {{
+            formatName({
+              name: item.approver_2_name,
+              full_name: item.approver_2_full_name,
+            })
+          }}
+        </span>
+      </v-chip>
+    </template>
+
+    <template #[`item.status_hrd`]="{ item }">
+      <v-chip v-if="item.status_hrd == 'pending'">
+        Menunggu Persetujuan:
+        <span class="font-bold ms-1"> HRD </span>
+      </v-chip>
+      <v-chip
+        v-else-if="item.status_hrd == 'approved'"
+        color="text-green-600"
+        variant="tonal"
+      >
+        Disetujui:
+        <span class="font-bold ms-1">
+          {{
+            formatName({
+              name: item.approver_hrd_name,
+              full_name: item.approver_hrd_full_name,
+            })
+          }}
+        </span>
+      </v-chip>
+      <v-chip
+        v-else-if="item.status_hrd == 'rejected'"
+        color="text-red-600"
+        variant="tonal"
+      >
+        Ditolak:
+        <span class="font-bold ms-1">
+          {{
+            formatName({
+              name: item.approver_hrd_name,
+              full_name: item.approver_hrd_full_name,
+            })
+          }}
+        </span>
+      </v-chip>
     </template>
 
     <template #[`item.created_at`]="{ item }">
@@ -69,6 +213,15 @@
 
     <template #[`item.actions`]="{ item }">
       <div class="flex justify-end items-center gap-1">
+        <v-btn
+          icon
+          color="text-blue-500"
+          variant="tonal"
+          size="x-small"
+          @click="handleInfo(item)"
+        >
+          <v-icon>mdi-information-outline</v-icon>
+        </v-btn>
         <v-btn
           icon="mdi-file-edit-outline"
           variant="text"
@@ -95,8 +248,10 @@ import { computed, onMounted, ref } from "vue";
 import { useLeaveRequestStore } from "@/stores/leave-request.store";
 import { useFormatName } from "@/composables/useFormatName";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
+import { useAuthStore } from "@/stores/auth.store";
 
 const { formatName } = useFormatName();
+const authStore = useAuthStore();
 const leaveRequestStore = useLeaveRequestStore();
 const leaveRequest = computed(() => leaveRequestStore.leaveRequest);
 
@@ -108,8 +263,12 @@ const props = defineProps<{
   ask: (options: any) => Promise<boolean>;
 }>();
 
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["edit", "info"]);
 
+function handleInfo(item: any) {
+  leaveRequestStore.leaveRequestSelected = item;
+  emit("info");
+}
 const headers = [
   { title: "No", key: "no", sortable: false, width: "60px" },
   { title: "Nama", key: "user_name", sortable: false },
@@ -117,9 +276,14 @@ const headers = [
   { title: "Tanggal Pengajuan", key: "created_at", sortable: false },
   { title: "Periode", key: "start_date", sortable: false },
   { title: "Keterangan", key: "reason", sortable: false },
-  { title: "Approval 1", key: "approved_by", sortable: false },
-  { title: "Approval 2", key: "approved_by_2", sortable: false },
-  { title: "Approval HRD", key: "approved_by_hrd", sortable: false },
+  { title: "Approval 1", key: "status", sortable: false, align: "center" },
+  { title: "Approval 2", key: "status_2", sortable: false, align: "center" },
+  {
+    title: "Approval HRD",
+    key: "status_hrd",
+    sortable: false,
+    align: "center",
+  },
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];
 
@@ -127,6 +291,15 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
   leaveRequestStore.params.length = options.itemsPerPage;
   leaveRequestStore.params.start = (options.page - 1) * options.itemsPerPage;
   leaveRequestStore.fetchLeaveRequest();
+}
+
+function approve(item: any) {
+  console.log("Approve", item);
+  // API call approve
+}
+function reject(item: any) {
+  console.log("Reject", item);
+  // API call reject
 }
 
 function handleEdit(item: any) {

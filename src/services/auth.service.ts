@@ -6,3 +6,6 @@ export const loginService = async (
 ): Promise<LoginResponse> => {
   return await authApi.login(payload);
 };
+export const logoutService = async (): Promise<void> => {
+  return await authApi.logout();
+};

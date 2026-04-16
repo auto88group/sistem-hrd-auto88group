@@ -17,49 +17,83 @@ export interface LeaveRequestDatatablesResponse {
   data: LeaveRequest[];
 }
 
+export interface LeaveRequestApprovalPayload {
+  id: number | null;
+  note: string | null;
+  status: "approved" | "rejected" | null;
+  level: "primary" | "secondary" | "hrd" | null;
+}
+
+export interface LeaveRequestApprovalResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface LeaveRequest {
   id: number;
   user_id: number;
   hrd_leave_type_id: number;
+
   start_date: string;
   end_date: string;
-  total_days?: number;
+  total_days: number | null;
+
   status: string;
-  attachment?: string;
+  note: string | null;
+
+  approved_by: number | null;
+  approved_at: string | null;
+
+  status_2: string | null;
+  note_2: string | null;
+  approved_by_2: number | null;
+  approved_at_2: string | null;
+
+  status_hrd: string | null;
+  note_hrd: string | null;
+  approved_by_hrd: number | null;
+  approved_at_hrd: string | null;
+
+  attachment: string | null;
   reason: string;
   created_at: string;
-  approved_by?: number;
-  approved_at?: string;
-  approved_by_2?: number;
-  approved_at_2?: string;
-  approved_by_hrd?: number;
-  approved_at_hrd?: string;
 
-  DT_RowIndex: 1;
+  // datatables
+  DT_RowIndex: number;
 
+  // user
   user_name: string;
-  user_full_name?: string;
-  user_employee_id?: string;
+  user_full_name: string | null;
+  user_employee_id: string | null;
+  primary_approver_id: number | null;
+  secondary_approver_id: number | null;
 
-  primary_approver_name: string;
-  primary_approver_full_name?: string;
-  primary_approver_employee_id?: string;
+  // branch
+  branch_name: string;
+  branch_alias: string;
 
-  secondary_approver_name: string;
-  secondary_approver_full_name?: string;
-  secondary_approver_employee_id?: string;
+  // approvers (default dari user relation)
+  primary_approver_name: string | null;
+  primary_approver_full_name: string | null;
+  primary_approver_employee_id?: string | null;
 
+  secondary_approver_name: string | null;
+  secondary_approver_full_name: string | null;
+  secondary_approver_employee_id?: string | null;
+
+  // leave type
   leave_type_name: string;
   leave_type: string;
 
-  approver_name: string;
-  approver_full_name: string;
+  // approval result (actual approver)
+  approver_name: string | null;
+  approver_full_name: string | null;
 
-  approver_2_name: string;
-  approver_2_full_name: string;
+  approver_2_name: string | null;
+  approver_2_full_name: string | null;
 
-  approver_hrd_name: string;
-  approver_hrd_full_name: string;
+  approver_hrd_name: string | null;
+  approver_hrd_full_name: string | null;
 }
 
 export const leaveRequestApi = {
@@ -67,5 +101,13 @@ export const leaveRequestApi = {
     params: LeaveRequestDatatablesParams,
   ): Promise<LeaveRequestDatatablesResponse> {
     return api.get("/hrd/leave-request", { params }).then((res) => res.data);
+  },
+
+  approval(
+    payload: LeaveRequestApprovalPayload,
+  ): Promise<LeaveRequestApprovalResponse> {
+    return api
+      .post(`/hrd/leave-request/${payload.id}/approval`, payload)
+      .then((res) => res.data);
   },
 };

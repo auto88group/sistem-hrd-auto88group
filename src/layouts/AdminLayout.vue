@@ -56,8 +56,8 @@
             <v-list>
               <v-list-item
                 prepend-avatar="https://cdn.vuetifyjs.com/images/john.jpg"
-                title="Administrator"
-                subtitle="admin@hrd.com"
+                :title="authStore.name as string"
+                :subtitle="authStore.email as string"
               >
               </v-list-item>
             </v-list>
@@ -515,9 +515,12 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useDisplay, useTheme } from "vuetify";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth.store";
 
+const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 
 const theme = useTheme();
 const { mdAndUp } = useDisplay();
@@ -605,7 +608,10 @@ const toggleDrawerAndScroll = () => {
   }
 };
 
-const handleLogout = () => {};
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push("/login");
+};
 </script>
 
 <style scoped>

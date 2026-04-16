@@ -197,33 +197,27 @@
 
             <div class="mb-3">
               <span
-                v-if="leaveRequest.status == 'approved'"
-                class="px-3 py-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[11px] font-bold rounded-full border border-green-100 dark:border-green-800"
-              >
-                Sudah Disetujui Oleh
-                {{
-                  formatName({
-                    name: leaveRequest.approver_name,
-                    full_name: leaveRequest.approver_full_name,
-                  })
-                }}
-              </span>
-              <span
-                v-else-if="leaveRequest.status == 'pending'"
                 class="px-3 py-1 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[11px] font-bold rounded-full border border-red-100 dark:border-red-800"
               >
-                Belum Disetujui Oleh Admin
-              </span>
-              <span
-                v-else
-                class="px-3 py-1 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[11px] font-bold rounded-full border border-red-100 dark:border-red-800"
-              >
-                Ditolak Oleh Admin
+                Belum Disetujui Oleh:
                 {{
-                  formatName({
-                    name: leaveRequest.approver_name,
-                    full_name: leaveRequest.approver_full_name,
-                  })
+                  [
+                    leaveRequest.status === "pending"
+                      ? formatName({
+                          name: leaveRequest.primary_approver_name,
+                          full_name: leaveRequest.primary_approver_full_name,
+                        })
+                      : null,
+                    leaveRequest.status_2 === "pending"
+                      ? formatName({
+                          name: leaveRequest.secondary_approver_name,
+                          full_name: leaveRequest.secondary_approver_full_name,
+                        })
+                      : null,
+                    leaveRequest.status_hrd === "pending" ? "HRD" : null,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")
                 }}
               </span>
             </div>

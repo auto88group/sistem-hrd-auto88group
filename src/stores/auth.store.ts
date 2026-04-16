@@ -1,6 +1,6 @@
 // src/stores/auth.store.ts
 import { defineStore } from "pinia";
-import { loginService } from "@/services/auth.service";
+import { loginService, logoutService } from "@/services/auth.service";
 import type { LoginPayload } from "@/types/auth.type";
 
 interface AuthState {
@@ -9,6 +9,7 @@ interface AuthState {
   email: string | null;
   level: string | null;
   image: string | null;
+  id: string | null;
 
   loading: boolean;
   error: string | null;
@@ -22,6 +23,7 @@ export const useAuthStore = defineStore("auth", {
     email: null,
     level: null,
     image: null,
+    id: null,
 
     loading: false,
     error: null,
@@ -32,6 +34,7 @@ export const useAuthStore = defineStore("auth", {
     initAuth() {
       this.token = localStorage.getItem("token");
       this.name = localStorage.getItem("name");
+      this.id = localStorage.getItem("id");
       this.email = localStorage.getItem("email");
       this.level = localStorage.getItem("level");
       this.image = localStorage.getItem("image");
@@ -51,6 +54,7 @@ export const useAuthStore = defineStore("auth", {
         this.email = data.email;
         this.level = data.level;
         this.image = data.image;
+        this.id = data.id;
 
         // ✅ simpan ke localStorage
         localStorage.setItem("token", data.token);
@@ -58,6 +62,7 @@ export const useAuthStore = defineStore("auth", {
         localStorage.setItem("email", data.email);
         localStorage.setItem("level", data.level);
         localStorage.setItem("image", data.image);
+        localStorage.setItem("id", data.id);
 
         return true;
       } catch (err: any) {
@@ -74,14 +79,28 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
-    logout() {
-      this.token = null;
-      this.name = null;
-      this.email = null;
-      this.level = null;
-      this.image = null;
+    async logout() {
+      this.loading = true;
 
-      localStorage.clear();
+      try {
+        await logoutService();
+      } catch (err) {
+        // tetap lanjut clear meski API gagal
+        console.error("Logout API error:", err);
+      } finally {
+        // ✅ clear state
+        this.token = null;
+        this.name = null;
+        this.email = null;
+        this.level = null;
+        this.image = null;
+        this.id = null;
+
+        // ✅ clear localStorage
+        localStorage.clear();
+
+        this.loading = false;
+      }
     },
   },
 });

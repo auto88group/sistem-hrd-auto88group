@@ -44,15 +44,18 @@
       </template>
     </v-snackbar>
     <table-leave-request
+      @info="handleInfo"
       :show-error="showError"
       :show-success="showSuccess"
       :ask="ask"
     />
+    <info-dialog-leave-request ref="infoDialogRef" />
   </div>
 </template>
 
 <script setup lang="ts">
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import InfoDialogLeaveRequest from "@/components/leave-request/InfoDialogLeaveRequest.vue";
 import TableLeaveRequest from "@/components/leave-request/TableLeaveRequest.vue";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { ref } from "vue";
@@ -60,8 +63,13 @@ const showErrorSnackbar = ref(false);
 const snackbarMessage = ref("");
 const showSuccessSnackbar = ref(false);
 const successMessage = ref("");
+const infoDialogRef = ref();
 
 const { ask } = useConfirmDialog();
+
+function handleInfo() {
+  infoDialogRef.value.openInfoDialog();
+}
 
 function showError(message: string) {
   console.log(message);
