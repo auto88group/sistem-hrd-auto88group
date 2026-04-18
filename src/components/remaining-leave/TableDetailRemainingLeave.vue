@@ -32,6 +32,7 @@
           v-if="item.reference_id"
           prepend-icon="mdi-link"
           variant="flat"
+          @click="openReferenceLeave(item.reference_id)"
           class="bg-amber-500 dark:bg-amber-800 text-sm text-white"
         >
           Lihat Referensi</v-btn
@@ -100,6 +101,8 @@ import { useLeaveBalanceType } from "@/composables/UseLeaveBalanceType";
 import { useRemainingLeaveStore } from "@/stores/remaining-leave.store";
 import { onMounted } from "vue";
 import FilterRemainingLaveDetail from "./FilterRemainingLaveDetail.vue";
+import { useLeaveRequestStore } from "@/stores/leave-request.store";
+import { useAppStore } from "@/stores/app";
 
 const { formatName } = useFormatName();
 const { toFullDate } = useDateFormatter();
@@ -111,7 +114,9 @@ const props = defineProps({
   },
 });
 
+const appStore = useAppStore();
 const remainingLeaveStore = useRemainingLeaveStore();
+const leaveRequestStore = useLeaveRequestStore();
 const headers = [
   { title: "No", key: "no", sortable: false, width: "60px" },
   { title: "Tanggal", key: "created_at", sortable: false },
@@ -128,6 +133,16 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
   remainingLeaveStore.detailParams.start =
     (options.page - 1) * options.itemsPerPage;
   remainingLeaveStore.fetchRemainingLeaveDetail(props.employeeId);
+}
+
+async function openReferenceLeave(id: any) {
+  try {
+    leaveRequestStore.infoDialog = true;
+    await leaveRequestStore.fetchLeaveRequestSelected(id);
+  } catch (error) {
+    appStore.showErrorSnackbar = true;
+    appStore.errorMessage = "Gagal mengambil data: " + error;
+  }
 }
 onMounted(() => {
   remainingLeaveStore.fetchRemainingLeaveDetail(props.employeeId);

@@ -11,11 +11,13 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
   const leaveRequest = ref<LeaveRequest[]>([]);
   const leaveRequestSelected = ref<LeaveRequest | null>(null);
   const isLoading = ref(false);
+  const isLoadingSelected = ref(false);
   const isLoadingDestroy = ref(false);
   const isLoadingApproval = ref(false);
   const totalRecords = ref(0);
 
   const dialog = ref(false);
+  const infoDialog = ref(false);
   const serverErrors = reactive<Record<string, string>>({});
 
   const params = reactive<LeaveRequestDatatablesParams>({
@@ -48,6 +50,27 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
     }
   }
 
+  async function fetchLeaveRequestSelected(userId: number) {
+    isLoadingSelected.value = true;
+    leaveRequestSelected.value = null;
+    try {
+      const res = await leaveRequestApi.getSelected(userId);
+      console.log(res);
+      if (res.success && res.data) {
+        leaveRequestSelected.value = res.data;
+      } else {
+        leaveRequestSelected.value = null;
+      }
+
+      return res;
+    } catch (error: any) {
+      leaveRequestSelected.value = null;
+      throw error;
+    } finally {
+      isLoadingSelected.value = false;
+    }
+  }
+
   async function approvalLeaveRequest() {
     isLoadingApproval.value = true;
     try {
@@ -58,18 +81,29 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
     }
   }
 
+  function clearApprovalPayload() {
+    payloadApproval.id = null;
+    payloadApproval.note = null;
+    payloadApproval.status = null;
+    payloadApproval.level = null;
+  }
+
   return {
     leaveRequest,
     leaveRequestSelected,
     isLoading,
     isLoadingApproval,
     isLoadingDestroy,
+    isLoadingSelected,
     totalRecords,
     payloadApproval,
     params,
     dialog,
+    infoDialog,
     serverErrors,
     fetchLeaveRequest,
     approvalLeaveRequest,
+    fetchLeaveRequestSelected,
+    clearApprovalPayload,
   };
 });

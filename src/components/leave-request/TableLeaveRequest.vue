@@ -56,9 +56,10 @@
       </span>
     </template>
 
+    <!-- PRIMARY -->
     <template #[`item.status`]="{ item }">
+      <!-- PENDING -->
       <div v-if="item.status == 'pending'">
-        <!-- Kalau user adalah approver -->
         <div v-if="item.primary_approver_id == authStore.id">
           <v-btn
             elevation="0"
@@ -81,7 +82,6 @@
           </v-btn>
         </div>
 
-        <!-- Kalau bukan approver -->
         <v-chip v-else-if="item.status === 'pending'">
           Menunggu Persetujuan:
           <span class="font-bold ms-1">
@@ -94,117 +94,257 @@
           </span>
         </v-chip>
       </div>
-      <v-chip
+
+      <!-- APPROVAL -->
+      <div
+        class="space-y-3 my-3 flex flex-col"
         v-else-if="item.status == 'approved'"
-        color="text-green-600"
-        variant="tonal"
       >
-        Disetujui:
-        <span class="font-bold ms-1">
-          {{
-            formatName({
-              name: item.approver_name,
-              full_name: item.approver_full_name,
-            })
-          }}
-        </span>
-      </v-chip>
-      <v-chip
+        <v-chip color="text-green-600 flex justify-center" variant="tonal">
+          <div>
+            Disetujui:
+            <span class="font-bold ms-1">
+              {{
+                formatName({
+                  name: item.approver_name,
+                  full_name: item.approver_full_name,
+                })
+              }}
+            </span>
+          </div>
+        </v-chip>
+        <v-btn
+          v-if="item.primary_approver_id == authStore.id"
+          color="text-red-700"
+          elevation="0"
+          variant="tonal"
+          size="small"
+          @click="reject(item)"
+        >
+          Ubah Ke Reject
+        </v-btn>
+      </div>
+
+      <!-- REJECT -->
+      <div
+        class="space-y-3 my-3 flex flex-col"
         v-else-if="item.status == 'rejected'"
-        color="text-red-600"
-        variant="tonal"
       >
-        Ditolak:
-        <span class="font-bold ms-1">
-          {{
-            formatName({
-              name: item.approver_name,
-              full_name: item.approver_full_name,
-            })
-          }}
-        </span>
-      </v-chip>
+        <v-chip color="text-red-600 flex justify-center" variant="tonal">
+          <div>
+            Ditolak:
+            <span class="font-bold ms-1">
+              {{
+                formatName({
+                  name: item.approver_name,
+                  full_name: item.approver_full_name,
+                })
+              }}
+            </span>
+          </div>
+        </v-chip>
+
+        <v-btn
+          v-if="item.primary_approver_id == authStore.id"
+          elevation="0"
+          variant="tonal"
+          color="text-green-700"
+          size="small"
+          class="me-2"
+          @click="approve(item)"
+        >
+          Ubah Ke Approve
+        </v-btn>
+      </div>
     </template>
 
+    <!-- SECONDARY -->
     <template #[`item.status_2`]="{ item }">
-      <v-chip v-if="item.status_2 == 'pending'">
-        Menunggu Persetujuan:
-        <span class="font-bold ms-1">
-          {{
-            formatName({
-              name: item.secondary_approver_name,
-              full_name: item.secondary_approver_full_name,
-            })
-          }}
-        </span>
-      </v-chip>
-      <v-chip
+      <!-- PENDING -->
+      <div v-if="item.status_2 == 'pending'">
+        <div v-if="item.secondary_approver_id == authStore.id">
+          <v-btn
+            elevation="0"
+            variant="tonal"
+            color="text-green-700"
+            size="small"
+            class="me-2"
+            @click="approve(item, 'secondary')"
+          >
+            Approve
+          </v-btn>
+          <v-btn
+            color="text-red-700"
+            elevation="0"
+            variant="tonal"
+            size="small"
+            @click="reject(item, 'secondary')"
+          >
+            Reject
+          </v-btn>
+        </div>
+        <v-chip v-else-if="item.status_2 == 'pending'">
+          Menunggu Persetujuan:
+          <span class="font-bold ms-1">
+            {{
+              formatName({
+                name: item.secondary_approver_name,
+                full_name: item.secondary_approver_full_name,
+              })
+            }}
+          </span>
+        </v-chip>
+      </div>
+
+      <!-- APPROVED -->
+      <div
+        class="space-y-3 my-3 flex flex-col"
         v-else-if="item.status_2 == 'approved'"
-        color="text-green-600"
-        variant="tonal"
       >
-        Disetujui:
-        <span class="font-bold ms-1">
-          {{
-            formatName({
-              name: item.approver_2_name,
-              full_name: item.approver_2_full_name,
-            })
-          }}
-        </span>
-      </v-chip>
-      <v-chip
+        <v-chip color="text-green-600" variant="tonal">
+          Disetujui:
+          <span class="font-bold ms-1">
+            {{
+              formatName({
+                name: item.approver_2_name,
+                full_name: item.approver_2_full_name,
+              })
+            }}
+          </span>
+        </v-chip>
+
+        <v-btn
+          v-if="item.secondary_approver_id == authStore.id"
+          color="text-red-700"
+          elevation="0"
+          variant="tonal"
+          size="small"
+          @click="reject(item, 'secondary')"
+        >
+          Ubah Ke Reject
+        </v-btn>
+      </div>
+
+      <!-- REJECTED -->
+      <div
+        class="space-y-3 my-3 flex flex-col"
         v-else-if="item.status_2 == 'rejected'"
-        color="text-red-600"
-        variant="tonal"
       >
-        Ditolak:
-        <span class="font-bold ms-1">
-          {{
-            formatName({
-              name: item.approver_2_name,
-              full_name: item.approver_2_full_name,
-            })
-          }}
-        </span>
-      </v-chip>
+        <v-chip color="text-red-600" variant="tonal">
+          Ditolak:
+          <span class="font-bold ms-1">
+            {{
+              formatName({
+                name: item.approver_2_name,
+                full_name: item.approver_2_full_name,
+              })
+            }}
+          </span>
+        </v-chip>
+
+        <v-btn
+          v-if="item.secondary_approver_id == authStore.id"
+          elevation="0"
+          variant="tonal"
+          color="text-green-700"
+          size="small"
+          class="me-2"
+          @click="approve(item, 'secondary')"
+        >
+          Ubah Ke Approve
+        </v-btn>
+      </div>
     </template>
 
+    <!-- HRD -->
     <template #[`item.status_hrd`]="{ item }">
-      <v-chip v-if="item.status_hrd == 'pending'">
-        Menunggu Persetujuan:
-        <span class="font-bold ms-1"> HRD </span>
-      </v-chip>
-      <v-chip
+      <!-- PENDING -->
+      <div v-if="item.status_hrd == 'pending'">
+        <div v-if="authStore.level == 'hrd'">
+          <v-btn
+            elevation="0"
+            variant="tonal"
+            color="text-green-700"
+            size="small"
+            class="me-2"
+            @click="approve(item, 'hrd')"
+          >
+            Approve
+          </v-btn>
+          <v-btn
+            color="text-red-700"
+            elevation="0"
+            variant="tonal"
+            size="small"
+            @click="reject(item, 'hrd')"
+          >
+            Reject
+          </v-btn>
+        </div>
+        <v-chip v-else-if="item.status_hrd == 'pending'">
+          Menunggu Persetujuan:
+          <span class="font-bold ms-1"> HRD </span>
+        </v-chip>
+      </div>
+
+      <!-- APPROVED -->
+      <div
+        class="space-y-3 my-3 flex flex-col"
         v-else-if="item.status_hrd == 'approved'"
-        color="text-green-600"
-        variant="tonal"
       >
-        Disetujui:
-        <span class="font-bold ms-1">
-          {{
-            formatName({
-              name: item.approver_hrd_name,
-              full_name: item.approver_hrd_full_name,
-            })
-          }}
-        </span>
-      </v-chip>
-      <v-chip
+        <v-chip color="text-green-600 flex justify-center" variant="tonal">
+          Disetujui:
+          <span class="font-bold ms-1">
+            {{
+              formatName({
+                name: item.approver_hrd_name,
+                full_name: item.approver_hrd_full_name,
+              })
+            }}
+          </span>
+        </v-chip>
+
+        <v-btn
+          v-if="authStore.level == 'hrd'"
+          color="text-red-700"
+          elevation="0"
+          variant="tonal"
+          size="small"
+          @click="reject(item, 'hrd')"
+        >
+          Ubah Ke Reject
+        </v-btn>
+      </div>
+
+      <!-- REJECTED -->
+      <div
+        class="space-y-3 my-3 flex flex-col"
         v-else-if="item.status_hrd == 'rejected'"
-        color="text-red-600"
-        variant="tonal"
       >
-        Ditolak:
-        <span class="font-bold ms-1">
-          {{
-            formatName({
-              name: item.approver_hrd_name,
-              full_name: item.approver_hrd_full_name,
-            })
-          }}
-        </span>
-      </v-chip>
+        <v-chip color="text-red-600 flex justify-center" variant="tonal">
+          Ditolak:
+          <span class="font-bold ms-1">
+            {{
+              formatName({
+                name: item.approver_hrd_name,
+                full_name: item.approver_hrd_full_name,
+              })
+            }}
+          </span>
+        </v-chip>
+
+        <v-btn
+          v-if="authStore.level == 'hrd'"
+          elevation="0"
+          variant="tonal"
+          color="text-green-700"
+          size="small"
+          class="me-2"
+          @click="approve(item, 'hrd')"
+        >
+          Ubah Ke Approve
+        </v-btn>
+      </div>
     </template>
 
     <template #[`item.created_at`]="{ item }">
@@ -212,7 +352,15 @@
     </template>
 
     <template #[`item.actions`]="{ item }">
-      <div class="flex justify-end items-center gap-1">
+      <div class="flex justify-end items-center gap-3">
+        <v-btn
+          v-if="!item.attachment && item.deduct_no_file"
+          color="bg-red-500 text-white"
+          variant="flat"
+          size="small"
+        >
+          Kurangi Cuti (Tidak ada lampiran)
+        </v-btn>
         <v-btn
           icon
           color="text-blue-500"
@@ -261,11 +409,11 @@ const props = defineProps<{
   ask: (options: any) => Promise<boolean>;
 }>();
 
-const emit = defineEmits(["edit", "info"]);
+const emit = defineEmits(["edit"]);
 
 function handleInfo(item: any) {
   leaveRequestStore.leaveRequestSelected = item;
-  emit("info");
+  leaveRequestStore.infoDialog = true;
 }
 const headers = [
   { title: "No", key: "no", sortable: false, width: "60px" },
@@ -291,18 +439,23 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
   leaveRequestStore.fetchLeaveRequest();
 }
 
-function approve(item: any) {
-  console.log("Approve", item);
+function approve(
+  item: any,
+  level: "primary" | "secondary" | "hrd" | null = "primary",
+) {
   leaveRequestStore.dialog = true;
   leaveRequestStore.payloadApproval.id = item.id;
   leaveRequestStore.payloadApproval.status = "approved";
-  leaveRequestStore.payloadApproval.level = "primary";
-
-  // API call approve
+  leaveRequestStore.payloadApproval.level = level;
 }
-function reject(item: any) {
-  console.log("Reject", item);
-  // API call reject
+function reject(
+  item: any,
+  level: "primary" | "secondary" | "hrd" | null = "primary",
+) {
+  leaveRequestStore.dialog = true;
+  leaveRequestStore.payloadApproval.id = item.id;
+  leaveRequestStore.payloadApproval.status = "rejected";
+  leaveRequestStore.payloadApproval.level = level;
 }
 
 function handleEdit(item: any) {

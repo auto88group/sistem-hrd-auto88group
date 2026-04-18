@@ -17,6 +17,12 @@ export interface LeaveRequestDatatablesResponse {
   data: LeaveRequest[];
 }
 
+export interface LeaveRequestSelectedResponse {
+  success: boolean;
+  message: string;
+  data: LeaveRequest | null;
+}
+
 export interface LeaveRequestApprovalPayload {
   id: number | null;
   note: string | null;
@@ -84,6 +90,7 @@ export interface LeaveRequest {
   // leave type
   leave_type_name: string;
   leave_type: string;
+  deduct_no_file: number;
 
   // approval result (actual approver)
   approver_name: string | null;
@@ -101,6 +108,12 @@ export const leaveRequestApi = {
     params: LeaveRequestDatatablesParams,
   ): Promise<LeaveRequestDatatablesResponse> {
     return api.get("/hrd/leave-request", { params }).then((res) => res.data);
+  },
+
+  getSelected(userId: number): Promise<LeaveRequestSelectedResponse> {
+    return api
+      .get(`/hrd/leave-request/selected/${userId}`)
+      .then((res) => res.data);
   },
 
   approval(

@@ -43,9 +43,9 @@
         ></v-btn>
       </template>
     </v-snackbar>
-    <table-leave-request @info="handleInfo" :ask="ask" />
+    <table-leave-request :ask="ask" />
     <form-dialog-approval />
-    <info-dialog-leave-request ref="infoDialogRef" />
+    <info-dialog-leave-request />
   </div>
 </template>
 
@@ -59,11 +59,5 @@ import { useAppStore } from "@/stores/app";
 import { ref } from "vue";
 const appStore = useAppStore();
 
-const infoDialogRef = ref();
-
 const { ask } = useConfirmDialog();
-
-function handleInfo() {
-  infoDialogRef.value.openInfoDialog();
-}
 </script>

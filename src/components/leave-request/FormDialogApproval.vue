@@ -22,7 +22,7 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text class="p-4">
-        <v-form ref="formRef">
+        <v-form>
           <v-row class="gy-4">
             <v-col cols="12">
               <v-text-field
@@ -65,7 +65,6 @@ import { computed, ref } from "vue";
 
 const appStore = useAppStore();
 const leaveRequestStore = useLeaveRequestStore();
-const formRef = ref();
 
 const form = computed(() => leaveRequestStore.payloadApproval);
 
@@ -81,6 +80,9 @@ async function submitForm() {
       appStore.showSuccessSnackbar = true;
       appStore.successMessage = res.message;
       leaveRequestStore.fetchLeaveRequest();
+      leaveRequestStore.dialog = false;
+      leaveRequestStore.isLoadingApproval = false;
+      leaveRequestStore.clearApprovalPayload();
     }
   } catch (error: any) {
     handleServerErrors(error);
@@ -91,6 +93,7 @@ function handleServerErrors(err: any) {
   if (err?.status === 422) {
     appStore.showErrorSnackbar = true;
     appStore.errorMessage = err?.message ?? "Terjadi kesalahan, coba lagi.";
+    leaveRequestStore.isLoadingApproval = false;
     const errors = err.errors as Record<string, string[]>;
     if (errors) {
       Object.entries(errors).forEach(([field, messages]) => {
@@ -100,12 +103,13 @@ function handleServerErrors(err: any) {
   } else {
     appStore.showErrorSnackbar = true;
     appStore.errorMessage = err?.message ?? "Terjadi kesalahan, coba lagi.";
+    leaveRequestStore.isLoadingApproval = false;
   }
 }
 
 function closeDialog() {
   leaveRequestStore.dialog = false;
-  formRef.value?.reset();
+  leaveRequestStore.clearApprovalPayload();
   Object.keys(leaveRequestStore.serverErrors).forEach(
     (key) => delete leaveRequestStore.serverErrors[key],
   );
