@@ -114,7 +114,9 @@
           </div>
         </v-chip>
         <v-btn
-          v-if="item.primary_approver_id == authStore.id"
+          v-if="
+            item.primary_approver_id == authStore.id && !item.has_deduct_no_file
+          "
           color="text-red-700"
           elevation="0"
           variant="tonal"
@@ -145,7 +147,9 @@
         </v-chip>
 
         <v-btn
-          v-if="item.primary_approver_id == authStore.id"
+          v-if="
+            item.primary_approver_id == authStore.id && !item.has_deduct_no_file
+          "
           elevation="0"
           variant="tonal"
           color="text-green-700"
@@ -214,7 +218,10 @@
         </v-chip>
 
         <v-btn
-          v-if="item.secondary_approver_id == authStore.id"
+          v-if="
+            item.secondary_approver_id == authStore.id &&
+            !item.has_deduct_no_file
+          "
           color="text-red-700"
           elevation="0"
           variant="tonal"
@@ -243,7 +250,10 @@
         </v-chip>
 
         <v-btn
-          v-if="item.secondary_approver_id == authStore.id"
+          v-if="
+            item.secondary_approver_id == authStore.id &&
+            !item.has_deduct_no_file
+          "
           elevation="0"
           variant="tonal"
           color="text-green-700"
@@ -305,7 +315,7 @@
         </v-chip>
 
         <v-btn
-          v-if="authStore.level == 'hrd'"
+          v-if="authStore.level == 'hrd' && !item.has_deduct_no_file"
           color="text-red-700"
           elevation="0"
           variant="tonal"
@@ -334,7 +344,7 @@
         </v-chip>
 
         <v-btn
-          v-if="authStore.level == 'hrd'"
+          v-if="authStore.level == 'hrd' && !item.has_deduct_no_file"
           elevation="0"
           variant="tonal"
           color="text-green-700"
@@ -355,7 +365,12 @@
       <div class="flex justify-end items-center gap-3">
         <v-btn
           v-if="
-            !item.attachment && item.deduct_no_file && !item.has_deduct_no_file
+            !item.attachment &&
+            item.deduct_no_file &&
+            !item.has_deduct_no_file &&
+            item.status === 'approved' &&
+            (item.status_2 === 'approved' || item.status_2 === null) &&
+            item.status_hrd === 'approved'
           "
           color="bg-red-500 text-white"
           variant="flat"
@@ -365,11 +380,21 @@
         >
           Kurangi Cuti (Tidak ada lampiran)
         </v-btn>
-        <v-chip
+        <v-btn
           v-if="
-            !item.attachment && item.deduct_no_file && item.has_deduct_no_file
+            !item.attachment &&
+            item.deduct_no_file &&
+            item.has_deduct_no_file &&
+            item.status === 'approved' &&
+            (item.status_2 === 'approved' || item.status_2 === null) &&
+            item.status_hrd === 'approved'
           "
-          >Cuti sudah dikurangi (tidak ada file)</v-chip
+          color="bg-amber-500 text-white"
+          variant="flat"
+          size="small"
+          :loading="leaveRequestStore.isLoadingDeductLeave"
+          @click="handleRestoreLeave(item.id)"
+          >Batalkan Pengurangan Cuti</v-btn
         >
         <v-btn
           icon
@@ -380,15 +405,49 @@
         >
           <v-icon>mdi-information-outline</v-icon>
         </v-btn>
+
+        <!-- BUTTON UPDATE DAN DELETE KHUSUS NON CUTI -->
         <v-btn
+          v-if="item.deduct_leave != 1 && item.has_deduct_no_file != 1"
           icon="mdi-file-edit-outline"
           variant="text"
           density="comfortable"
           class="!text-amber-600 hover:!bg-amber-50 transition-all duration-300"
           @click="handleEdit(item)"
         />
-
         <v-btn
+          v-if="item.deduct_leave != 1 && item.has_deduct_no_file != 1"
+          icon="mdi-delete-outline"
+          variant="text"
+          density="comfortable"
+          @click="handleDelete(item.id)"
+          :loading="leaveRequestStore.isLoadingDestroy"
+          class="!text-red-500 hover:!bg-red-50 transition-all duration-300"
+        />
+
+        <!-- BUTTON UPDATE DAN DELETE KHUSUS CUTI -->
+        <v-btn
+          v-if="
+            item.deduct_leave == 1 &&
+            !(
+              item.status_hrd === 'approved' &&
+              (item.status_2 === null || item.status_2 === 'approved')
+            )
+          "
+          icon="mdi-file-edit-outline"
+          variant="text"
+          density="comfortable"
+          class="!text-amber-600 hover:!bg-amber-50 transition-all duration-300"
+          @click="handleEdit(item)"
+        />
+        <v-btn
+          v-if="
+            item.deduct_leave == 1 &&
+            !(
+              item.status_hrd === 'approved' &&
+              (item.status_2 === null || item.status_2 === 'approved')
+            )
+          "
           icon="mdi-delete-outline"
           variant="text"
           density="comfortable"
@@ -402,7 +461,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
 import { useLeaveRequestStore } from "@/stores/leave-request.store";
 import { useFormatName } from "@/composables/useFormatName";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
@@ -417,10 +476,6 @@ const leaveRequestStore = useLeaveRequestStore();
 const leaveRequest = computed(() => leaveRequestStore.leaveRequest);
 const { ask } = useConfirmDialog();
 const { toFullDateWithDay, toFullDate } = useDateFormatter();
-
-// const props = defineProps<{
-//   ask: (options: any) => Promise<boolean>;
-// }>();
 
 const emit = defineEmits(["edit"]);
 
@@ -497,8 +552,58 @@ async function handleDeductLeave(id: number) {
   }
 }
 
+async function handleRestoreLeave(id: number) {
+  const confirmed = await ask({
+    title: "Batalkan Pengurangan Cuti",
+    message: "Pengurangan cuti akan dibatalkan. lanjutkan?",
+    confirmText: "Ya, Batalkan",
+    color: "red-darken-1",
+  });
+  if (confirmed) {
+    try {
+      leaveRequestStore.paramId = id;
+      const res = await leaveRequestStore.restoreLeaveRequest();
+      if (res.success) {
+        appStore.showSuccessSnackbar = true;
+        appStore.successMessage = res.message;
+        leaveRequestStore.fetchLeaveRequest();
+      }
+    } catch (error: any) {
+      appStore.showErrorSnackbar = true;
+      appStore.errorMessage = error?.message ?? "Terjadi kesalahan, coba lagi.";
+    }
+  }
+}
+
 function handleEdit(item: any) {
-  emit("edit", item);
+  const {
+    id,
+    user_id,
+    user_name,
+    user_full_name,
+    user_email,
+    hrd_leave_type_id,
+    start_date,
+    end_date,
+    total_days,
+    reason,
+  } = item;
+  Object.assign(leaveRequestStore.payloadCreateUpdate, {
+    id,
+    user_id,
+    user_name,
+    user_full_name,
+    user_email,
+    hrd_leave_type_id,
+    start_date,
+    end_date,
+    total_days,
+    reason,
+  });
+
+  leaveRequestStore.payloadCreateUpdate.attachment_preview = item.attachment;
+
+  leaveRequestStore.createEditDialog = true;
 }
 
 async function handleDelete(id: number) {
@@ -508,13 +613,24 @@ async function handleDelete(id: number) {
     confirmText: "Ya, Hapus",
     color: "red-darken-1",
   });
-  if (confirmed) deleteWorkExperience(id);
+  if (confirmed) deleteLeaveRequest(id);
 }
 
-async function deleteWorkExperience(id: number) {
+async function deleteLeaveRequest(id: number) {
   try {
-    // await leaveRequestStore.destroyLeaveType(id);
-  } catch (err: any) {}
+    leaveRequestStore.paramId = id;
+    const res = await leaveRequestStore.destroyLeaveRequest();
+    if (res.success) {
+      appStore.showSuccessSnackbar = true;
+      appStore.successMessage = res.message;
+      leaveRequestStore.fetchLeaveRequest();
+    }
+  } catch (error: any) {
+    if (error.status === 422) {
+      appStore.showErrorSnackbar = true;
+      appStore.errorMessage = error?.message ?? "Terjadi kesalahan, coba lagi.";
+    }
+  }
 }
 
 onMounted(() => leaveRequestStore.fetchLeaveRequest());

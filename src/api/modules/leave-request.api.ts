@@ -3,11 +3,12 @@ export interface LeaveRequestDatatablesParams {
   draw?: number;
   start?: number;
   length?: number;
+  periodForm?: string[];
   period?: string;
-  status?: string;
-  user_id?: number;
-  branch_id?: number;
-  hrd_leave_type_id?: number;
+  status: string | null;
+  user_id: number | null;
+  branch_id: number | null;
+  hrd_leave_type_id: number | null;
 }
 
 export interface LeaveRequestDatatablesResponse {
@@ -26,12 +27,16 @@ export interface LeaveRequestSelectedResponse {
 export interface LeaveRequestCreateUpdatePayload {
   id: number | null;
   user_id: number | null;
+  user_name: string | null;
+  user_full_name: string | null;
+  user_email: string | null;
   hrd_leave_type_id: number | null;
   start_date: string | null;
   end_date: string | null;
   total_days: number | null;
   reason: string | null;
-  attachment: string | null;
+  attachment: File[] | null;
+  attachment_preview: string | null;
 }
 
 export interface LeaveRequestApprovalPayload {
@@ -82,6 +87,7 @@ export interface LeaveRequest {
   // user
   user_name: string;
   user_full_name: string | null;
+  user_email: string | null;
   user_employee_id: string | null;
   primary_approver_id: number | null;
   secondary_approver_id: number | null;
@@ -103,6 +109,7 @@ export interface LeaveRequest {
   leave_type_name: string;
   leave_type: string;
   deduct_no_file: number;
+  deduct_leave: number;
 
   // approval result (actual approver)
   approver_name: string | null;
@@ -120,6 +127,27 @@ export const leaveRequestApi = {
     params: LeaveRequestDatatablesParams,
   ): Promise<LeaveRequestDatatablesResponse> {
     return api.get("/hrd/leave-request", { params }).then((res) => res.data);
+  },
+
+  createLeaveRequest(params: FormData): Promise<LeaveRequestSelectedResponse> {
+    return api
+      .post(`/hrd/leave-request`, params, {
+        headers: { "Content-Type": "multipart/form-data" },
+        transformRequest: [(data) => data],
+      })
+      .then((res) => res.data);
+  },
+
+  updateLeaveRequest(
+    id: number,
+    params: FormData,
+  ): Promise<LeaveRequestSelectedResponse> {
+    return api
+      .post(`/hrd/leave-request/${id}?_method=POST`, params, {
+        headers: { "Content-Type": "multipart/form-data" },
+        transformRequest: [(data) => data],
+      })
+      .then((res) => res.data);
   },
 
   getSelected(userId: number): Promise<LeaveRequestSelectedResponse> {
@@ -140,5 +168,15 @@ export const leaveRequestApi = {
     return api
       .post(`/hrd/leave-request/deduct-leave/${id}`)
       .then((res) => res.data);
+  },
+
+  restoreLeave(id: number | null): Promise<LeaveRequestApprovalResponse> {
+    return api
+      .post(`/hrd/leave-request/restore-leave/${id}`)
+      .then((res) => res.data);
+  },
+
+  destroyLeave(id: number | null): Promise<LeaveRequestApprovalResponse> {
+    return api.delete(`/hrd/leave-request/${id}`).then((res) => res.data);
   },
 };

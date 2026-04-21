@@ -24,10 +24,10 @@
         </template>
       </v-text-field>
     </template>
-
     <v-date-picker
       v-model="selectedDate"
       :min="min"
+      :max="max"
       @update:model-value="onDateSelected"
     ></v-date-picker>
   </v-menu>
@@ -36,24 +36,22 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 
-// 1. Tambahkan rules ke dalam Interface Props
 interface Props {
   modelValue?: string | Date | null;
   rules?: any[];
   disabled?: boolean;
   min?: string | Date;
+  max?: string | Date;
   errorMessages?: string | string[];
   bgColor?: string;
 }
 
 const props = defineProps<Props>();
-
 const emit = defineEmits<{
   (e: "update:modelValue", value: string | null): void;
 }>();
 
 const menu = ref(false);
-
 const selectedDate = ref<Date | null>(
   props.modelValue ? new Date(props.modelValue) : null,
 );
@@ -78,14 +76,12 @@ const formatToYMD = (date: Date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-
   return `${year}-${month}-${day}`;
 };
 
 const onDateSelected = (val: unknown) => {
   const dateVal = val as Date;
   menu.value = false;
-
   const formatted = formatToYMD(dateVal);
   emit("update:modelValue", formatted);
 };

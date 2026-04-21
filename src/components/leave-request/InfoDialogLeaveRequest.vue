@@ -282,7 +282,7 @@
           </v-table>
 
           <div v-if="leaveRequest?.attachment">
-            <p class="m-0 font-bold">FIle</p>
+            <p class="m-0 font-bold">Lampiran</p>
             <div class="bg-gray-300 p-3">
               <v-img
                 :src="`${baseUrl}/image/leave-request/${leaveRequest?.user_id}/${leaveRequest?.attachment}`"

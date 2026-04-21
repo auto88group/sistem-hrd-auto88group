@@ -571,7 +571,7 @@ onMounted(() => {
     targetTheme = savedTheme as "light" | "dark";
   } else {
     const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
+      "(prefers-color-scheme: light)",
     ).matches;
     targetTheme = prefersDark ? "dark" : "light";
   }

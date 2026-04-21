@@ -537,6 +537,7 @@
                 clearable
                 no-filter
                 @update:search="onSearchPrimaryApprover"
+                @click:clear="onClearPrimaryApprover"
                 :error-messages="serverErrors.primary_approver_id"
               >
                 <template v-slot:label>
@@ -572,6 +573,7 @@
                 clearable
                 no-filter
                 @update:search="onSearchSecondaryApprover"
+                @click:clear="onClearSecondaryApprover"
                 :error-messages="serverErrors.secondary_approver_id"
               >
                 <template v-slot:item="{ props, item }">
@@ -981,6 +983,24 @@ const listSecondaryApprover = computed(() => {
   }
   return users;
 });
+
+const onClearPrimaryApprover = async () => {
+  selectedPrimaryApproverText.value = "";
+  isSelectingPrimaryApprover.value = false;
+  // Reset list ke data awal
+  userStore.usersData = await userStore.fetchUsersDataWithParams({
+    search: "",
+  });
+};
+
+const onClearSecondaryApprover = async () => {
+  selectedSecondaryApproverText.value = "";
+  isSelectingSecondaryApprover.value = false;
+  // Reset list ke data awal
+  userStore.usersData = await userStore.fetchUsersDataWithParams({
+    search: "",
+  });
+};
 
 const listEducation = computed(() => {
   const keyword = searchEducation.value.toLowerCase();
