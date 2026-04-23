@@ -17,9 +17,24 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       draw: 1,
       start: 0,
       length: 10,
+      period: undefined,
+      user_id: null,
+      branch_id: null,
+
+      type_present: 1,
+      type_late: 1,
+      type_go_home_early: 1,
+      type_didnt_check_out: 1,
+      type_negligent: 1,
+      type_sick: 1,
+      type_permit: 1,
+      type_leave: 1,
+      type_holiday: 1,
     });
 
-    async function fetchOvertimeRequest() {
+    const formDialog = ref(false);
+
+    async function fetchEmployeeAttendance() {
       isLoading.value = true;
       try {
         const res = await employeeAttendanceRequestApi.getDatatables({
@@ -38,7 +53,8 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       isLoading,
       totalRecords,
       params,
-      fetchOvertimeRequest,
+      formDialog,
+      fetchEmployeeAttendance,
     };
   },
 );

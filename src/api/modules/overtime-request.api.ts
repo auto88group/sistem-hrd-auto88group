@@ -64,6 +64,7 @@ export interface OvertimeRequest {
   user_name: string;
   user_full_name: string;
   user_email: string;
+  user_employee_id: string;
   primary_approver_id: number | null;
   secondary_approver_id: number | null;
 

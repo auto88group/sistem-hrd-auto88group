@@ -23,6 +23,7 @@
     <v-date-picker
       v-model="internalDates"
       multiple="range"
+      :max="maxDate"
       @update:model-value="onPickerChange"
     ></v-date-picker>
   </v-menu>
@@ -35,10 +36,12 @@ const props = withDefaults(
   defineProps<{
     modelValue?: string[];
     rules?: any[];
+    maxDate?: string;
   }>(),
   {
     modelValue: () => [],
     rules: () => [],
+    maxDate: undefined,
   },
 );
 

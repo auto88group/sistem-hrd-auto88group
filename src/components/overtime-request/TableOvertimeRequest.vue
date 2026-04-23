@@ -33,6 +33,22 @@
       {{ (overtimeRequestStore.params.start ?? 0) + index + 1 }}
     </template>
 
+    <template #[`item.user_name`]="{ item }">
+      <ul class="list-none p-0">
+        <li class="font-bold">
+          {{
+            formatName({
+              name: item.user_name,
+              full_name: item.user_full_name,
+            })
+          }}
+        </li>
+        <li class="text-gray-600">
+          {{ item.user_employee_id }}
+        </li>
+      </ul>
+    </template>
+
     <template #[`item.created_at`]="{ item }">
       {{ toFullDateWithDay(item.created_at) }}
     </template>

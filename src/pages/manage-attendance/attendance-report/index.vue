@@ -42,11 +42,13 @@
       </template>
     </v-snackbar>
 
+    <header-attendance-report />
     <table-attendance-report />
   </div>
 </template>
 
 <script setup lang="ts">
+import HeaderAttendanceReport from "@/components/attendance-report/HeaderAttendanceReport.vue";
 import TableAttendanceReport from "@/components/attendance-report/TableAttendanceReport.vue";
 import { useAppStore } from "@/stores/app";
 
