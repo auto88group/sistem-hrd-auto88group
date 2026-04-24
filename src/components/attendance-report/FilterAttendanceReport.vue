@@ -1,105 +1,139 @@
 <template>
-  <div class="md:grid grid-cols-2 items-end gap-2">
-    <v-row gap="12">
-      <v-col cols="12">
-        <date-range-picker
-          v-model="form.periodForm"
-          :max-date="today"
-          @update:model-value="onChangePeriod"
-        />
-      </v-col>
-      <v-col cols="12">
-        <v-row no-gutters>
-          <v-col
-            v-for="item in checkboxOptions"
-            :key="item.key"
-            cols="6"
-            sm="4"
-            md="3"
-          >
-            <v-checkbox
-              v-model="form[item.key as keyof typeof form]"
-              :label="item.label"
-              :true-value="1"
-              :false-value="0"
-              density="compact"
-              color="primary"
-              hide-details
-            />
-          </v-col>
-        </v-row>
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-autocomplete
-          v-model="form.branch_id"
-          :items="listBranch"
-          :loading="branchStore.isLoadingData"
-          prepend-inner-icon="mdi-map-marker-outline"
-          item-title="alias"
-          item-value="value"
-          placeholder="Lokasi cabang"
-          variant="outlined"
-          density="compact"
-          color="primary"
-          class="custom-input"
-          hide-details="auto"
-          clearable
-          no-filter
-          @update:search="onSearchBranch"
-        >
-          <template v-slot:item="{ props, item }">
-            <v-list-item
-              v-bind="props"
-              :title="item.alias"
-              :subtitle="item.title"
+  <div class="space-y-5 md:space-y-0 md:flex md:gap-10 lg:gap-30">
+    <div class="space-y-3 md:space-y-0 md:flex gap-3 items-end">
+      <v-row gap="12">
+        <v-col cols="12">
+          <date-range-picker
+            v-model="form.periodForm"
+            :max-date="today"
+            @update:model-value="onChangePeriod"
+          />
+        </v-col>
+        <v-col cols="12">
+          <v-row no-gutters>
+            <v-col
+              v-for="item in checkboxOptions"
+              :key="item.key"
+              cols="6"
+              sm="4"
+              md="3"
             >
-            </v-list-item>
-          </template>
-        </v-autocomplete>
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-autocomplete
-          v-model="form.user_id"
-          :items="listUser"
-          :loading="userStore.isLoadingData"
-          item-title="name"
-          item-value="value"
-          prepend-inner-icon="mdi-account"
-          placeholder="Cari nama..."
-          variant="outlined"
-          density="compact"
-          color="primary"
-          class="custom-input"
-          hide-details="auto"
-          clearable
-          no-filter
-          @update:search="onSearchUser"
-          @update:model-value="onSelectUser"
-          @click:clear="onClearUser"
+              <v-checkbox
+                v-model="form[item.key as keyof typeof form]"
+                :label="item.label"
+                :true-value="1"
+                :false-value="0"
+                density="compact"
+                color="primary"
+                hide-details
+              />
+            </v-col>
+          </v-row>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-autocomplete
+            v-model="form.branch_id"
+            :items="listBranch"
+            :loading="branchStore.isLoadingData"
+            prepend-inner-icon="mdi-map-marker-outline"
+            item-title="alias"
+            item-value="value"
+            placeholder="Lokasi cabang"
+            variant="outlined"
+            density="compact"
+            color="primary"
+            class="custom-input"
+            hide-details="auto"
+            clearable
+            no-filter
+            @update:search="onSearchBranch"
+          >
+            <template v-slot:item="{ props, item }">
+              <v-list-item
+                v-bind="props"
+                :title="item.alias"
+                :subtitle="item.title"
+              >
+              </v-list-item>
+            </template>
+          </v-autocomplete>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-autocomplete
+            v-model="form.user_id"
+            :items="listUser"
+            :loading="userStore.isLoadingData"
+            item-title="name"
+            item-value="value"
+            prepend-inner-icon="mdi-account"
+            placeholder="Cari nama..."
+            variant="outlined"
+            density="compact"
+            color="primary"
+            class="custom-input"
+            hide-details="auto"
+            clearable
+            no-filter
+            @update:search="onSearchUser"
+            @update:model-value="onSelectUser"
+            @click:clear="onClearUser"
+          >
+            <template v-slot:item="{ props, item }">
+              <v-list-item
+                v-bind="props"
+                :title="formatName(item)"
+                :subtitle="item.email"
+              />
+            </template>
+            <template v-slot:selection="{ item }">
+              {{ formatName(item) }}
+            </template>
+          </v-autocomplete>
+        </v-col>
+      </v-row>
+      <div>
+        <v-btn
+          color="bg-blue-300 dark:bg-blue-500"
+          variant="flat"
+          prepend-icon="mdi-filter-check"
+          :loading="employeeAttendanceStore.isLoading"
+          @click="filter"
         >
-          <template v-slot:item="{ props, item }">
-            <v-list-item
-              v-bind="props"
-              :title="formatName(item)"
-              :subtitle="item.email"
-            />
-          </template>
-          <template v-slot:selection="{ item }">
-            {{ formatName(item) }}
-          </template>
-        </v-autocomplete>
-      </v-col>
-    </v-row>
-    <div>
-      <v-btn
-        color="bg-blue-300 dark:bg-blue-500"
-        variant="flat"
-        prepend-icon="mdi-filter-check"
-        :loading="employeeAttendanceStore.isLoading"
-        @click="filter"
-      >
-        Filter
-      </v-btn>
+          Filter
+        </v-btn>
+      </div>
+    </div>
+    <div
+      class="md:w-[50%] lg:w-[30%] flex flex-col justify-center p-3 bg-gray-100 dark:bg-gray-800 rounded-xl"
+    >
+      <v-row class="m-0">
+        <v-col cols="4"><span class="font-bold">H</span></v-col>
+        <v-col cols="8">: Hadir</v-col>
+      </v-row>
+      <v-row class="m-0">
+        <v-col cols="4"><span class="font-bold">T</span></v-col>
+        <v-col cols="8">: Terlambat</v-col>
+      </v-row>
+      <v-row class="m-0">
+        <v-col cols="4"><span class="font-bold">PC</span></v-col>
+        <v-col cols="8">: Pulang Cepat</v-col>
+      </v-row>
+      <v-row class="m-0">
+        <v-col cols="4"><span class="font-bold">TAP</span></v-col>
+        <v-col cols="8">: Tidak Absen Pulang</v-col>
+      </v-row>
+      <v-row class="m-0">
+        <v-col cols="4"><span class="font-bold">A</span></v-col>
+        <v-col cols="8">: Alpa</v-col>
+      </v-row>
+      <v-row class="m-0">
+        <v-col cols="4"><div class="bg-purple-500 w-5 h-5"></div></v-col>
+        <v-col cols="8">: Shift</v-col>
+      </v-row>
+      <v-row class="m-0">
+        <v-col cols="4"><div class="bg-red-500 w-5 h-5"></div></v-col>
+        <v-col cols="8">: Libur</v-col>
+      </v-row>
     </div>
   </div>
 </template>

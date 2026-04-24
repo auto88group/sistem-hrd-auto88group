@@ -23,6 +23,7 @@ export interface EmployeeAttendanceEditParams {
   id: number | null;
   user_id: number | null;
   user_name: string | null;
+  user_full_name: string | null;
   period_date: string | null;
   working_hour: string | null;
   time_in: string | null;

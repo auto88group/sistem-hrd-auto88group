@@ -44,10 +44,12 @@
 
     <header-attendance-report />
     <table-attendance-report />
+    <form-dialog-edit-attendance />
   </div>
 </template>
 
 <script setup lang="ts">
+import FormDialogEditAttendance from "@/components/attendance-report/FormDialogEditAttendance.vue";
 import HeaderAttendanceReport from "@/components/attendance-report/HeaderAttendanceReport.vue";
 import TableAttendanceReport from "@/components/attendance-report/TableAttendanceReport.vue";
 import { useAppStore } from "@/stores/app";

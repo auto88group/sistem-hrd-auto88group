@@ -152,6 +152,7 @@
           </v-tooltip>
         </span>
 
+        <!-- KALAU TIDAK ABSEN PULANG -->
         <span
           v-if="
             item.created_at && isDidntCheckOut(item.created_at, item.time_out)
@@ -334,6 +335,7 @@
     <template #[`item.actions`]="{ item }">
       <div class="flex justify-end items-center gap-3">
         <v-btn
+          @click="handleEdit(item)"
           icon="mdi-file-edit-outline"
           variant="text"
           density="comfortable"
@@ -345,6 +347,7 @@
 </template>
 
 <script setup lang="ts">
+import type { EmployeeAttendance } from "@/api/modules/employee-attendance.api";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
 import { useFormatName } from "@/composables/useFormatName";
 import { useEmployeeAttendanceRequestStore } from "@/stores/employee-attendance.store";
@@ -385,8 +388,16 @@ const formatTime = (workingHour: string, index: number) => {
   return time.substring(0, 5);
 };
 
-function handleEdit(item: any) {
+function handleEdit(item: EmployeeAttendance) {
   employeeAttendanceStore.formDialog = true;
+  employeeAttendanceStore.payloadEdit.id = item.id;
+  employeeAttendanceStore.payloadEdit.user_id = item.user_id;
+  employeeAttendanceStore.payloadEdit.user_name = item.user_name;
+  employeeAttendanceStore.payloadEdit.user_full_name = item.user_full_name;
+  employeeAttendanceStore.payloadEdit.period_date = item.period_date;
+  employeeAttendanceStore.payloadEdit.working_hour = item.working_hour;
+  employeeAttendanceStore.payloadEdit.time_in = item.time_in;
+  employeeAttendanceStore.payloadEdit.time_out = item.time_out;
 }
 
 function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
