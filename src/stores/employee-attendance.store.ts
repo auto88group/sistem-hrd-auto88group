@@ -41,6 +41,7 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       user_name: null,
       user_full_name: null,
       user_email: null,
+      branch_id: null,
       period_date: null,
       hrd_master_shift_id: null,
       working_hour: null,
@@ -69,7 +70,10 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       payloadEdit.user_id = null;
       payloadEdit.user_name = null;
       payloadEdit.user_full_name = null;
+      payloadEdit.user_email = null;
+      payloadEdit.branch_id = null;
       payloadEdit.period_date = null;
+      payloadEdit.hrd_master_shift_id = null;
       payloadEdit.working_hour = null;
       payloadEdit.time_in = null;
       payloadEdit.time_out = null;

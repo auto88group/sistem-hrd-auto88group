@@ -394,6 +394,7 @@ function handleEdit(item: EmployeeAttendance) {
   employeeAttendanceStore.payloadEdit.user_id = item.user_id;
   employeeAttendanceStore.payloadEdit.user_name = item.user_name;
   employeeAttendanceStore.payloadEdit.user_full_name = item.user_full_name;
+  employeeAttendanceStore.payloadEdit.branch_id = item.branch_id;
   employeeAttendanceStore.payloadEdit.period_date = item.period_date;
   employeeAttendanceStore.payloadEdit.working_hour = item.working_hour;
   employeeAttendanceStore.payloadEdit.time_in = item.time_in;
@@ -472,11 +473,17 @@ function isDidntCheckOut(createdAt: string, timeOut: string | null): boolean {
 <style scoped>
 :deep(.holiday-row td) {
   background-color: #fee2e2 !important; /* soft red - Tailwind red-100 */
+  color: black !important;
+}
+
+:deep(.holiday-row span) {
+  color: black !important;
 }
 
 /* Opsional: hover state agar tetap terlihat */
 :deep(.holiday-row:hover td) {
   background-color: #fecaca !important; /* Tailwind red-200 */
+  color: black !important;
 }
 
 /* Gunakan deep selector agar tembus ke dalam komponen Vuetify */

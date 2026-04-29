@@ -3,6 +3,7 @@
     v-model="employeeAttendanceStore.formDialog"
     max-width="700"
     scrollable
+    persistent
   >
     <v-card rounded="lg">
       <v-card-title class="flex items-center gap-2 px-6 pt-5 pb-3">
@@ -86,12 +87,10 @@
               hide-details="auto"
               clearable
               no-filter
-              :rules="[rules.required]"
+              @update:model-value="onShiftSelected"
               @update:search="onSearchShift"
             >
-              <template v-slot:label>
-                Shift<span class="text-red-500">*</span>
-              </template>
+              <template v-slot:label> Shift </template>
             </v-autocomplete>
           </v-col>
 
@@ -100,12 +99,94 @@
               <div class="bg-blue-500 flex items-center p-3">
                 <v-icon icon="mdi-clock-outline" color="white"></v-icon>
               </div>
-              <div class="p-3">Jam Kerja:</div>
+              <div class="p-3 font-bold">
+                Jam Kerja: {{ form.working_hour }}
+              </div>
             </div>
           </v-col>
 
-          <v-col cols="12" md="6"> </v-col>
+          <v-col cols="12" md="6">
+            <v-menu
+              v-model="openTimeIn"
+              :close-on-content-click="false"
+              transition="scale-transition"
+            >
+              <template #activator="{ props }">
+                <div class="space-y-1">
+                  <v-text-field
+                    v-model="form.time_in"
+                    readonly
+                    v-bind="props"
+                    variant="outlined"
+                    density="compact"
+                    color="blue-darken-1"
+                    :rules="[rules.required]"
+                    hide-details="auto"
+                    prepend-inner-icon="mdi-clock-outline"
+                    class="rounded-lg shadow-sm"
+                  >
+                    <template v-slot:label>
+                      Jam Masuk<span class="text-red-500">*</span>
+                    </template>
+                  </v-text-field>
+                </div>
+              </template>
+
+              <v-card class="rounded-xl elevation-12">
+                <v-time-picker
+                  v-model="form.time_in"
+                  format="24hr"
+                  color="blue-darken-1"
+                  @update:minute="openTimeIn = false"
+                />
+              </v-card>
+            </v-menu>
+          </v-col>
+
+          <v-col cols="12" md="6">
+            <v-menu
+              v-model="openTimeOut"
+              :close-on-content-click="false"
+              transition="scale-transition"
+            >
+              <template #activator="{ props }">
+                <div class="space-y-1">
+                  <v-text-field
+                    v-model="form.time_out"
+                    readonly
+                    v-bind="props"
+                    variant="outlined"
+                    density="compact"
+                    color="blue-darken-1"
+                    hide-details="auto"
+                    prepend-inner-icon="mdi-clock-outline"
+                    class="rounded-lg shadow-sm"
+                  >
+                    <template v-slot:label> Jam Keluar </template>
+                  </v-text-field>
+                </div>
+              </template>
+
+              <v-card class="rounded-xl elevation-12">
+                <v-time-picker
+                  v-model="form.time_out"
+                  format="24hr"
+                  color="blue-darken-1"
+                  @update:minute="openTimeOut = false"
+                />
+              </v-card>
+            </v-menu>
+          </v-col>
         </v-row>
+        <div class="flex justify-end w-full gap-2 mt-6">
+          <v-btn
+            color="bg-blue-200"
+            prepend-icon="mdi-content-save"
+            variant="flat"
+          >
+            Perbarui
+          </v-btn>
+        </div>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -121,16 +202,23 @@ import { storeToRefs } from "pinia";
 import { computed, onMounted, ref } from "vue";
 import AppDatePicker from "../AppDatePicker.vue";
 import { useShiftStore } from "@/stores/shift.store";
+import { useBranchStore } from "@/stores/branch.store";
 
 const employeeAttendanceStore = useEmployeeAttendanceRequestStore();
-
+const branchStore = useBranchStore();
 const { payloadEdit: form, serverErrors } = storeToRefs(
   employeeAttendanceStore,
 );
+const shiftStore = useShiftStore();
+const { branchData } = storeToRefs(branchStore);
+const { shiftData } = storeToRefs(shiftStore);
+
+const openTimeIn = ref<boolean>(false);
+const openTimeOut = ref<boolean>(false);
 
 const appStore = useAppStore();
 const userStore = useUserStore();
-const shiftStore = useShiftStore();
+
 const { formatName } = useFormatName();
 
 const isSelectingUser = ref(false);
@@ -140,7 +228,9 @@ const searchShift = ref("");
 const listShift = computed(() => {
   const keyword = searchShift.value.toLowerCase();
 
-  return shiftStore.shiftData
+  const regularOption = { title: "Regular", value: 0 };
+
+  const filtered = shiftStore.shiftData
     .filter((b) => {
       if (!keyword) return true;
       return b.name.toLowerCase().includes(keyword);
@@ -149,6 +239,11 @@ const listShift = computed(() => {
       title: b.name,
       value: b.id,
     }));
+
+  // Tampilkan "Regular" hanya jika keyword kosong atau cocok
+  const showRegular = !keyword || "regular".includes(keyword);
+
+  return showRegular ? [regularOption, ...filtered] : filtered;
 });
 
 const listUser = computed(() => {
@@ -190,6 +285,48 @@ const onSearchUser = useDebounceFn(async (val: string) => {
 const onSearchShift = (val: any) => {
   searchShift.value = val ?? "";
 };
+const onShiftSelected = (val: any) => {
+  if (!val === null) return;
+  if (val === 0) {
+    const result = getTimeByIdBranch(form.value.branch_id ?? 0);
+    const time = result?.time;
+    const date = form.value.period_date;
+
+    const dayCode = date ? new Date(date).getDay() : null;
+
+    if (dayCode !== null) {
+      const matchedDay = time?.find((item) => Number(item.dayCode) === dayCode);
+
+      if (matchedDay) {
+        form.value.working_hour = `${matchedDay.time_in} - ${matchedDay.time_out}`;
+      } else {
+        form.value.working_hour = null;
+      }
+    }
+  } else {
+    // Cari shift berdasarkan id yang sama dengan val
+    const matchedShift = shiftData.value.find((item) => item.id === val);
+
+    if (matchedShift) {
+      form.value.working_hour = `${matchedShift.time_in} - ${matchedShift.time_out}`;
+    } else {
+      form.value.working_hour = null;
+    }
+  }
+};
+
+function getTimeByIdBranch(id: number) {
+  const item = branchData.value.find((d) => d.id === id);
+  if (!item) return null;
+
+  const timeSchedule: { dayCode: string; time_in: string; time_out: string }[] =
+    JSON.parse(item.time);
+
+  return {
+    ...item,
+    time: timeSchedule,
+  };
+}
 
 const onClearUser = async () => {
   selectedUserText.value = "";
@@ -242,6 +379,7 @@ function handleServerErrors(err: any) {
 function closeDialog() {
   employeeAttendanceStore.formDialog = false;
   employeeAttendanceStore.clearpayloadEdit();
+  searchShift.value = "";
   Object.keys(employeeAttendanceStore.serverErrors).forEach(
     (key) => delete employeeAttendanceStore.serverErrors[key],
   );

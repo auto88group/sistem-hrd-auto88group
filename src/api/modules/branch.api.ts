@@ -12,6 +12,7 @@ export interface Branch {
   name: string;
   code: string;
   alias: string;
+  time: string;
 }
 
 export const branchApi = {
