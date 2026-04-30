@@ -12,6 +12,7 @@ export const useEmployeeAttendanceRequestStore = defineStore(
   () => {
     const employeeAttendance = ref<EmployeeAttendance[]>([]);
     const isLoading = ref(false);
+    const isLoadingEdit = ref(false);
     const serverErrors = reactive<Record<string, string>>({});
 
     const totalRecords = ref(0);
@@ -46,7 +47,9 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       hrd_master_shift_id: null,
       working_hour: null,
       time_in: null,
+      note_in: null,
       time_out: null,
+      note_out: null,
     });
 
     const formDialog = ref(false);
@@ -65,6 +68,37 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       }
     }
 
+    async function updateAttendance() {
+      if (!payloadEdit.id) throw new Error("ID tidak ditemukan.");
+
+      isLoadingEdit.value = true;
+
+      try {
+        const { data } = await employeeAttendanceRequestApi.update(
+          payloadEdit.id,
+          payloadEdit,
+        );
+        return data;
+      } finally {
+        isLoadingEdit.value = false;
+      }
+    }
+
+    async function modifyAttendance() {
+      isLoadingEdit.value = true;
+
+      try {
+        const { data } = await employeeAttendanceRequestApi.modify(payloadEdit);
+        return data;
+      } finally {
+        isLoadingEdit.value = false;
+      }
+    }
+
+    function resetServerErrors() {
+      Object.keys(serverErrors).forEach((key) => delete serverErrors[key]);
+    }
+
     function clearpayloadEdit() {
       payloadEdit.id = null;
       payloadEdit.user_id = null;
@@ -77,18 +111,24 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       payloadEdit.working_hour = null;
       payloadEdit.time_in = null;
       payloadEdit.time_out = null;
+      payloadEdit.note_in = null;
+      payloadEdit.note_out = null;
     }
 
     return {
       employeeAttendance,
       isLoading,
+      isLoadingEdit,
       totalRecords,
       params,
       formDialog,
       payloadEdit,
       serverErrors,
+      modifyAttendance,
       fetchEmployeeAttendance,
       clearpayloadEdit,
+      updateAttendance,
+      resetServerErrors,
     };
   },
 );

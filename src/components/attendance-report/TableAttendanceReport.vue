@@ -332,6 +332,15 @@
       <span v-else>━</span>
     </template>
 
+    <template #[`item.modify_by`]="{ item }">
+      {{
+        formatName({
+          name: item.modify_by_name,
+          full_name: item.modify_by_full_name,
+        })
+      }}
+    </template>
+
     <template #[`item.actions`]="{ item }">
       <div class="flex justify-end items-center gap-3">
         <v-btn
@@ -340,6 +349,13 @@
           variant="text"
           density="comfortable"
           class="!text-amber-600 hover:!bg-amber-50 transition-all duration-300"
+        />
+        <v-btn
+          @click="handleEdit(item)"
+          icon="mdi-delete-outline"
+          variant="text"
+          density="comfortable"
+          class="!text-red-600 hover:!bg-red-50 transition-all duration-300"
         />
       </div>
     </template>
@@ -368,8 +384,11 @@ const headers = [
   { title: "Jam Kerja", key: "working_hour", sortable: false },
   { title: "Absen Masuk", key: "time_in", sortable: false },
   { title: "Foto Masuk", key: "image_in", sortable: false },
+  { title: "Catatan Masuk", key: "note_in", sortable: false },
   { title: "Absen Pulang", key: "time_out", sortable: false },
   { title: "Foto Pulang", key: "image_out", sortable: false },
+  { title: "Catatan Keluar", key: "note_out", sortable: false },
+  { title: "Modify By", key: "modify_by", sortable: false },
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];
 

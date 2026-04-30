@@ -34,6 +34,7 @@
               color="primary"
               class="custom-input"
               hide-details="auto"
+              disabled
               clearable
               no-filter
               @update:search="onSearchUser"
@@ -61,6 +62,7 @@
             <app-date-picker
               v-model="form.period_date"
               variant="outlined"
+              disabled
               density="compact"
               :rules="[rules.required]"
               :error-messages="serverErrors.period_date"
@@ -89,6 +91,7 @@
               no-filter
               @update:model-value="onShiftSelected"
               @update:search="onSearchShift"
+              :error-messages="serverErrors.working_hour"
             >
               <template v-slot:label> Shift </template>
             </v-autocomplete>
@@ -124,6 +127,7 @@
                     hide-details="auto"
                     prepend-inner-icon="mdi-clock-outline"
                     class="rounded-lg shadow-sm"
+                    :error-messages="serverErrors.time_in"
                   >
                     <template v-slot:label>
                       Jam Masuk<span class="text-red-500">*</span>
@@ -136,11 +140,27 @@
                 <v-time-picker
                   v-model="form.time_in"
                   format="24hr"
+                  use-seconds
                   color="blue-darken-1"
                   @update:minute="openTimeIn = false"
                 />
               </v-card>
             </v-menu>
+          </v-col>
+
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="form.note_in"
+              variant="outlined"
+              density="compact"
+              label="Catatan Masuk"
+              color="blue-darken-1"
+              hide-details="auto"
+              prepend-inner-icon="mdi-note-outline"
+              class="rounded-lg shadow-sm"
+              :error-messages="serverErrors.note_in"
+            >
+            </v-text-field>
           </v-col>
 
           <v-col cols="12" md="6">
@@ -161,6 +181,7 @@
                     hide-details="auto"
                     prepend-inner-icon="mdi-clock-outline"
                     class="rounded-lg shadow-sm"
+                    :error-messages="serverErrors.time_out"
                   >
                     <template v-slot:label> Jam Keluar </template>
                   </v-text-field>
@@ -171,11 +192,27 @@
                 <v-time-picker
                   v-model="form.time_out"
                   format="24hr"
+                  use-seconds
                   color="blue-darken-1"
                   @update:minute="openTimeOut = false"
                 />
               </v-card>
             </v-menu>
+          </v-col>
+
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="form.note_out"
+              variant="outlined"
+              density="compact"
+              label="Catatan Keluar"
+              color="blue-darken-1"
+              hide-details="auto"
+              prepend-inner-icon="mdi-note-outline"
+              class="rounded-lg shadow-sm"
+              :error-messages="serverErrors.note_out"
+            >
+            </v-text-field>
           </v-col>
         </v-row>
         <div class="flex justify-end w-full gap-2 mt-6">
@@ -183,6 +220,8 @@
             color="bg-blue-200"
             prepend-icon="mdi-content-save"
             variant="flat"
+            :loading="isLoadingEdit"
+            @click="submitForm"
           >
             Perbarui
           </v-btn>
@@ -206,9 +245,11 @@ import { useBranchStore } from "@/stores/branch.store";
 
 const employeeAttendanceStore = useEmployeeAttendanceRequestStore();
 const branchStore = useBranchStore();
-const { payloadEdit: form, serverErrors } = storeToRefs(
-  employeeAttendanceStore,
-);
+const {
+  payloadEdit: form,
+  serverErrors,
+  isLoadingEdit,
+} = storeToRefs(employeeAttendanceStore);
 const shiftStore = useShiftStore();
 const { branchData } = storeToRefs(branchStore);
 const { shiftData } = storeToRefs(shiftStore);
@@ -339,21 +380,25 @@ const onClearUser = async () => {
 
 async function submitForm() {
   try {
+    Object.keys(employeeAttendanceStore.serverErrors).forEach(
+      (key) => delete employeeAttendanceStore.serverErrors[key],
+    );
+
     let res = null;
+
     if (form.value.id) {
-      //  res = await employeeAttendanceStore.updateLeaveRequest();
+      // UPDATE
+      res = await employeeAttendanceStore.updateAttendance();
     } else {
-      //res = await employeeAttendanceStore.createLeaveRequest();
+      res = await employeeAttendanceStore.modifyAttendance();
     }
 
-    // if (res?.success) {
-
-    //   appStore.showSuccessSnackbar = true;
-    //   appStore.successMessage = res.message;
-    //   employeeAttendanceStore.fetchLeaveRequest();
-    //   employeeAttendanceStore.createEditDialog = false;
-    //   employeeAttendanceStore.clearCreateUpdatePayload();
-    // }
+    if (res?.status) {
+      appStore.showSuccessSnackbar = true;
+      appStore.successMessage = res.message ?? "Data berhasil disimpan.";
+      employeeAttendanceStore.fetchEmployeeAttendance();
+      closeDialog();
+    }
   } catch (error: any) {
     handleServerErrors(error);
   }

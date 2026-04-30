@@ -30,7 +30,9 @@ export interface EmployeeAttendanceEditParams {
   hrd_master_shift_id: string | null;
   working_hour: string | null;
   time_in: string | null;
+  note_in: string | null;
   time_out: string | null;
+  note_out: string | null;
 }
 
 export interface EmployeeAttendanceResponse {
@@ -38,6 +40,11 @@ export interface EmployeeAttendanceResponse {
   recordsTotal: number;
   recordsFiltered: number;
   data: EmployeeAttendance[];
+}
+
+export interface DefaultResponse {
+  success: boolean;
+  message: string;
 }
 
 export interface EmployeeAttendance {
@@ -90,6 +97,9 @@ export interface EmployeeAttendance {
   shift_id: number | null;
   shift_name: string | null;
   shift_code: string | null;
+  modify_by: number | null;
+  modify_by_name: string | null;
+  modify_by_full_name: string | null;
 }
 
 export const employeeAttendanceRequestApi = {
@@ -99,5 +109,19 @@ export const employeeAttendanceRequestApi = {
     return api
       .get("/hrd/employee-attendance", { params })
       .then((res) => res.data);
+  },
+
+  update: (id: number, payload: Partial<EmployeeAttendanceEditParams>) =>
+    api.post<{ status: boolean; message: string; data: EmployeeAttendance }>(
+      `/hrd/employee-attendance/${id}`,
+      payload,
+    ),
+
+  destroy(id: number): Promise<DefaultResponse> {
+    return api.delete(`/hrd/holidays/${id}`).then((res) => res.data);
+  },
+
+  modify(payload: EmployeeAttendanceEditParams) {
+    return api.post(`/hrd/employee-attendance/modify`, payload);
   },
 };
