@@ -3,6 +3,9 @@ import {
   type EmployeeAttendance,
   type EmployeeAttendanceEditParams,
   type EmployeeAttendanceParams,
+  type EmployeeAttendanceRecapItem,
+  type EmployeeAttendanceRecapParams,
+  type RecapDate,
 } from "@/api/modules/employee-attendance.api";
 import { defineStore } from "pinia";
 import { ref, reactive } from "vue";
@@ -11,9 +14,12 @@ export const useEmployeeAttendanceRequestStore = defineStore(
   "employee-attendance",
   () => {
     const employeeAttendance = ref<EmployeeAttendance[]>([]);
+    const employeeAttendanceRecap = ref<EmployeeAttendanceRecapItem[]>([]);
     const isLoading = ref(false);
     const isLoadingEdit = ref(false);
+    const isLoadingDestroy = ref(false);
     const serverErrors = reactive<Record<string, string>>({});
+    const recapDates = ref<RecapDate[]>([]);
 
     const totalRecords = ref(0);
 
@@ -34,6 +40,15 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       type_permit: 1,
       type_leave: 1,
       type_holiday: 1,
+    });
+
+    const recapParams = reactive<EmployeeAttendanceRecapParams>({
+      draw: 1,
+      start: 0,
+      length: 10,
+      period: undefined,
+      user_id: null,
+      branch_id: null,
     });
 
     const payloadEdit = reactive<EmployeeAttendanceEditParams>({
@@ -68,6 +83,21 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       }
     }
 
+    async function fetchEmployeeAttendanceRecap() {
+      isLoading.value = true;
+      try {
+        const res = await employeeAttendanceRequestApi.getRecapDatatables({
+          ...recapParams,
+        });
+        employeeAttendanceRecap.value = res.data;
+        totalRecords.value = res.recordsTotal;
+        params.draw = res.draw + 1;
+        recapDates.value = res.dates;
+      } finally {
+        isLoading.value = false;
+      }
+    }
+
     async function updateAttendance() {
       if (!payloadEdit.id) throw new Error("ID tidak ditemukan.");
 
@@ -95,6 +125,18 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       }
     }
 
+    async function destroyAttendance(id: number) {
+      isLoadingDestroy.value = true;
+      try {
+        const res = await employeeAttendanceRequestApi.destroy(id);
+        return res;
+      } catch (err: any) {
+        throw err;
+      } finally {
+        isLoadingDestroy.value = false;
+      }
+    }
+
     function resetServerErrors() {
       Object.keys(serverErrors).forEach((key) => delete serverErrors[key]);
     }
@@ -117,18 +159,24 @@ export const useEmployeeAttendanceRequestStore = defineStore(
 
     return {
       employeeAttendance,
+      employeeAttendanceRecap,
       isLoading,
       isLoadingEdit,
+      isLoadingDestroy,
       totalRecords,
       params,
+      recapParams,
       formDialog,
       payloadEdit,
       serverErrors,
+      recapDates,
+      destroyAttendance,
       modifyAttendance,
       fetchEmployeeAttendance,
       clearpayloadEdit,
       updateAttendance,
       resetServerErrors,
+      fetchEmployeeAttendanceRecap,
     };
   },
 );

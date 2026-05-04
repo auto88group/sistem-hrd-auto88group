@@ -351,7 +351,8 @@
           class="!text-amber-600 hover:!bg-amber-50 transition-all duration-300"
         />
         <v-btn
-          @click="handleEdit(item)"
+          v-if="item.id"
+          @click="handleDelete(item.id)"
           icon="mdi-delete-outline"
           variant="text"
           density="comfortable"
@@ -364,8 +365,10 @@
 
 <script setup lang="ts">
 import type { EmployeeAttendance } from "@/api/modules/employee-attendance.api";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
 import { useFormatName } from "@/composables/useFormatName";
+import { useAppStore } from "@/stores/app";
 import { useEmployeeAttendanceRequestStore } from "@/stores/employee-attendance.store";
 import { computed } from "vue";
 
@@ -374,6 +377,8 @@ const employeeAttendanceStore = useEmployeeAttendanceRequestStore();
 const employee = computed(() => employeeAttendanceStore.employeeAttendance);
 const { toFullDateWithDay } = useDateFormatter();
 const { formatName } = useFormatName();
+const { ask } = useConfirmDialog();
+const appStore = useAppStore();
 
 const headers = [
   { title: "No", key: "no", sortable: false, align: "center" },
@@ -406,6 +411,30 @@ const formatTime = (workingHour: string, index: number) => {
   if (!time) return "-";
   return time.substring(0, 5);
 };
+
+async function handleDelete(id: number) {
+  console.log(id);
+  const confirmed = await ask({
+    title: "Hapus Data Absensi",
+    message: "Data ini akan dihapus. Lanjutkan?",
+    confirmText: "Ya, Hapus",
+    color: "red-darken-1",
+  });
+  if (confirmed) deleteAttendance(id);
+}
+
+async function deleteAttendance(id: number) {
+  let res = null;
+  try {
+    res = await employeeAttendanceStore.destroyAttendance(id);
+    appStore.showSuccessSnackbar = true;
+    appStore.successMessage = res.message ?? "Data berhasil disimpan.";
+    employeeAttendanceStore.fetchEmployeeAttendance();
+  } catch (err: any) {
+    appStore.showErrorSnackbar = true;
+    appStore.errorMessage = err?.message ?? "Terjadi kesalahan, coba lagi.";
+  }
+}
 
 function handleEdit(item: EmployeeAttendance) {
   employeeAttendanceStore.formDialog = true;

@@ -113,6 +113,13 @@ const router = createRouter({
             import("@/pages/manage-attendance/attendance-report/index.vue"),
           meta: { requiresAuth: true },
         },
+        {
+          path: "/manage-attendance/attendance-recap",
+          name: "Rekap Absensi",
+          component: () =>
+            import("@/pages/manage-attendance/attendance-recap/index.vue"),
+          meta: { requiresAuth: true },
+        },
       ],
     },
     {

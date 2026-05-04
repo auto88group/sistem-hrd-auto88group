@@ -1,5 +1,7 @@
 <template>
   <div class="space-y-5">
+    <confirm-dialog />
+
     <v-snackbar
       v-model="appStore.showErrorSnackbar"
       color="bg-red-500"
@@ -52,6 +54,7 @@
 import FormDialogEditAttendance from "@/components/attendance-report/FormDialogEditAttendance.vue";
 import HeaderAttendanceReport from "@/components/attendance-report/HeaderAttendanceReport.vue";
 import TableAttendanceReport from "@/components/attendance-report/TableAttendanceReport.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import { useAppStore } from "@/stores/app";
 
 const appStore = useAppStore();

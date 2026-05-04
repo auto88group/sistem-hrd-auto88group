@@ -190,10 +190,8 @@ const headers = computed(() => {
     align: "center" as const,
     width: "100",
     nowrap: true,
-    headerProps: isHoliday(dateKey)
-      ? { class: "!text-black !bg-gray-300" }
-      : {},
-    cellProps: isHoliday(dateKey) ? { class: "!text-black !bg-gray-300" } : {},
+    headerProps: isHoliday(dateKey) ? { class: "!text-black !bg-red-200" } : {},
+    cellProps: isHoliday(dateKey) ? { class: "!text-black !bg-red-200" } : {},
   }));
 
   return [...staticHeaders, ...dateHeaders];

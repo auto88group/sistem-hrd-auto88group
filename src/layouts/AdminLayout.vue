@@ -258,7 +258,10 @@
               >Laporan Absensi</v-btn
             >
             <v-btn
-              to="/absensi"
+              to="/manage-attendance/attendance-recap"
+              :active="
+                $route.path.startsWith('/manage-attendance/attendance-recap')
+              "
               variant="text"
               size="small"
               prepend-icon="mdi-file-table"
@@ -476,7 +479,10 @@
               value="laporan-absensi"
             ></v-list-item>
             <v-list-item
-              active-class="text-indigo-600"
+              to="/manage-attendance/attendance-recap"
+              :active="
+                $route.path.startsWith('/manage-attendance/attendance-recap')
+              "
               title="Rekap Absensi"
               value="rekap-absensi"
             ></v-list-item>

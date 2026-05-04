@@ -19,6 +19,16 @@ export interface EmployeeAttendanceParams {
   type_holiday?: number | null;
 }
 
+export interface EmployeeAttendanceRecapParams {
+  draw?: number;
+  start?: number;
+  length?: number;
+  periodForm?: string[];
+  period?: string;
+  user_id?: number | null;
+  branch_id?: number | null;
+}
+
 export interface EmployeeAttendanceEditParams {
   id: number | null;
   user_id: number | null;
@@ -102,12 +112,80 @@ export interface EmployeeAttendance {
   modify_by_full_name: string | null;
 }
 
+export interface EmployeeAttendanceDailyStatus {
+  is_holiday: number;
+  is_hadir: number;
+  is_shift: number;
+  is_late: number;
+  is_pc: number;
+  is_tap: number;
+  is_izin: number;
+  is_sakit: number;
+  is_cuti: number;
+  is_alpha: number;
+  lr_type: string | null;
+  lr_type_code: string | null;
+  lr_type_name: string | null;
+  lr_is_full_name: string | null;
+  lr_is_full_day: number;
+  shift_id: number | null;
+  shift_name: string | null;
+  shift_code: string | null;
+}
+
+export interface EmployeeAttendanceRecapItem {
+  user_id: number;
+  user_name: string;
+  user_full_name: string;
+  user_email: string;
+  user_employee_id: number;
+  branch_id: number;
+  branch_name: string;
+  branch_alias: string;
+  branch_code: string;
+  h: number;
+  t: number;
+  t_duration: string;
+  pc: number;
+  pc_duration: string;
+  tap: number;
+  i: number;
+  s: number;
+  c: number;
+  a: number;
+  holiday: number;
+  total_working_hour: string;
+  daily: Record<string, EmployeeAttendanceDailyStatus>;
+}
+
+export interface EmployeeAttendanceRecapResponse {
+  draw: number;
+  recordsTotal: number;
+  recordsFiltered: number;
+  dates: RecapDate[];
+  data: EmployeeAttendanceRecapItem[];
+}
+
+export interface RecapDate {
+  date: string;
+  is_holiday: number;
+  holiday_name: string;
+}
+
 export const employeeAttendanceRequestApi = {
   getDatatables(
     params: EmployeeAttendanceParams,
   ): Promise<EmployeeAttendanceResponse> {
     return api
       .get("/hrd/employee-attendance", { params })
+      .then((res) => res.data);
+  },
+
+  getRecapDatatables(
+    params: EmployeeAttendanceRecapParams,
+  ): Promise<EmployeeAttendanceRecapResponse> {
+    return api
+      .get("/hrd/employee-attendance/recap", { params })
       .then((res) => res.data);
   },
 
@@ -118,7 +196,7 @@ export const employeeAttendanceRequestApi = {
     ),
 
   destroy(id: number): Promise<DefaultResponse> {
-    return api.delete(`/hrd/holidays/${id}`).then((res) => res.data);
+    return api.delete(`/hrd/employee-attendance/${id}`).then((res) => res.data);
   },
 
   modify(payload: EmployeeAttendanceEditParams) {
