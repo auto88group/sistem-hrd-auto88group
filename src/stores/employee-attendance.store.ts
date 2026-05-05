@@ -47,8 +47,8 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       start: 0,
       length: 10,
       period: undefined,
-      user_id: null,
       branch_id: null,
+      user_id: null,
     });
 
     const payloadEdit = reactive<EmployeeAttendanceEditParams>({

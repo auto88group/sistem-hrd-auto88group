@@ -178,7 +178,7 @@
                 </span>
               </template>
 
-              {{ item.daily[d.date].lr_type_code }} (Approved)
+              {{ item.daily[d.date].lr_type_name }} (Approved)
             </v-tooltip>
           </span>
 
@@ -261,7 +261,7 @@
                 </span>
               </template>
 
-              {{ item.daily[d.date].lr_type_code }} (Approved)
+              {{ item.daily[d.date].lr_type_name }} (Approved)
             </v-tooltip>
           </span>
 
@@ -297,40 +297,81 @@
               Pulang Cepat
             </v-tooltip>
           </span>
+
+          <!-- KALAU TIDAP ABSEN PULANG -->
+          <span v-if="item.daily[d.date].is_tap"
+            >,
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <span
+                  v-bind="props"
+                  class="font-bold text-amber-500 cursor-pointer"
+                >
+                  TAP
+                </span>
+              </template>
+              Tidak Absen Pulang
+            </v-tooltip>
+          </span>
         </span>
 
-        <!-- <v-chip color="green" size="x-small" label>
-          {{ item.daily[d.date].is_late ? "T" : "✓" }}
-        </v-chip> -->
-        <v-chip
-          v-else-if="item.daily[d.date].is_izin"
-          color="blue"
-          size="x-small"
-          label
-          >I</v-chip
+        <span
+          v-if="item.daily[d.date].is_izin && item.daily[d.date].lr_is_full_day"
         >
-        <v-chip
-          v-else-if="item.daily[d.date].is_sakit"
-          color="orange"
-          size="x-small"
-          label
-          >S</v-chip
-        >
-        <v-chip
-          v-else-if="item.daily[d.date].is_cuti"
-          color="purple"
-          size="x-small"
-          label
-          >C</v-chip
-        >
-        <v-chip
-          v-else-if="item.daily[d.date].is_alpha"
-          color="text-red-600"
-          size="x-small"
-          label
-          >A</v-chip
-        >
-        <span v-else>-</span>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <span
+                v-bind="props"
+                class="font-bold text-green-500 cursor-pointer"
+              >
+                {{ item.daily[d.date].lr_type_code }}</span
+              >
+            </template>
+            {{ item.daily[d.date].lr_type_name }}
+          </v-tooltip>
+        </span>
+
+        <span v-if="item.daily[d.date].is_sakit">
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <span
+                v-bind="props"
+                class="font-bold text-green-500 cursor-pointer"
+              >
+                {{ item.daily[d.date].lr_type_code }}</span
+              >
+            </template>
+            {{ item.daily[d.date].lr_type_name }}
+          </v-tooltip>
+        </span>
+
+        <span v-else-if="item.daily[d.date].is_cuti">
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <span
+                v-bind="props"
+                class="font-bold text-green-500 cursor-pointer"
+              >
+                {{ item.daily[d.date].lr_type_code }}</span
+              >
+            </template>
+            {{ item.daily[d.date].lr_type_name }}
+          </v-tooltip>
+        </span>
+
+        <span v-else-if="item.daily[d.date].is_alpha">
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <span
+                v-bind="props"
+                class="font-bold text-red-500 cursor-pointer"
+              >
+                A</span
+              >
+            </template>
+            Alpa
+          </v-tooltip>
+        </span>
       </template>
       <span v-else>-</span>
     </template>

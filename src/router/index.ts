@@ -25,6 +25,12 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
+          path: "/dashboard/contract-end", // Diakses via /dashboard
+          name: "Daftar Kontrak Akan Berakhir",
+          component: () => import("@/pages/user-contract-end/index.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
           path: "/master",
           redirect: "/master/employee",
         },

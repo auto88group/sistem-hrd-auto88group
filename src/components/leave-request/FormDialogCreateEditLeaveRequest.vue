@@ -293,6 +293,7 @@ const onClearUser = async () => {
 };
 
 function closeDialog() {
+  imagePreview.value = null;
   leaveRequestStore.createEditDialog = false;
   leaveRequestStore.clearCreateUpdatePayload();
   Object.keys(leaveRequestStore.serverErrors).forEach(

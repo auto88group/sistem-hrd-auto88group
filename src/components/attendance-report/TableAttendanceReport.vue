@@ -344,6 +344,7 @@
     <template #[`item.actions`]="{ item }">
       <div class="flex justify-end items-center gap-3">
         <v-btn
+          v-if="item.lr_is_full_day != 1"
           @click="handleEdit(item)"
           icon="mdi-file-edit-outline"
           variant="text"
@@ -459,8 +460,10 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
 function getLateDuration(timeIn: string, workingHour: string): string {
   const startWorkTime = workingHour.split(" - ")[0].trim();
 
-  const [inHour, inMin, inSec] = timeIn.split(":").map(Number);
-  const [workHour, workMin, workSec] = startWorkTime.split(":").map(Number);
+  const [inHour = 0, inMin = 0, inSec = 0] = timeIn.split(":").map(Number);
+  const [workHour = 0, workMin = 0, workSec = 0] = startWorkTime
+    .split(":")
+    .map(Number);
 
   const timeInSeconds = inHour * 3600 + inMin * 60 + inSec;
   const workStartSeconds = workHour * 3600 + workMin * 60 + workSec;
@@ -483,8 +486,10 @@ function getLateDuration(timeIn: string, workingHour: string): string {
 function getEarlyGoHomeDuration(timeOut: string, workingHour: string): string {
   const endWorkTime = workingHour.split(" - ")[1].trim();
 
-  const [outHour, outMin, outSec] = timeOut.split(":").map(Number);
-  const [workHour, workMin, workSec] = endWorkTime.split(":").map(Number);
+  const [outHour = 0, outMin = 0, outSec = 0] = timeOut.split(":").map(Number);
+  const [workHour = 0, workMin = 0, workSec = 0] = endWorkTime
+    .split(":")
+    .map(Number);
 
   const timeOutSeconds = outHour * 3600 + outMin * 60 + outSec;
   const workEndSeconds = workHour * 3600 + workMin * 60 + workSec;
@@ -512,7 +517,6 @@ function isDidntCheckOut(createdAt: string, timeOut: string | null): boolean {
   itemDate.setHours(0, 0, 0, 0);
 
   const isBeforeToday = itemDate < today;
-  console.log(`dfa: ${timeOut}`);
 
   return isBeforeToday && !timeOut;
 }

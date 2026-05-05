@@ -120,6 +120,8 @@ export interface LeaveRequest {
 
   approver_hrd_name: string | null;
   approver_hrd_full_name: string | null;
+
+  missing_attendance: number;
 }
 
 export const leaveRequestApi = {

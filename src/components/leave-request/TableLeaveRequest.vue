@@ -56,6 +56,16 @@
       </span>
     </template>
 
+    <template #[`item.reason`]="{ item }">
+      <span v-if="item.missing_attendance === 0">
+        {{ item.reason }}
+      </span>
+      <span v-if="item.missing_attendance === 1">
+        {{ item.reason }}
+        <span class="text-red-500 font-bold"> (Absensi Tidak Ditemukan)</span>
+      </span>
+    </template>
+
     <!-- PRIMARY -->
     <template #[`item.status`]="{ item }">
       <!-- PENDING -->
