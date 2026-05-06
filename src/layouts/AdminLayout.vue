@@ -121,6 +121,7 @@
               prepend-icon="mdi-account-tie"
               to="/dashboard/personnel"
               class="btn-nav-custom"
+              :active="$route.path.startsWith('/dashboard/personnel')"
               >Kepegawaian</v-btn
             >
           </div>

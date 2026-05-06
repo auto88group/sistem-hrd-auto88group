@@ -793,7 +793,7 @@
                 :rules="[rules.required]"
               >
                 <template v-slot:label>
-                  Jatah Cuti <span class="text-red-500">*</span>
+                  Jatah Cuti <span class="text-red-500"></span>
                 </template>
               </v-text-field>
             </v-col>
@@ -1218,7 +1218,7 @@ const form = reactive({
   position: "",
   branch_id: null as number | null,
   location_presensi_id: null as number | null,
-  remaining_leave: null as number | null,
+  remaining_leave: 0,
   status_id: null as number | null,
   effective_start_date: "",
   effective_end_date: "",
@@ -1366,11 +1366,12 @@ function scrollToFirstError(serverErr?: Record<string, string>) {
 // ── Submit ────────────────────────────────────────────────────────────────────
 async function handleSubmit() {
   const { valid } = await formRef.value.validate();
+
   if (!valid) {
     scrollToFirstError();
     return;
   }
-
+  console.log("asa");
   Object.keys(serverErrors).forEach((key) => delete serverErrors[key]);
 
   isSaving.value = true;

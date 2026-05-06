@@ -62,7 +62,7 @@
         :color="
           getDateDiffInfo(item.effective_end_date).isPassed
             ? 'text-red-500'
-            : 'text-amber-500'
+            : 'text-amber-700'
         "
         class="font-semibold"
       >
@@ -73,6 +73,8 @@
     <template #[`item.actions`]="{ item }">
       <div class="flex justify-end items-center gap-3">
         <v-btn
+          :to="`/master/employee/detail/${item.id}`"
+          target="_blank"
           icon="mdi-information-outline"
           variant="text"
           density="comfortable"
@@ -92,7 +94,7 @@ const userContractEndStore = useUserContractEndStore();
 const { userContractEnd, totalRecords, params, isLoading } =
   storeToRefs(userContractEndStore);
 
-const { toFullDateWithDay } = useDateFormatter();
+const { toFullDateWithDay, getDateDiffInfo } = useDateFormatter();
 const { formatName } = useFormatName();
 
 const headers = [
@@ -113,46 +115,6 @@ const headers = [
   { title: "Keterangan", key: "note", sortable: false },
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];
-
-function getDateDiffInfo(dateStr: string | null): {
-  text: string;
-  isPassed: boolean;
-} {
-  if (!dateStr) {
-    return { text: "-", isPassed: false };
-  }
-
-  const [year, month, day] = dateStr.split("-").map(Number);
-
-  const target = new Date(year, month - 1, day);
-  const today = new Date();
-
-  // normalize ke awal hari
-  target.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-
-  const diffTime = target.getTime() - today.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) {
-    return {
-      text: `lewat ${Math.abs(diffDays)} hari`,
-      isPassed: true,
-    };
-  }
-
-  if (diffDays === 0) {
-    return {
-      text: "hari ini",
-      isPassed: false,
-    };
-  }
-
-  return {
-    text: `${diffDays} hari lagi`,
-    isPassed: false,
-  };
-}
 
 function isDatePassed(dateStr: string | null): boolean {
   if (!dateStr) return false;

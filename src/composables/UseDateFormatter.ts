@@ -94,11 +94,37 @@ export function useDateFormatter() {
     return `${dayName}, ${day} ${month} ${year}`;
   };
 
+  const getDateDiffInfo = (
+    dateStr: string | null,
+  ): {
+    text: string;
+    isPassed: boolean;
+  } => {
+    if (!dateStr) {
+      return { text: "-", isPassed: false };
+    }
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const target = new Date(year, month - 1, day);
+    const today = new Date();
+    target.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const diffTime = target.getTime() - today.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) {
+      return { text: `lewat ${Math.abs(diffDays)} hari`, isPassed: true };
+    }
+    if (diffDays === 0) {
+      return { text: "hari ini", isPassed: false };
+    }
+    return { text: `${diffDays} hari lagi`, isPassed: false };
+  };
+
   return {
     toDayMonthYear,
     toFullDate,
     toDayShortMonth,
     toRangeYMD,
     toFullDateWithDay,
+    getDateDiffInfo,
   };
 }

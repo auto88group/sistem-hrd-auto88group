@@ -8,8 +8,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    },
-    "ignoreDeprecations": "6.0" // tambahkan ini
+    }
+    // "ignoreDeprecations": "6.0" // tambahkan ini
   },
   "vueCompilerOptions": {
     "plugins": [

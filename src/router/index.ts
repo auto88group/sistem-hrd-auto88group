@@ -1,8 +1,12 @@
 import AdminLayout from "@/layouts/AdminLayout.vue";
-import { createRouter, createWebHistory } from "vue-router";
+import {
+  createRouter,
+  createWebHashHistory,
+  createWebHistory,
+} from "vue-router";
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(),
   routes: [
     {
       path: "/",
@@ -25,7 +29,7 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
-          path: "/dashboard/contract-end", // Diakses via /dashboard
+          path: "/dashboard/personnel/contract-end", // Diakses via /dashboard
           name: "Daftar Kontrak Akan Berakhir",
           component: () => import("@/pages/user-contract-end/index.vue"),
           meta: { requiresAuth: true },
@@ -130,7 +134,7 @@ const router = createRouter({
     },
     {
       path: "/login",
-      component: import("@/pages/login.vue"),
+      component: () => import("@/pages/login.vue"),
     },
   ],
 });

@@ -14,6 +14,7 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
   const leaveRequestSelected = ref<LeaveRequest | null>(null);
   const isLoading = ref(false);
   const isLoadingSelected = ref(false);
+  const isLoadingSelectedByHighlight = ref(false);
   const isLoadingDestroy = ref(false);
   const isLoadingApproval = ref(false);
   const isLoadingCreateEdit = ref(false);
@@ -219,6 +220,7 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
 
   return {
     leaveRequest,
+    isLoadingSelectedByHighlight,
     leaveRequestSelected,
     isLoading,
     isLoadingApproval,

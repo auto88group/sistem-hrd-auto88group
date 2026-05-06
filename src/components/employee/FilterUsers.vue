@@ -211,7 +211,8 @@ const listPosition = computed(() => {
 });
 const listBranch = computed(() => {
   const keyword = searchBranch.value.toLowerCase();
-  return branchStore.branchData
+
+  return (branchStore.branchData || [])
     .filter((branch) => {
       if (!keyword) return true;
 

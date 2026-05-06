@@ -113,7 +113,7 @@
         </div>
       </template>
 
-      <template v-else-if="higlightStore.leaveRequest.length === 0">
+      <template v-else-if="!higlightStore.leaveRequest?.length">
         <div
           class="flex flex-col items-center justify-center py-10 text-center"
         >
@@ -159,6 +159,8 @@
               </div>
             </div>
             <v-btn
+              :to="`/manage-attendance/leave-request?userId=${leaveRequest.user_id}&id=${leaveRequest.id}`"
+              target="_blank"
               variant="tonal"
               size="small"
               rounded="pill"
@@ -229,6 +231,8 @@
       class="border-t border-slate-100 dark:border-slate-800 backdrop-blur-md rounded-b-[24px]"
     >
       <v-btn
+        target="_blank"
+        to="/manage-attendance/leave-request"
         block
         color="#6962e9"
         variant="flat"

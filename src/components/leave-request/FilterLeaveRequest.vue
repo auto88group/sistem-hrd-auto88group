@@ -129,14 +129,17 @@ import { useUserStore } from "@/stores/user.store";
 import { useDebounceFn } from "@/composables/UseDebounce";
 import { useBranchStore } from "@/stores/branch.store";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
+import { useRoute } from "vue-router";
 
+const route = useRoute();
 const { formatName } = useFormatName();
 const { toRangeYMD } = useDateFormatter();
 const userStore = useUserStore();
 const branchStore = useBranchStore();
 const leaveRequestStore = useLeaveRequestStore();
 const leaveTypeStore = useLeaveTypeStore();
-const { params: form } = storeToRefs(leaveRequestStore);
+const { params: form, isLoadingSelectedByHighlight } =
+  storeToRefs(leaveRequestStore);
 
 const searchLeaveType = ref("");
 const isSelecting = ref(false);
@@ -256,8 +259,15 @@ async function filter() {
 }
 
 onMounted(async () => {
-  branchStore.fetchBranchData();
-  userStore.fetchUsersData();
-  leaveTypeStore.fetchLeaveTypeData();
+  const userId = route.query.userId
+    ? parseInt(route.query.userId as string)
+    : undefined;
+  const id = route.query.id ? parseInt(route.query.id as string) : undefined;
+
+  if (!userId && !id) {
+    branchStore.fetchBranchData();
+    userStore.fetchUsersData();
+    leaveTypeStore.fetchLeaveTypeData();
+  }
 });
 </script>
