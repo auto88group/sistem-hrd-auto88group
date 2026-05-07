@@ -15,7 +15,11 @@ export const useBranchStore = defineStore("branch", () => {
   });
 
   async function fetchBranchData() {
+    // kalau data sudah ada, jangan fetch lagi
+    if (branchData.value?.length) return;
+
     isLoadingData.value = true;
+
     try {
       const res = await branchApi.getData({ ...branchDataParams });
       branchData.value = res.data;

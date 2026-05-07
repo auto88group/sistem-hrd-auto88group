@@ -1,5 +1,6 @@
 import api from "../axios";
 
+// LEAVE REQUEST
 export interface LeaveRequestParams {
   branch_id?: number;
   hrd_leave_type_id?: number;
@@ -52,10 +53,98 @@ export interface LeaveRequest {
   leave_type: string;
 }
 
+// GENDER
+export interface GenderParams {
+  alias?: string;
+}
+export type GenderType = "M" | "F" | "UNSET" | "TOTAL";
+interface GenderBaseItem {
+  id: GenderType;
+  details: string[];
+}
+interface GenderPercentItem extends GenderBaseItem {
+  id: Exclude<GenderType, "TOTAL">;
+  value: number;
+  type: "percent";
+}
+interface GenderTotalItem extends GenderBaseItem {
+  id: Extract<GenderType, "TOTAL">;
+  value: number;
+  type: "total";
+}
+export type GenderItem = GenderPercentItem | GenderTotalItem;
+export type GenderResponse = GenderItem[];
+
+// RELIGION
+export interface ReligionParams {
+  alias?: string;
+}
+interface ReligionTotalItem {
+  value: number;
+  type: "total";
+  details: string[];
+}
+interface ReligionPercentItem {
+  id: string;
+  value: number;
+  type: "percent";
+  details: string[];
+}
+export type ReligionItem = ReligionPercentItem | ReligionTotalItem;
+export type ReligionResponse = ReligionItem[];
+
+// EMPLOYEE TOTAL
+export interface EmployeeTotalParams {
+  alias?: string;
+}
+export interface EmployeeTotalItem {
+  year: number;
+  volume: number;
+}
+export type EmployeeTotalResponse = EmployeeTotalItem[];
+
+// JOIN TERMINATION
+export interface JoinTerminationParams {
+  alias?: string;
+  year?: number;
+}
+export interface JoinTerminationItem {
+  month: string;
+  join: number;
+  termination: number;
+}
+export type JoinTerminationResponse = JoinTerminationItem[];
+
 export const highlightApi = {
   getLeaveRequest(params: LeaveRequestParams): Promise<LeaveRequestResponse> {
     return api
       .get(`/hrd/highlight/leave-request`, { params })
+      .then((res) => res.data);
+  },
+
+  getGender(params?: GenderParams): Promise<GenderResponse> {
+    return api.get(`/hrd/highlight/gender`, { params }).then((res) => res.data);
+  },
+
+  getReligion(params?: ReligionParams): Promise<ReligionResponse> {
+    return api
+      .get(`/hrd/highlight/religion`, { params })
+      .then((res) => res.data);
+  },
+
+  getEmployeeTotal(
+    params?: EmployeeTotalParams,
+  ): Promise<EmployeeTotalResponse> {
+    return api
+      .get(`/hrd/highlight/employee-total`, { params })
+      .then((res) => res.data);
+  },
+
+  getJoinTermination(
+    params?: JoinTerminationParams,
+  ): Promise<JoinTerminationResponse> {
+    return api
+      .get(`/hrd/highlight/join-termination`, { params })
       .then((res) => res.data);
   },
 };

@@ -16,7 +16,7 @@
       </div>
 
       <v-card-text class="text-base pt-4">
-        {{ options.message }}
+        <div v-html="options.message"></div>
       </v-card-text>
 
       <v-card-actions class="pa-4">

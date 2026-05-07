@@ -27,31 +27,65 @@
 
     <v-expand-transition>
       <div v-if="showFilter" class="mb-4 px-1 flex gap-3">
-        <v-select
-          v-model="filters.tahun"
-          :items="[2024, 2025, 2026]"
+        <v-autocomplete
+          id="field-year"
+          v-model="form.year"
+          :items="listYear"
           label="Tahun"
+          prepend-inner-icon="mdi-calendar"
+          placeholder="Pilih tahun"
+          variant="outlined"
+          class="custom-input mt-2"
+          density="compact"
+          color="primary"
+          item-title="label"
+          item-value="value"
+          hide-details="auto"
+          clearable
+          no-filter
+          @update:model-value="onChangeYear"
+        >
+        </v-autocomplete>
+        <v-autocomplete
+          v-model="form.alias"
+          :items="listBranch"
+          :loading="branchStore.isLoadingData"
+          prepend-inner-icon="mdi-map-marker-outline"
+          item-title="alias"
+          item-value="value"
+          placeholder="Lokasi cabang"
           variant="outlined"
           density="compact"
-          hide-details
-          rounded="xl"
-        ></v-select>
-        <v-select
-          v-model="filters.cabang"
-          :items="[
-            'Semua Cabang',
-            'Autoplaza 88 (Pontianak)',
-            'Auto 88 Kuburaya',
-          ]"
-          label="Cabang"
-          variant="outlined"
-          density="compact"
-          hide-details
-          rounded="xl"
-        ></v-select>
+          color="primary"
+          class="custom-input mt-2"
+          hide-details="auto"
+          clearable
+          no-filter
+          @update:search="onSearchBranch"
+          @update:model-value="onChangeBranch"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :title="item.alias"
+              :subtitle="item.title"
+            >
+            </v-list-item>
+          </template>
+        </v-autocomplete>
       </div>
     </v-expand-transition>
-    <div class="mt-2 w-full">
+
+    <!-- Loading -->
+    <div
+      v-if="highlightStore.isLoadingJoinTermination"
+      class="flex items-center justify-center h-[430px]"
+    >
+      <v-progress-circular indeterminate color="indigo"></v-progress-circular>
+    </div>
+
+    <!-- Chart -->
+    <div v-show="!highlightStore.isLoadingJoinTermination" class="mt-2 w-full">
       <apexchart
         type="bar"
         height="430"
@@ -63,46 +97,84 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import VueApexCharts from "vue3-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import { useTheme } from "vuetify";
-
-const theme = useTheme();
+import { useHighlightStore } from "@/stores/highlight.store";
+import { useBranchStore } from "@/stores/branch.store";
+import { storeToRefs } from "pinia";
+import { useDebounceFn } from "@/composables/UseDebounce";
 
 const apexchart = VueApexCharts;
+const theme = useTheme();
+const highlightStore = useHighlightStore();
+const branchStore = useBranchStore();
+
+const { joinTerminationParams: form, joinTermination } =
+  storeToRefs(highlightStore);
+const { branchData } = storeToRefs(branchStore);
 
 const showFilter = ref(false);
 
-const filters = ref({
-  tahun: 2026,
-  cabang: "Semua Cabang",
+const searchBranch = ref("");
+const listBranch = computed(() => {
+  const keyword = searchBranch.value.toLowerCase();
+
+  const filtered = branchData.value.filter((branch) => {
+    if (!keyword) return true;
+
+    return (
+      branch.name.toLowerCase().includes(keyword) ||
+      branch.alias.toLowerCase().includes(keyword)
+    );
+  });
+
+  // group / unique by alias
+  const uniqueByAlias = Array.from(
+    new Map(filtered.map((branch) => [branch.alias, branch])).values(),
+  );
+
+  return uniqueByAlias.map((branch) => ({
+    title: branch.name,
+    alias: branch.alias,
+    value: branch.alias,
+  }));
 });
 
-const rawData = [
-  { bulan: "Jan", join: 13, termination: 10 },
-  { bulan: "Feb", join: 7, termination: 0 },
-  { bulan: "Mar", join: 8, termination: 0 },
-  { bulan: "Apr", join: 0, termination: 0 },
-  { bulan: "Mei", join: 0, termination: 0 },
-  { bulan: "Jun", join: 0, termination: 0 },
-  { bulan: "Jul", join: 0, termination: 0 },
-  { bulan: "Agu", join: 0, termination: 0 },
-  { bulan: "Sep", join: 0, termination: 0 },
-  { bulan: "Okt", join: 0, termination: 0 },
-  { bulan: "Nov", join: 0, termination: 0 },
-  { bulan: "Des", join: 0, termination: 0 },
-];
+const startYear = 2020;
+const currentYear = new Date().getFullYear();
+const listYear = Array.from(
+  { length: currentYear - startYear + 1 },
+  (_, index) => {
+    const year = (currentYear - index).toString();
 
-// Series dikelompokkan menjadi Join dan Termination
+    return {
+      label: year,
+      value: year,
+    };
+  },
+);
+const onSearchBranch = (val: any) => {
+  searchBranch.value = val ?? "";
+};
+
+const onChangeBranch = useDebounceFn((val: string) => {
+  highlightStore.fetchJoinTermination();
+}, 400);
+
+const onChangeYear = useDebounceFn((val: number) => {
+  highlightStore.fetchJoinTermination();
+}, 400);
+
 const series = computed(() => [
   {
     name: "Join",
-    data: rawData.map((item) => item.join),
+    data: joinTermination.value.map((item) => item.join),
   },
   {
     name: "Termination",
-    data: rawData.map((item) => item.termination),
+    data: joinTermination.value.map((item) => item.termination),
   },
 ]);
 
@@ -111,11 +183,8 @@ const chartOptions = computed<ApexOptions>(() => ({
     type: "bar",
     toolbar: { show: false },
     fontFamily: "Inter, sans-serif",
-    stacked: false, // Set true jika ingin grafik bertumpuk
+    stacked: false,
   },
-  // theme: {
-  //   mode: theme.global.current.value.dark ? "dark" : "light",
-  // },
   plotOptions: {
     bar: {
       borderRadius: 4,
@@ -146,7 +215,7 @@ const chartOptions = computed<ApexOptions>(() => ({
     },
   },
   xaxis: {
-    categories: rawData.map((item) => item.bulan),
+    categories: joinTermination.value.map((item) => item.month),
     axisBorder: { show: false },
     axisTicks: { show: false },
     labels: {
@@ -174,4 +243,8 @@ const chartOptions = computed<ApexOptions>(() => ({
     },
   },
 }));
+
+onMounted(() => {
+  highlightStore.fetchJoinTermination();
+});
 </script>

@@ -27,19 +27,46 @@
 
     <v-expand-transition>
       <div v-if="showFilter" class="mb-4 px-1">
-        <v-select
-          v-model="selectedFilter"
-          :items="filterOptions"
-          label="Pilih Cabang"
+        <v-autocomplete
+          v-model="form.alias"
+          :items="listBranch"
+          :loading="branchStore.isLoadingData"
+          prepend-inner-icon="mdi-map-marker-outline"
+          item-title="alias"
+          item-value="value"
+          placeholder="Lokasi cabang"
           variant="outlined"
           density="compact"
-          class="mt-2"
-          hide-details
-          rounded="xl"
-        ></v-select>
+          color="primary"
+          class="custom-input mt-2"
+          hide-details="auto"
+          clearable
+          no-filter
+          @update:search="onSearchBranch"
+          @update:model-value="onChangeBranch"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :title="item.alias"
+              :subtitle="item.title"
+            >
+            </v-list-item>
+          </template>
+        </v-autocomplete>
       </div>
     </v-expand-transition>
-    <div class="mt-2 w-full">
+
+    <!-- Loading -->
+    <div
+      v-show="highlightStore.isLoadingEmployeeTotal"
+      class="flex items-center justify-center h-[430px]"
+    >
+      <v-progress-circular indeterminate color="indigo"></v-progress-circular>
+    </div>
+
+    <!-- Chart -->
+    <div v-show="!highlightStore.isLoadingEmployeeTotal" class="mt-2 w-full">
       <apexchart
         type="bar"
         height="430"
@@ -51,42 +78,52 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import VueApexCharts from "vue3-apexcharts";
 import type { ApexOptions } from "apexcharts";
+import { useHighlightStore } from "@/stores/highlight.store";
+import { storeToRefs } from "pinia";
+import { useBranchStore } from "@/stores/branch.store";
+import { useDebounceFn } from "@/composables/UseDebounce";
 
 const apexchart = VueApexCharts;
-
+const branchStore = useBranchStore();
+const highlightStore = useHighlightStore();
 const showFilter = ref(false);
-const selectedFilter = ref(null);
-const filterOptions = [
-  "Semua Cabang",
-  "Autoplaza 88 (Pontianak)",
-  "Auto 88 Kuburaya",
-  "Auto 88 Sintang",
-];
 
-const rawData = [
-  { tahun: 2014, volume: 1 },
-  { tahun: 2015, volume: 2 },
-  { tahun: 2016, volume: 2 },
-  { tahun: 2017, volume: 3 },
-  { tahun: 2018, volume: 4 },
-  { tahun: 2019, volume: 10 },
-  { tahun: 2020, volume: 19 },
-  { tahun: 2021, volume: 22 },
-  { tahun: 2022, volume: 31 },
-  { tahun: 2023, volume: 36 },
-  { tahun: 2024, volume: 56 },
-  { tahun: 2025, volume: 86 },
-  { tahun: 2026, volume: 114 },
-];
+const { employeeTotalParams: form, employeeTotal } =
+  storeToRefs(highlightStore);
+const { branchData } = storeToRefs(branchStore);
 
-// Konfigurasi ApexCharts
+const searchBranch = ref("");
+const listBranch = computed(() => {
+  const keyword = searchBranch.value.toLowerCase();
+
+  const filtered = branchData.value.filter((branch) => {
+    if (!keyword) return true;
+
+    return (
+      branch.name.toLowerCase().includes(keyword) ||
+      branch.alias.toLowerCase().includes(keyword)
+    );
+  });
+
+  // group / unique by alias
+  const uniqueByAlias = Array.from(
+    new Map(filtered.map((branch) => [branch.alias, branch])).values(),
+  );
+
+  return uniqueByAlias.map((branch) => ({
+    title: branch.name,
+    alias: branch.alias,
+    value: branch.alias,
+  }));
+});
+
 const series = computed(() => [
   {
     name: "Karyawan",
-    data: rawData.map((item) => item.volume),
+    data: employeeTotal.value.map((item) => item.volume),
   },
 ]);
 
@@ -104,7 +141,7 @@ const chartOptions = computed<ApexOptions>(() => ({
       dataLabels: { position: "top" },
     },
   },
-  colors: ["#4f46e5"], // Warna Indigo sesuai button Anda
+  colors: ["#4f46e5"],
   dataLabels: {
     enabled: true,
     formatter: (val: number) => val,
@@ -115,7 +152,7 @@ const chartOptions = computed<ApexOptions>(() => ({
     },
   },
   xaxis: {
-    categories: rawData.map((item) => item.tahun),
+    categories: highlightStore.employeeTotal.map((item) => item.year),
     axisBorder: { show: false },
     axisTicks: { show: false },
     labels: {
@@ -136,4 +173,16 @@ const chartOptions = computed<ApexOptions>(() => ({
     },
   },
 }));
+
+const onSearchBranch = (val: any) => {
+  searchBranch.value = val ?? "";
+};
+
+const onChangeBranch = useDebounceFn((val: string) => {
+  highlightStore.fetchEmployeeTotal();
+}, 400);
+
+onMounted(() => {
+  highlightStore.fetchEmployeeTotal();
+});
 </script>

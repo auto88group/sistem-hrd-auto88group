@@ -1,11 +1,11 @@
 <template>
   <v-card
-    class="w-full !rounded-[24px] !p-3 border border-slate-100 dark:border-slate-900 transition-all duration-300 hover:shadow-xl shadow-md"
+    class="w-full !rounded-[24px] !p-5 border border-slate-100 dark:border-slate-900 transition-all duration-300 hover:shadow-xl shadow-md"
     variant="flat"
   >
     <div class="flex items-center justify-between">
       <h2
-        class="text-md font-bold text-slate-800 dark:text-slate-200 tracking-tight"
+        class="text-md m-0 font-bold text-slate-800 dark:text-slate-200 tracking-tight"
       >
         Karyawan
       </h2>
@@ -27,24 +27,62 @@
 
     <v-expand-transition>
       <div v-if="showFilter" class="mb-4 px-1">
-        <v-select
-          v-model="selectedFilter"
-          :items="filterOptions"
-          label="Pilih Cabang"
+        <v-autocomplete
+          v-model="form.alias"
+          :items="listBranch"
+          :loading="branchStore.isLoadingData"
+          prepend-inner-icon="mdi-map-marker-outline"
+          item-title="alias"
+          item-value="value"
+          placeholder="Lokasi cabang"
           variant="outlined"
           density="compact"
-          class="mt-2"
-          hide-details
-          rounded="xl"
-        ></v-select>
+          color="primary"
+          class="custom-input mt-2"
+          hide-details="auto"
+          clearable
+          no-filter
+          @update:search="onSearchBranch"
+          @update:model-value="onChangeBranch"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :title="item.alias"
+              :subtitle="item.title"
+            >
+            </v-list-item>
+          </template>
+        </v-autocomplete>
       </div>
     </v-expand-transition>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Loading State -->
+    <div
+      v-if="highlightStore.isLoadingGender"
+      class="grid grid-cols-1 md:grid-cols-3 gap-4"
+    >
+      <div v-for="i in 4" :key="i" class="flex gap-4 animate-pulse">
+        <div
+          class="mt-4 flex-shrink-0 w-12 h-12 rounded-2xl bg-slate-100"
+        ></div>
+        <div class="flex-grow space-y-2 mt-4">
+          <div class="h-4 bg-slate-100 rounded w-1/2"></div>
+          <div class="h-1.5 bg-slate-100 rounded-full"></div>
+          <div class="h-3 bg-slate-100 rounded w-3/4"></div>
+          <div class="h-3 bg-slate-100 rounded w-2/3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data -->
+    <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div
         v-for="(item, index) in dataKaryawan"
         :key="index"
         class="flex gap-4"
+        @click="toggleDetail(index)"
+        title="Klik untuk lihat detail"
       >
         <div
           :class="`mt-4 flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center ${item.bgColor}`"
@@ -52,44 +90,47 @@
           <v-icon :color="item.iconColor" size="24">{{ item.icon }}</v-icon>
         </div>
 
-        <div class="flex-grow">
+        <div class="flex-grow" :class="item.type !== 'percent' ? 'mt-2' : ''">
           <div class="flex items-baseline justify-between">
-            <h3 class="text-lg font-black text-slate-900 dark:text-slate-200">
-              <span v-if="item.percentage !== null"
-                >{{ item.percentage }}%</span
-              >
-              <span class="ml-1">{{ item.label }}</span>
+            <h3
+              class="text-lg mb-0 font-black text-slate-900 dark:text-slate-200"
+            >
+              <span v-if="item.type === 'percent'">{{ item.value }}%</span>
+              <span v-else>{{ item.value }}</span>
+              <span class="ml-1 text-sm font-semibold">{{ item.label }}</span>
             </h3>
           </div>
 
           <div
-            v-if="item.percentage !== null"
+            v-if="item.type === 'percent'"
             class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden"
           >
             <div
               class="h-full rounded-full transition-all duration-1000"
               :class="item.barColor"
-              :style="{ width: `${item.percentage}%` }"
+              :style="{ width: `${item.value}%` }"
             ></div>
           </div>
 
-          <ul class="!p-0 !my-2">
-            <li
-              v-for="(detail, dIndex) in item.details"
-              :key="dIndex"
-              class="flex items-center text-sm text-slate-500"
-            >
-              <span
-                :class="`w-1.5 h-1.5 rounded-full mr-2 ${item.dotColor}`"
-              ></span>
-              <span class="font-bold text-slate-700 dark:text-slate-300 mr-1">{{
-                detail.split(" ")[0]
-              }}</span>
-              <span class="truncate">{{
-                detail.substring(detail.indexOf(" "))
-              }}</span>
-            </li>
-          </ul>
+          <v-expand-transition>
+            <ul v-show="expandedIndex === index" class="!p-0 !my-2">
+              <li
+                v-for="(detail, dIndex) in item.details"
+                :key="dIndex"
+                class="flex items-center text-sm text-slate-500"
+              >
+                <span
+                  :class="`w-1.5 h-1.5 rounded-full mr-2 ${item.dotColor}`"
+                ></span>
+                <span class="font-bold text-slate-700 dark:text-slate-300 mr-1">
+                  {{ detail.split(" ")[0] }}
+                </span>
+                <span class="truncate">{{
+                  detail.substring(detail.indexOf(" "))
+                }}</span>
+              </li>
+            </ul>
+          </v-expand-transition>
         </div>
       </div>
     </div>
@@ -97,71 +138,118 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useHighlightStore } from "@/stores/highlight.store";
+import type { GenderItem } from "@/api/modules/highlight.api";
+import { storeToRefs } from "pinia";
+import { useBranchStore } from "@/stores/branch.store";
+import { useDebounceFn } from "@/composables/UseDebounce";
 
-// Definisikan Interface agar bisa digunakan kembali
-interface KaryawanItem {
-  label: string;
-  percentage: number | null;
-  icon: string;
-  iconColor: string;
-  bgColor: string;
-  barColor: string;
-  dotColor: string;
-  details: string[];
-}
+const branchStore = useBranchStore();
+const highlightStore = useHighlightStore();
 
-// Data ini bisa dijadikan props jika ingin dinamis dari parent,
-// tapi untuk saat ini kita pindahkan saja logikanya ke sini.
-const dataKaryawan: KaryawanItem[] = [
+const { genderParams: form, gender } = storeToRefs(highlightStore);
+const { branchData } = storeToRefs(branchStore);
+
+const showFilter = ref(false);
+
+const expandedIndex = ref<number | null>(null);
+
+const searchBranch = ref("");
+const listBranch = computed(() => {
+  const keyword = searchBranch.value.toLowerCase();
+
+  const filtered = branchData.value.filter((branch) => {
+    if (!keyword) return true;
+
+    return (
+      branch.name.toLowerCase().includes(keyword) ||
+      branch.alias.toLowerCase().includes(keyword)
+    );
+  });
+
+  // group / unique by alias
+  const uniqueByAlias = Array.from(
+    new Map(filtered.map((branch) => [branch.alias, branch])).values(),
+  );
+
+  return uniqueByAlias.map((branch) => ({
+    title: branch.name,
+    alias: branch.alias,
+    value: branch.alias,
+  }));
+});
+
+const onSearchBranch = (val: any) => {
+  searchBranch.value = val ?? "";
+};
+
+const onChangeBranch = useDebounceFn((val: string) => {
+  highlightStore.fetchGender();
+}, 400);
+
+// Config visual per id
+const visualConfig: Record<
+  string,
   {
+    label: string;
+    icon: string;
+    iconColor: string;
+    bgColor: string;
+    barColor: string;
+    dotColor: string;
+  }
+> = {
+  M: {
     label: "Laki-Laki",
-    percentage: 73,
     icon: "mdi-gender-male",
     iconColor: "text-blue-900",
     bgColor: "bg-blue-50",
     barColor: "bg-blue-500",
     dotColor: "bg-blue-400",
-    details: ["20 Cb. Autoplaza", "20 Cb. Auto 88 Kuburaya", "2 Cb. Bengkel"],
   },
-  {
+  F: {
     label: "Perempuan",
-    percentage: 73,
     icon: "mdi-gender-female",
     iconColor: "text-rose-900",
     bgColor: "bg-pink-50",
     barColor: "bg-pink-500",
     dotColor: "bg-pink-400",
-    details: ["20 Cb. Autoplaza", "20 Cb. Auto 88 Kuburaya", "2 Cb. Bengkel"],
   },
-  {
+  UNSET: {
     label: "Belum Diatur",
-    percentage: 0,
     icon: "mdi-account-question-outline",
     iconColor: "text-amber-900",
     bgColor: "bg-amber-50",
     barColor: "bg-amber-400",
     dotColor: "bg-amber-400",
-    details: ["0 Orang"],
   },
-  {
+  TOTAL: {
     label: "Total Karyawan",
-    percentage: 42,
     icon: "mdi-account-group",
     iconColor: "text-slate-900",
     bgColor: "bg-slate-100",
     barColor: "bg-slate-500",
     dotColor: "bg-slate-400",
-    details: ["42 Orang"],
   },
-];
+};
 
-const showFilter = ref(false);
-const selectedFilter = ref(null);
-const filterOptions = [
-  "Autoplaza 88 (Cabang Pontianak)",
-  "Autoplaza 88 (Cabang Wahidin)",
-  "Auto 88 Kuburaya",
-  "Auto 88 Sintang",
-];
+const toggleDetail = (index: number) => {
+  expandedIndex.value = expandedIndex.value === index ? null : index;
+};
+const dataKaryawan = computed(() =>
+  gender.value.map((item: GenderItem) => ({
+    ...visualConfig[item.id],
+    value: item.value,
+    type: item.type,
+    details: item.details,
+  })),
+);
+
+onMounted(() => {
+  highlightStore.fetchGender();
+  branchStore.fetchBranchData();
+
+  console.log(branchData);
+});
 </script>

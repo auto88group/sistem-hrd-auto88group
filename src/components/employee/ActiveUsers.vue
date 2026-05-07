@@ -176,8 +176,17 @@
             density="comfortable"
             class="!text-blue-600 hover:!bg-blue-50 transition-all duration-300"
           />
-
           <v-btn
+            v-if="item.deleted === 1"
+            :loading="store.isLoadingDestroy"
+            @click="handleRestore(item.id)"
+            icon="mdi-file-restore-outline"
+            variant="text"
+            density="comfortable"
+            class="!text-red-500 hover:!bg-red-50 transition-all duration-300"
+          />
+          <v-btn
+            v-else
             :loading="store.isLoadingDestroy"
             @click="handleDelete(item.id)"
             icon="mdi-delete-outline"
@@ -188,6 +197,69 @@
         </div>
       </template>
     </v-data-table-server>
+
+    <v-dialog v-model="isDialogDeleteOpen" max-width="450" persistent>
+      <v-card
+        elevation="1"
+        prepend-icon="mdi-alert-circle-outline"
+        title="Konfirmasi Hapus Karyawan"
+      >
+        <!-- Bungkus konten dengan v-form -->
+        <v-form ref="formDelete" @submit.prevent="deleteUser">
+          <div class="p-[16px] space-y-5">
+            <v-select
+              v-model="userDestoryParams.is_resign"
+              label="Karyawan Resign?"
+              variant="outlined"
+              density="compact"
+              hide-details="auto"
+              :items="[
+                { title: 'Ya', value: 1 },
+                { title: 'Tidak', value: 0 },
+              ]"
+              item-title="title"
+              item-value="value"
+              :rules="[rules.required]"
+              @update:model-value="
+                userDestoryParams.is_resign === 0
+                  ? (userDestoryParams.resign_date = undefined)
+                  : ''
+              "
+            ></v-select>
+
+            <app-date-picker
+              v-if="userDestoryParams.is_resign === 1"
+              v-model="userDestoryParams.resign_date"
+              variant="outlined"
+              label="Tanggal Resign"
+              density="compact"
+              :rules="[rules.required]"
+              clearable
+            >
+            </app-date-picker>
+          </div>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              text="Batal"
+              color="bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-200 font-bold"
+              variant="plain"
+              @click="isDialogDeleteOpen = false"
+            ></v-btn>
+
+            <!-- Button type diset ke 'submit' -->
+            <v-btn
+              type="submit"
+              color="bg-indigo-200 dark:bg-indigo-800 text-indigo-500 dark:text-indigo-200 font-bold"
+              text="Ya, Hapus"
+              variant="flat"
+              :loading="isLoadingDestroy"
+            ></v-btn>
+          </v-card-actions>
+        </v-form>
+      </v-card>
+    </v-dialog>
 
     <v-dialog v-model="isDialogProspectOpen" max-width="450">
       <v-card
@@ -262,11 +334,19 @@ import { useEmployeeStatus } from "@/composables/UseEmployeeStatus";
 import { useFormatName } from "@/composables/useFormatName";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import ConfirmDialog from "../ConfirmDialog.vue";
+import { storeToRefs } from "pinia";
+import AppDatePicker from "../AppDatePicker.vue";
+import type { VForm } from "vuetify/components";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const { formatName } = useFormatName();
 const store = useUserStore();
-const karyawan = computed(() => store.users);
+const {
+  users: karyawan,
+  userDestoryParams,
+  isLoadingDestroy,
+} = storeToRefs(store);
+
 const router = useRouter();
 const { statusLabel, statusColor } = useEmployeeStatus();
 const { ask } = useConfirmDialog();
@@ -278,6 +358,12 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
   store.params.start = (options.page - 1) * options.itemsPerPage;
   store.fetchUsers();
 }
+
+const formDelete = ref<VForm | null>(null);
+const rules = {
+  required: (v: any) =>
+    (v !== null && v !== undefined && v !== "") || "Wajib diisi",
+};
 
 const showErrorSnackbar = ref(false);
 const snackbarMessage = ref("");
@@ -331,6 +417,8 @@ function prospectColor(id: number): string {
     "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
   );
 }
+
+const isDialogDeleteOpen = ref(false);
 const isDialogProspectOpen = ref(false);
 const targetProspect = ref<any>(null);
 function prospectChange(item: any) {
@@ -352,23 +440,53 @@ function goToDetail(item: any) {
   });
 }
 
-async function handleDelete(id: number) {
+async function handleRestore(id: number) {
   const confirmed = await ask({
-    title: "Hapus User",
-    message: "Data ini akan dihapus. Lanjutkan?",
-    confirmText: "Ya, Hapus",
+    title: "Kembalikan Data User",
+    message:
+      "Data akan dikembalikan sebagai </br><b>TANPA KONTRAK</b>. Lanjutkan?",
+    confirmText: "Ya, Setuju",
     color: "red-darken-1",
   });
-  if (confirmed) deleteUser(id);
-}
-
-async function deleteUser(id: number) {
-  try {
-    await store.destroyUser(id);
-    showSuccess("Data pengalaman kerja berhasil dihapus.");
-  } catch (err: any) {
-    showError(err?.message ?? "Gagal menghapus data pengalaman kerja.");
+  if (confirmed) {
+    userDestoryParams.value.id = id.toString();
+    userDestoryParams.value.action = "restore";
+    try {
+      await store.destroyUser();
+      showSuccess("Karyawan berhasil dikembalikan.");
+      resetUserDestoryParams();
+    } catch (err: any) {
+      showError(err?.message ?? "Gagal mengembalikan data karyawan.");
+    }
+  } else {
+    resetUserDestoryParams();
   }
+}
+function handleDelete(id: number) {
+  isDialogDeleteOpen.value = true;
+  userDestoryParams.value.id = id.toString();
+  userDestoryParams.value.action = "delete";
+}
+async function deleteUser() {
+  const validation = await formDelete.value?.validate();
+  try {
+    if (validation) {
+      await store.destroyUser();
+      showSuccess("Karyawan berhasil dihapus.");
+      resetUserDestoryParams();
+    } else {
+      showError("Form belum valid, cek inputan kembali.");
+    }
+  } catch (err: any) {
+    showError(err?.message ?? "Gagal menghapus data karyawan.");
+  }
+}
+function resetUserDestoryParams() {
+  isDialogDeleteOpen.value = false;
+  userDestoryParams.value.id = undefined;
+  userDestoryParams.value.is_resign = 0;
+  userDestoryParams.value.resign_date = undefined;
+  userDestoryParams.value.action = undefined;
 }
 
 const handleConfirmStatus = async () => {

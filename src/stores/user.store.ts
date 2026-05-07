@@ -9,7 +9,9 @@ import {
   type UserSelectedParams,
   type UserCreateUpdateParams,
   type UserAccountAccessParams,
+  type UserDestroyParams,
 } from "@/api/modules/user.api";
+import { id } from "vuetify/locale";
 
 export const useUserStore = defineStore("user", () => {
   const users = ref<User[]>([]);
@@ -54,6 +56,12 @@ export const useUserStore = defineStore("user", () => {
   });
   const userProspectParams = reactive<UserProspectParams>({
     action: "",
+  });
+  const userDestoryParams = reactive<UserDestroyParams>({
+    id: undefined,
+    is_resign: 0,
+    resign_date: undefined,
+    action: undefined,
   });
 
   const buildUserDataParams = (params: UserDataParams): URLSearchParams => {
@@ -173,12 +181,16 @@ export const useUserStore = defineStore("user", () => {
     }
   }
 
-  async function destroyUser(id: number) {
+  async function destroyUser() {
     isLoadingDestroy.value = true;
     deleteError.value = null;
     try {
-      const res = await userApi.destroyUser(id);
-      users.value = users.value.filter((f) => f.id !== id);
+      const res = await userApi.destroyUser(userDestoryParams);
+      if (userDestoryParams.id != null) {
+        users.value = users.value.filter(
+          (f) => f.id !== Number(userDestoryParams.id),
+        );
+      }
       return res;
     } catch (err: any) {
       deleteError.value =
@@ -260,6 +272,7 @@ export const useUserStore = defineStore("user", () => {
     userDataParams,
     userSelectedParams,
     userProspectParams,
+    userDestoryParams,
     updateError,
     createError,
     deleteError,

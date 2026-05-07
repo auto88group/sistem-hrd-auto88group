@@ -83,6 +83,13 @@ export interface UserSelectedParams {
   id?: string;
 }
 
+export interface UserDestroyParams {
+  id?: string;
+  is_resign?: number;
+  resign_date?: string;
+  action?: string;
+}
+
 export interface UserProspectParams {
   action: string;
 }
@@ -240,6 +247,7 @@ export interface User {
     name: string;
   };
   zip_code: string;
+  deleted?: number | null;
 }
 
 export const userApi = {
@@ -296,8 +304,10 @@ export const userApi = {
       .then((res) => res.data);
   },
 
-  destroyUser(id: number): Promise<UserDefaultResponse> {
-    return api.delete(`/hrd/users/${id}`).then((res) => res.data);
+  destroyUser(params: UserDestroyParams): Promise<UserDefaultResponse> {
+    return api
+      .delete(`/hrd/users/${params.id}`, { params })
+      .then((res) => res.data);
   },
 
   updateUserProspect(
