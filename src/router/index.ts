@@ -35,6 +35,13 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
+          path: "/dashboard/attendance-today-report",
+          name: "Laporan Absensi Hari Ini",
+          component: () =>
+            import("@/pages/manage-attendance/attendance-report/today-report.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
           path: "/master",
           redirect: "/master/employee",
         },

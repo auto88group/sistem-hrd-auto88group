@@ -27,153 +27,149 @@
 
     <v-expand-transition>
       <div v-if="showFilter" class="mb-4 px-1">
-        <v-select
-          v-model="selectedFilter"
-          :items="filterOptions"
-          label="Pilih Cabang"
+        <v-autocomplete
+          v-model="form.alias"
+          :items="listBranch"
+          :loading="isLoadingBranch"
+          prepend-inner-icon="mdi-map-marker-outline"
+          item-title="alias"
+          item-value="value"
+          placeholder="Lokasi cabang"
           variant="outlined"
           density="compact"
-          class="mt-2"
-          hide-details
-          rounded="xl"
-        ></v-select>
+          color="primary"
+          class="custom-input mt-2"
+          hide-details="auto"
+          clearable
+          no-filter
+          @update:search="onSearchBranch"
+          @update:model-value="onChangeBranch"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :title="item.alias"
+              :subtitle="item.title"
+            >
+            </v-list-item>
+          </template>
+        </v-autocomplete>
       </div>
     </v-expand-transition>
-    <div class="mt-2 w-full">
+
+    <div class="mt-2 w-full relative">
+      <div
+        v-if="isLoading"
+        class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm rounded-2xl"
+      >
+        <v-progress-circular indeterminate color="indigo" size="36" />
+      </div>
       <apexchart
         type="donut"
         width="100%"
         height="300"
         :options="chartOptions as any"
         :series="series"
-      ></apexchart>
+      />
     </div>
+
+    <!-- Summary Cards -->
     <div class="mt-4 grid grid-cols-2 gap-4">
-      <div
-        v-for="(item, index) in chartData"
-        :key="index"
-        class="flex flex-col p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50"
-      >
-        <span class="text-xs text-slate-500 dark:text-slate-200 font-medium">{{
-          item.status
-        }}</span>
-        <span class="text-lg font-bold text-slate-800 dark:text-white"
-          >{{ item.jumlah }}
-          <small
-            class="text-[10px] font-normal text-slate-400 dark:text-slate-200"
-            >Orang</small
-          ></span
+      <template v-if="isLoading">
+        <div
+          v-for="i in 2"
+          :key="i"
+          class="flex flex-col p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 animate-pulse h-16"
+        />
+      </template>
+      <template v-else>
+        <div
+          v-for="(item, index) in chartData"
+          :key="index"
+          class="flex flex-col p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50"
         >
-      </div>
+          <span class="text-xs text-slate-500 dark:text-slate-200 font-medium">
+            {{ item.status }}
+          </span>
+          <span class="text-lg font-bold text-slate-800 dark:text-white">
+            {{ item.total }}
+            <small
+              class="text-[10px] font-normal text-slate-400 dark:text-slate-200"
+              >Orang</small
+            >
+          </span>
+        </div>
+      </template>
     </div>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import VueApexCharts from "vue3-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import { useTheme } from "vuetify";
+import { storeToRefs } from "pinia";
+import { useHighlightStore } from "@/stores/highlight.store";
+import { useBranchStore } from "@/stores/branch.store";
+import { useDebounceFn } from "@/composables/UseDebounce";
 
 const theme = useTheme();
-
 const apexchart = VueApexCharts;
 
+const highlightStore = useHighlightStore();
+const branchStore = useBranchStore();
+
+const {
+  employeeStatus: chartData,
+  isLoadingEmployeeStatus: isLoading,
+  employeStatusParams: form,
+} = storeToRefs(highlightStore);
+
+const { branchData, isLoadingData: isLoadingBranch } = storeToRefs(branchStore);
+
 const showFilter = ref(false);
-const selectedFilter = ref(null);
-const filterOptions = [
-  "Semua Cabang",
-  "Autoplaza 88 (Pontianak)",
-  "Auto 88 Kuburaya",
-  "Auto 88 Sintang",
-];
 
-const chartData = [
-  { status: "Kontrak", jumlah: 93 },
-  { status: "Tetap", jumlah: 23 },
-];
+const searchBranch = ref("");
+const listBranch = computed(() => {
+  const keyword = searchBranch.value.toLowerCase();
 
-const series = computed(() => chartData.map((item) => item.jumlah));
+  const filtered = branchData.value.filter((branch) => {
+    if (!keyword) return true;
+
+    return (
+      branch.name.toLowerCase().includes(keyword) ||
+      branch.alias.toLowerCase().includes(keyword)
+    );
+  });
+
+  // group / unique by alias
+  const uniqueByAlias = Array.from(
+    new Map(filtered.map((branch) => [branch.alias, branch])).values(),
+  );
+
+  return uniqueByAlias.map((branch) => ({
+    title: branch.name,
+    alias: branch.alias,
+    value: branch.alias,
+  }));
+});
+const onSearchBranch = (val: any) => {
+  searchBranch.value = val ?? "";
+};
+const onChangeBranch = useDebounceFn((val: string) => {
+  highlightStore.fetchEmployeeStatus();
+}, 400);
+
+const series = computed(() => chartData.value.map((item) => item.total));
 const chartOptions = computed(() => ({
-  chart: {
-    type: "donut",
-    fontFamily: "Inter, sans-serif",
-    foreColor: theme.global.current.value.dark ? "#cbd5e1" : "#64748b",
-  },
-  // theme: {
-  //   mode: theme.global.current.value.dark ? "dark" : "light",
-  // },
-  labels: chartData.map((item) => item.status),
-  colors: ["#6366f1", "#10b981"], // Indigo untuk Kontrak, Emerald untuk Tetap
-  stroke: {
-    show: false,
-  },
-  plotOptions: {
-    pie: {
-      donut: {
-        size: "75%",
-        labels: {
-          show: true,
-          name: {
-            show: true,
-            fontSize: "14px",
-            fontWeight: 600,
-            color: theme.global.current.value.dark ? "#94a3b8" : "#64748b",
-          },
-          value: {
-            show: true,
-            fontSize: "24px",
-            fontWeight: 700,
-            color: theme.global.current.value.dark ? "#f8fafc" : "#1e293b",
-            formatter: (val: string) => val,
-          },
-          total: {
-            show: true,
-            label: "Total",
-            color: theme.global.current.value.dark ? "#94a3b8" : "#64748b",
-            formatter: (w: any) => {
-              return w.globals.seriesTotals.reduce(
-                (a: number, b: number) => a + b,
-                0,
-              );
-            },
-          },
-        },
-      },
-    },
-  },
-  legend: {
-    position: "bottom",
-    horizontalAlign: "center",
-    fontSize: "12px",
-    labels: {
-      colors: theme.global.current.value.dark ? "#cbd5e1" : "#64748b",
-    },
-    markers: {
-      radius: 12,
-    },
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  tooltip: {
-    enabled: true,
-    y: {
-      formatter: (val: number) => `${val} Pegawai`,
-    },
-  },
-  responsive: [
-    {
-      breakpoint: 480,
-      options: {
-        chart: {
-          height: 250,
-        },
-        legend: {
-          position: "bottom",
-        },
-      },
-    },
-  ],
+  // ... (sama persis seperti sebelumnya, hanya ganti chartData → chartData.value)
+  labels: chartData.value.map((item) => item.status),
+  // ...
 }));
+
+onMounted(() => {
+  branchStore.fetchBranchData();
+  highlightStore.fetchEmployeeStatus();
+});
 </script>

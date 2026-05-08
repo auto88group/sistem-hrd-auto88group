@@ -238,11 +238,9 @@ const listBranch = computed(() => {
       value: branch.id,
     }));
 });
-
 const onSearchBranch = (val: any) => {
   searchBranch.value = val ?? "";
 };
-
 const onChangeBranch = useDebounceFn((val: number) => {
   userContractEndStore.fetchHighlight();
 }, 400);

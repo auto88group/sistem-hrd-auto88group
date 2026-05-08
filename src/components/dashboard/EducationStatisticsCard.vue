@@ -27,19 +27,42 @@
 
     <v-expand-transition>
       <div v-if="showFilter" class="mb-4 px-1">
-        <v-select
-          v-model="selectedFilter"
-          :items="filterOptions"
-          label="Pilih Cabang"
+        <v-autocomplete
+          v-model="form.alias"
+          :items="listBranch"
+          :loading="isLoadingBranch"
+          prepend-inner-icon="mdi-map-marker-outline"
+          item-title="alias"
+          item-value="value"
+          placeholder="Lokasi cabang"
           variant="outlined"
           density="compact"
-          class="mt-2"
-          hide-details
-          rounded="xl"
-        ></v-select>
+          color="primary"
+          class="custom-input mt-2"
+          hide-details="auto"
+          clearable
+          no-filter
+          @update:search="onSearchBranch"
+          @update:model-value="onChangeBranch"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :title="item.alias"
+              :subtitle="item.title"
+            >
+            </v-list-item>
+          </template>
+        </v-autocomplete>
       </div>
     </v-expand-transition>
     <div class="space-y-3 w-full md:h-100 md:flex md:space-y-0 items-center">
+      <div
+        v-if="isLoading"
+        class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm rounded-2xl"
+      >
+        <v-progress-circular indeterminate color="indigo" size="36" />
+      </div>
       <div class="w-full">
         <apexchart
           width="100%"
@@ -98,64 +121,104 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import VueApexCharts from "vue3-apexcharts";
-import type { ApexOptions } from "apexcharts";
 import { useTheme } from "vuetify";
+import { storeToRefs } from "pinia";
+import { useHighlightStore } from "@/stores/highlight.store";
+import { useBranchStore } from "@/stores/branch.store";
+import { useDebounceFn } from "@/composables/UseDebounce";
 
 const theme = useTheme();
-
 const apexchart = VueApexCharts;
 
+const highlightStore = useHighlightStore();
+const branchStore = useBranchStore();
+
+const {
+  employeeEducation: rawData,
+  isLoadingEmployeeEducation: isLoading,
+  employeeEducationParams: form,
+} = storeToRefs(highlightStore);
+
+const { branchData, isLoadingData: isLoadingBranch } = storeToRefs(branchStore);
+
 const showFilter = ref(false);
-const selectedFilter = ref(null);
-const filterOptions = [
-  "Semua Cabang",
-  "Autoplaza 88 (Pontianak)",
-  "Auto 88 Kuburaya",
-  "Auto 88 Sintang",
-];
-// Data dari JSON
-const rawData = {
-  "SMA/SMK": 20,
-  D3: 0,
-  D4: 0,
-  S1: 10,
-  S2: 0,
-  S3: 0,
-  "Belum Diatur": 116,
-};
-const chartColors = [
-  "#6366f1",
-  "#8b5cf6",
-  "#ec4899",
-  "#f43f5e",
-  "#f59e0b",
-  "#10b981",
-  "#94a3b8",
-];
 
-// Transformasi data untuk ApexCharts
-const series = computed(() => Object.values(rawData));
-const labels = computed(() => Object.keys(rawData));
-const totalData = computed(() => series.value.reduce((a, b) => a + b, 0));
+// Filter options dinamis dari branchData
+const searchBranch = ref("");
+const listBranch = computed(() => {
+  const keyword = searchBranch.value.toLowerCase();
 
-const tableData = computed(() => {
-  return labels.value.map((name, index) => ({
-    name,
-    value: series.value[index],
+  const filtered = branchData.value.filter((branch) => {
+    if (!keyword) return true;
+
+    return (
+      branch.name.toLowerCase().includes(keyword) ||
+      branch.alias.toLowerCase().includes(keyword)
+    );
+  });
+
+  // group / unique by alias
+  const uniqueByAlias = Array.from(
+    new Map(filtered.map((branch) => [branch.alias, branch])).values(),
+  );
+
+  return uniqueByAlias.map((branch) => ({
+    title: branch.name,
+    alias: branch.alias,
+    value: branch.alias,
   }));
 });
+const onSearchBranch = (val: any) => {
+  searchBranch.value = val ?? "";
+};
+const onChangeBranch = useDebounceFn((val: string) => {
+  highlightStore.fetchEmployeeEducation();
+}, 400);
+
+// Warna acak yang konsisten berdasarkan index
+const generateColors = (count: number): string[] => {
+  const palette = [
+    "#6366f1",
+    "#f59e0b",
+    "#10b981",
+    "#ef4444",
+    "#3b82f6",
+    "#ec4899",
+    "#14b8a6",
+    "#f97316",
+    "#8b5cf6",
+    "#84cc16",
+    "#06b6d4",
+    "#e11d48",
+    "#d97706",
+    "#7c3aed",
+    "#059669",
+  ];
+  return Array.from({ length: count }, (_, i) => palette[i % palette.length]);
+};
+
+// Transformasi data
+const series = computed(() => Object.values(rawData.value));
+const labels = computed(() => Object.keys(rawData.value));
+const totalData = computed(() => series.value.reduce((a, b) => a + b, 0));
+const chartColors = computed(() => generateColors(labels.value.length));
+
+const tableData = computed(() =>
+  labels.value.map((name, index) => ({
+    name,
+    value: series.value[index],
+  })),
+);
 
 const calculatePercentage = (value: number) => {
-  if (totalData.value === 0) return 0;
+  if (totalData.value === 0) return "0.0";
   return ((value / totalData.value) * 100).toFixed(1);
 };
 
-// Konfigurasi Chart
 const chartOptions = computed(() => {
   const isDark = theme.global.name.value === "dark";
-
   return {
     chart: {
       type: "donut",
@@ -167,20 +230,11 @@ const chartOptions = computed(() => {
       },
     },
     labels: labels.value,
-    // Palet warna yang modern dan kontras
-    colors: [
-      "#6366f1",
-      "#8b5cf6",
-      "#ec4899",
-      "#f43f5e",
-      "#f59e0b",
-      "#10b981",
-      "#94a3b8",
-    ],
+    colors: chartColors.value,
     stroke: {
       show: true,
       width: 2,
-      colors: [isDark ? "#0f172a" : "#ffffff"], // Border antar slice
+      colors: [isDark ? "#0f172a" : "#ffffff"],
     },
     plotOptions: {
       pie: {
@@ -207,41 +261,28 @@ const chartOptions = computed(() => {
         },
       },
     },
-    dataLabels: {
-      enabled: false, // Dimatikan agar lebih clean, data muncul di hover/center
-    },
+    dataLabels: { enabled: false },
     legend: {
       position: "bottom",
       fontSize: "12px",
       fontWeight: 500,
-      labels: {
-        colors: isDark ? "#cbd5e1" : "#475569",
-      },
-      markers: {
-        width: 10,
-        height: 10,
-        radius: 12,
-      },
-      itemMargin: {
-        horizontal: 10,
-        vertical: 5,
-      },
+      labels: { colors: isDark ? "#cbd5e1" : "#475569" },
+      markers: { width: 10, height: 10, radius: 12 },
+      itemMargin: { horizontal: 10, vertical: 5 },
     },
     tooltip: {
       theme: isDark ? "dark" : "light",
-      y: {
-        formatter: (val: number) => `${val} Orang`,
-      },
+      y: { formatter: (val: number) => `${val} Orang` },
     },
     states: {
-      hover: {
-        filter: { type: "darken", value: 0.9 },
-      },
+      hover: { filter: { type: "darken", value: 0.9 } },
     },
-    // theme: {
-    //   mode: isDark ? "dark" : "light",
-    // },
   };
+});
+
+onMounted(() => {
+  branchStore.fetchBranchData();
+  highlightStore.fetchEmployeeEducation();
 });
 </script>
 

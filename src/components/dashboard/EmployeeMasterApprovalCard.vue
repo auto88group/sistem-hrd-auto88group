@@ -6,10 +6,10 @@
     <div class="flex items-center justify-between">
       <h2 class="text-md tracking-tight">
         <span class="font-bold text-slate-800 dark:text-slate-200"
-          >Approval Master Karyawan</span
+          >Approval Data Karyawan</span
         >
         <v-chip class="ms-3 bg-blue-50 dark:bg-blue-900 font-bold">
-          {{ filteredEmployees.length }}
+          {{ data.length }}
         </v-chip>
       </h2>
       <button
@@ -30,24 +30,74 @@
 
     <v-expand-transition>
       <div v-if="showFilter" class="mb-4 px-1">
-        <v-select
-          v-model="selectedFilter"
-          :items="filterOptions"
-          label="Pilih Cabang"
+        <v-autocomplete
+          v-model="form.alias"
+          :items="listBranch"
+          :loading="isLoadingBranch"
+          prepend-inner-icon="mdi-map-marker-outline"
+          item-title="alias"
+          item-value="value"
+          placeholder="Lokasi cabang"
           variant="outlined"
           density="compact"
-          class="mt-2"
-          hide-details
-          rounded="xl"
-        ></v-select>
+          color="primary"
+          class="custom-input mt-2"
+          hide-details="auto"
+          clearable
+          no-filter
+          @update:search="onSearchBranch"
+          @update:model-value="onChangeBranch"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :title="item.alias"
+              :subtitle="item.title"
+            >
+            </v-list-item>
+          </template>
+        </v-autocomplete>
       </div>
     </v-expand-transition>
     <div
       class="overflow-scroll h-[400px] md:h-[400px] custom-scrollbar space-y-3 pb-20"
     >
+      <template v-if="isLoading">
+        <div
+          v-for="n in 3"
+          :key="n"
+          class="p-4 shadow-md rounded-[20px] border border-slate-200 dark:border-slate-800 animate-pulse"
+        >
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex gap-3">
+              <div
+                class="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-xl"
+              ></div>
+              <div class="space-y-2">
+                <div
+                  class="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded"
+                ></div>
+                <div
+                  class="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded"
+                ></div>
+              </div>
+            </div>
+            <div
+              class="h-8 w-16 bg-slate-200 dark:bg-slate-700 rounded-full"
+            ></div>
+          </div>
+          <div
+            class="h-6 w-32 bg-slate-100 dark:bg-slate-800 rounded-full mb-4"
+          ></div>
+          <div class="flex gap-4">
+            <div class="h-3 w-24 bg-slate-100 dark:bg-slate-800 rounded"></div>
+            <div class="h-3 w-24 bg-slate-100 dark:bg-slate-800 rounded"></div>
+          </div>
+        </div>
+      </template>
       <div
-        v-for="employee in filteredEmployees"
-        :key="employee.id"
+        v-for="item in data"
+        :key="item.id"
         class="p-4 shadow-md rounded-[20px] border border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 transition-colors group"
       >
         <div class="flex items-start justify-between mb-2">
@@ -61,9 +111,16 @@
               <div
                 class="font-bold text-slate-800 dark:text-white leading-tight"
               >
-                {{ employee.name }}
+                {{
+                  formatName({
+                    name: item.user_name,
+                    full_name: item.user_full_name,
+                  })
+                }}
               </div>
-              <div class="text-xs text-slate-500">{{ employee.email }}</div>
+              <div class="text-xs text-slate-500">
+                {{ item.user_employee_id ?? item.user_email }}
+              </div>
             </div>
           </div>
           <v-btn
@@ -77,11 +134,13 @@
           </v-btn>
         </div>
 
-        <div class="mb-3">
+        <div class="mb-3 flex flex-wrap gap-1.5">
           <span
+            v-for="(lbl, i) in item.label"
+            :key="i"
             class="px-3 py-1 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[11px] font-bold rounded-full border border-red-100 dark:border-red-800"
           >
-            {{ employee.group }}
+            {{ lbl }}
           </span>
         </div>
 
@@ -89,7 +148,7 @@
           <div class="flex items-center gap-1">
             <span class="text-green-600 font-medium">Diajukan Pada:</span>
             <span class="text-slate-900 dark:text-slate-300">{{
-              employee.startDate
+              toFullDateWithDay(item.created_at)
             }}</span>
           </div>
         </div>
@@ -114,43 +173,62 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { useDateFormatter } from "@/composables/UseDateFormatter";
+import { useDebounceFn } from "@/composables/UseDebounce";
+import { useFormatName } from "@/composables/useFormatName";
+import { useBranchStore } from "@/stores/branch.store";
+import { useHighlightStore } from "@/stores/highlight.store";
+import { storeToRefs } from "pinia";
+import { computed, onMounted, ref } from "vue";
+
+const branchStore = useBranchStore();
+const highlightStore = useHighlightStore();
+const { formatName } = useFormatName();
+const { toFullDateWithDay } = useDateFormatter();
+
+const { branchData, isLoadingData: isLoadingBranch } = storeToRefs(branchStore);
+const {
+  userDataApprovalParams: form,
+  userDataApproval: data,
+  isLoadingUserDataApproval: isLoading,
+} = storeToRefs(highlightStore);
 
 const showFilter = ref(false);
-const selectedFilter = ref("Semua Cabang");
-const filterOptions = [
-  "Semua Cabang",
-  "Autoplaza 88 (Pontianak)",
-  "Auto 88 Kuburaya",
-  "Auto 88 Sintang",
-];
 
-const groupOptions = [
-  "Data Keluarga",
-  "Data Diri",
-  "Data Pendidikan",
-  "Data Pengalaman Kerja",
-  "Data Sertifikat Pelatihan",
-];
-// Generate 50 dummy data
-const employees = Array.from({ length: 50 }, (_, i) => {
-  const randomBranchIndex =
-    Math.floor(Math.random() * (filterOptions.length - 1)) + 1;
-  const randomGroupIndex = Math.floor(Math.random() * groupOptions.length);
+const searchBranch = ref("");
+const listBranch = computed(() => {
+  const keyword = searchBranch.value.toLowerCase();
 
-  return {
-    id: i + 1,
-    name: `Karyawan Ke-${i + 1}`,
-    email: `user${i + 1}@auto88.co.id`,
-    branch: filterOptions[randomBranchIndex],
-    startDate: "29-06-2020",
-    group: groupOptions[randomGroupIndex], // Mengambil group secara acak
-  };
+  const filtered = branchData.value.filter((branch) => {
+    if (!keyword) return true;
+
+    return (
+      branch.name.toLowerCase().includes(keyword) ||
+      branch.alias.toLowerCase().includes(keyword)
+    );
+  });
+
+  // group / unique by alias
+  const uniqueByAlias = Array.from(
+    new Map(filtered.map((branch) => [branch.alias, branch])).values(),
+  );
+
+  return uniqueByAlias.map((branch) => ({
+    title: branch.name,
+    alias: branch.alias,
+    value: branch.alias,
+  }));
 });
+const onSearchBranch = (val: any) => {
+  searchBranch.value = val ?? "";
+};
+const onChangeBranch = useDebounceFn((val: string) => {
+  highlightStore.fetchUserDataApproval();
+}, 400);
 
-const filteredEmployees = computed(() => {
-  if (selectedFilter.value === "Semua Cabang") return employees;
-  return employees.filter((emp) => emp.branch === selectedFilter.value);
+onMounted(async () => {
+  branchStore.fetchBranchData();
+  highlightStore.fetchUserDataApproval();
 });
 </script>
 

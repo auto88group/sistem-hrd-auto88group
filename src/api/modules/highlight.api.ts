@@ -115,6 +115,49 @@ export interface JoinTerminationItem {
 }
 export type JoinTerminationResponse = JoinTerminationItem[];
 
+// USR DATA APPROVAL
+export interface UserDataApprovalParams {
+  alias?: string;
+}
+export interface UserDataApprovalItem {
+  id: number;
+  user_name: string;
+  user_full_name: string;
+  user_email: string;
+  user_employee_id: string;
+  is_active: number;
+  label: string[];
+  created_at: string;
+}
+export type UserDataApprovalResponse = UserDataApprovalItem[];
+
+// EMPLOYEE STATUS
+export interface EmployeeStatusParams {
+  alias?: string;
+}
+export interface EmployeeStatusItem {
+  status: string;
+  total: number;
+}
+export type EmployeeStatusResponse = EmployeeStatusItem[];
+
+// EMPLOYEE EDUCATION
+export interface EmployeeEducationParams {
+  alias?: string;
+}
+export type EmployeeEducationResponse = Record<string, number>;
+
+// ATTENDANCE TODAY
+export interface AttendanceTodayParams {
+  alias?: string;
+}
+export interface AttendanceTodayItem {
+  label: string;
+  total: number;
+  percent: number;
+}
+export type AttendanceTodayResponse = AttendanceTodayItem[];
+
 export const highlightApi = {
   getLeaveRequest(params: LeaveRequestParams): Promise<LeaveRequestResponse> {
     return api
@@ -145,6 +188,38 @@ export const highlightApi = {
   ): Promise<JoinTerminationResponse> {
     return api
       .get(`/hrd/highlight/join-termination`, { params })
+      .then((res) => res.data);
+  },
+
+  getUserDataApproval(
+    params?: UserDataApprovalParams,
+  ): Promise<UserDataApprovalResponse> {
+    return api
+      .get(`/hrd/highlight/user-data-approval`, { params })
+      .then((res) => res.data);
+  },
+
+  getEmployeeStatus(
+    params?: EmployeeStatusParams,
+  ): Promise<EmployeeStatusResponse> {
+    return api
+      .get(`/hrd/highlight/employee-status`, { params })
+      .then((res) => res.data);
+  },
+
+  getEmployeeEducation(
+    params?: EmployeeEducationParams,
+  ): Promise<EmployeeEducationResponse> {
+    return api
+      .get(`/hrd/highlight/employee-education`, { params })
+      .then((res) => res.data);
+  },
+
+  getAttendanceToday(
+    params?: AttendanceTodayParams,
+  ): Promise<AttendanceTodayResponse> {
+    return api
+      .get(`/hrd/highlight/attendance-today`, { params })
       .then((res) => res.data);
   },
 };

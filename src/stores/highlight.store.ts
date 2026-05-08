@@ -1,5 +1,11 @@
 import {
   highlightApi,
+  type AttendanceTodayParams,
+  type AttendanceTodayResponse,
+  type EmployeeEducationParams,
+  type EmployeeEducationResponse,
+  type EmployeeStatusItem,
+  type EmployeeStatusParams,
   type EmployeeTotalItem,
   type EmployeeTotalParams,
   type GenderItem,
@@ -10,6 +16,8 @@ import {
   type LeaveRequestParams,
   type ReligionItem,
   type ReligionParams,
+  type UserDataApprovalItem,
+  type UserDataApprovalParams,
 } from "@/api/modules/highlight.api";
 import { defineStore } from "pinia";
 import { ref, reactive } from "vue";
@@ -102,6 +110,78 @@ export const useHighlightStore = defineStore("highlight", () => {
     }
   }
 
+  // USER DATA APPROVAL
+  const userDataApproval = ref<UserDataApprovalItem[]>([]);
+  const isLoadingUserDataApproval = ref(false);
+  const userDataApprovalParams = reactive<UserDataApprovalParams>({
+    alias: undefined,
+  });
+  async function fetchUserDataApproval() {
+    isLoadingUserDataApproval.value = true;
+    try {
+      const res = await highlightApi.getUserDataApproval({
+        ...userDataApprovalParams,
+      });
+      userDataApproval.value = res;
+    } finally {
+      isLoadingUserDataApproval.value = false;
+    }
+  }
+
+  // EMPLOYEE STATUS
+  const employeeStatus = ref<EmployeeStatusItem[]>([]);
+  const isLoadingEmployeeStatus = ref(false);
+  const employeStatusParams = reactive<EmployeeStatusParams>({
+    alias: undefined,
+  });
+  async function fetchEmployeeStatus() {
+    isLoadingEmployeeStatus.value = true;
+    try {
+      const res = await highlightApi.getEmployeeStatus({
+        ...employeStatusParams,
+      });
+      employeeStatus.value = res;
+    } finally {
+      isLoadingEmployeeStatus.value = false;
+    }
+  }
+
+  // EMPLOYEE EDUCATION
+  const employeeEducation = ref<EmployeeEducationResponse>({});
+  const isLoadingEmployeeEducation = ref(false);
+  const employeeEducationParams = reactive<EmployeeEducationParams>({
+    alias: undefined,
+  });
+  async function fetchEmployeeEducation() {
+    isLoadingEmployeeEducation.value = true;
+    try {
+      const res = await highlightApi.getEmployeeEducation({
+        ...employeeEducationParams,
+      });
+      employeeEducation.value = res;
+    } finally {
+      isLoadingEmployeeEducation.value = false;
+    }
+  }
+
+  // ATTENDANCE TODAY
+  const attendanceToday = ref<AttendanceTodayResponse>([]);
+  const isLoadingAttendanceToday = ref(false);
+  const attendanceTodayParams = reactive<AttendanceTodayParams>({
+    alias: undefined,
+  });
+  async function fetchAttendanceToday() {
+    isLoadingAttendanceToday.value = true;
+    try {
+      const res = await highlightApi.getAttendanceToday({
+        ...attendanceTodayParams,
+      });
+      attendanceToday.value = res;
+    } finally {
+      isLoadingAttendanceToday.value = false;
+    }
+  }
+
   return {
     // LEAVE REQUEST
     leaveRequest,
@@ -132,5 +212,29 @@ export const useHighlightStore = defineStore("highlight", () => {
     isLoadingJoinTermination,
     joinTerminationParams,
     fetchJoinTermination,
+
+    // USER DATA APPROVAL
+    userDataApproval,
+    isLoadingUserDataApproval,
+    userDataApprovalParams,
+    fetchUserDataApproval,
+
+    // EMPLOYEE STATUS
+    employeeStatus,
+    isLoadingEmployeeStatus,
+    employeStatusParams,
+    fetchEmployeeStatus,
+
+    // EMPLOYEE EDUCATION
+    employeeEducation,
+    isLoadingEmployeeEducation,
+    employeeEducationParams,
+    fetchEmployeeEducation,
+
+    // ATTENDANCE TODAY
+    attendanceToday,
+    isLoadingAttendanceToday,
+    attendanceTodayParams,
+    fetchAttendanceToday,
   };
 });

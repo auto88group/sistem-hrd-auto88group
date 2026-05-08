@@ -10,12 +10,13 @@
         Rekap Absensi Hari Ini
       </h2>
       <div class="flex gap-3">
-        <button
+        <v-btn
+          to="/dashboard/attendance-today-report"
           class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
         >
           <v-icon size="18">mdi-eye-outline</v-icon>
           <span class="hidden sm:inline">Detail</span>
-        </button>
+        </v-btn>
         <button
           @click="showFilter = !showFilter"
           :class="
@@ -38,17 +39,35 @@
         v-if="showFilter"
         class="mb-4 px-1 space-y-4 md:space-y-0 md:flex gap-2"
       >
-        <v-select
-          v-model="selectedBranch"
-          :items="branchOptions"
-          label="Pilih Cabang"
+        <v-autocomplete
+          v-model="form.alias"
+          :items="listBranch"
+          :loading="isLoadingBranch"
+          prepend-inner-icon="mdi-map-marker-outline"
+          item-title="alias"
+          item-value="value"
+          placeholder="Lokasi cabang"
           variant="outlined"
           density="compact"
-          hide-details
-          rounded="xl"
-        ></v-select>
+          color="primary"
+          class="custom-input mt-2"
+          hide-details="auto"
+          clearable
+          no-filter
+          @update:search="onSearchBranch"
+          @update:model-value="onChangeBranch"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :title="item.alias"
+              :subtitle="item.title"
+            >
+            </v-list-item>
+          </template>
+        </v-autocomplete>
 
-        <v-select
+        <!-- <v-select
           v-model="selectedShift"
           :items="shiftOptions"
           label="Jam Kerja"
@@ -60,10 +79,17 @@
           <template v-slot:prepend-inner>
             <v-icon size="small" class="mr-1">mdi-clock-outline</v-icon>
           </template>
-        </v-select>
+        </v-select> -->
       </div>
     </v-expand-transition>
     <div class="space-y-3 w-full md:h-100 md:flex md:space-y-0 items-center">
+      <div
+        v-if="isLoading"
+        class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm rounded-2xl"
+      >
+        <v-progress-circular indeterminate color="indigo" size="36" />
+      </div>
+
       <div class="w-full">
         <apexchart
           width="100%"
@@ -111,7 +137,7 @@
               <td
                 class="pr-2 py-2.5 text-xs font-medium text-slate-400 dark:text-slate-500 text-right"
               >
-                {{ calculatePercentage(item.value) }}%
+                {{ item.percent }}%
               </td>
             </tr>
           </tbody>
@@ -122,83 +148,87 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import VueApexCharts from "vue3-apexcharts";
-import type { ApexOptions } from "apexcharts";
 import { useTheme } from "vuetify";
+import { storeToRefs } from "pinia";
+import { useHighlightStore } from "@/stores/highlight.store";
+import { useBranchStore } from "@/stores/branch.store";
+import { useDebounceFn } from "@/composables/UseDebounce";
 
 const theme = useTheme();
-
 const apexchart = VueApexCharts;
 
+const highlightStore = useHighlightStore();
+const branchStore = useBranchStore();
+
+const {
+  attendanceToday: rawData,
+  isLoadingAttendanceToday: isLoading,
+  attendanceTodayParams: form,
+} = storeToRefs(highlightStore);
+
+const { branchData, isLoadingData: isLoadingBranch } = storeToRefs(branchStore);
+
 const showFilter = ref(false);
-// Filter States
-const selectedBranch = ref("Semua Cabang");
-const branchOptions = [
-  "Semua Cabang",
-  "Autoplaza 88 (Pontianak)",
-  "Auto 88 Kuburaya",
-  "Auto 88 Sintang",
-];
 
-const selectedShift = ref("Semua Jam Kerja");
-const shiftOptions = ["Semua Jam Kerja", "Reguler", "Piket"];
+const searchBranch = ref("");
+const listBranch = computed(() => {
+  const keyword = searchBranch.value.toLowerCase();
 
-// Data Absensi Terbaru
-const rawData = {
-  hadir: 32,
-  terlambat: 2,
-  belum_absen: 0,
-  cuti: 0,
-  izin: 0,
-  sakit: 0,
+  const filtered = branchData.value.filter((branch) => {
+    if (!keyword) return true;
+
+    return (
+      branch.name.toLowerCase().includes(keyword) ||
+      branch.alias.toLowerCase().includes(keyword)
+    );
+  });
+
+  // group / unique by alias
+  const uniqueByAlias = Array.from(
+    new Map(filtered.map((branch) => [branch.alias, branch])).values(),
+  );
+
+  return uniqueByAlias.map((branch) => ({
+    title: branch.name,
+    alias: branch.alias,
+    value: branch.alias,
+  }));
+});
+const onSearchBranch = (val: any) => {
+  searchBranch.value = val ?? "";
 };
+const onChangeBranch = useDebounceFn((val: string) => {
+  highlightStore.fetchAttendanceToday();
+}, 400);
 
-// Warna yang disesuaikan dengan status (Hadir=Hijau, Terlambat=Kuning, Belum=Abu, dsb)
+// Warna tetap sesuai urutan label dari backend
 const chartColors = [
-  "#10b981", // hadir (Emerald)
-  "#f59e0b", // terlambat (Amber)
-  "#94a3b8", // belum_absen (Slate)
-  "#6366f1", // cuti (Indigo)
-  "#8b5cf6", // izin (Violet)
-  "#f43f5e", // sakit (Rose)
+  "#10b981", // Hadir
+  "#f59e0b", // Terlambat
+  "#94a3b8", // Belum Absen
+  "#6366f1", // Cuti
+  "#8b5cf6", // Izin
+  "#f43f5e", // Sakit
 ];
 
-// Transformasi data untuk ApexCharts
-const series = computed(() => Object.values(rawData));
+const series = computed(() => rawData.value.map((item) => item.total));
+const labels = computed(() => rawData.value.map((item) => item.label));
 const totalData = computed(() => series.value.reduce((a, b) => a + b, 0));
 
-const labels = computed(() => tableData.value.map((item) => item.label));
-
-const tableData = computed(() => {
-  return Object.keys(rawData).map((key, index) => {
-    // Fungsi untuk mengubah 'belum_absen' menjadi 'Belum Absen'
-    const formattedLabel = key
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-
-    return {
-      name: key, // key asli (hadir)
-      label: formattedLabel, // label rapi (Hadir)
-      value: series.value[index],
-    };
-  });
-});
-
-const calculatePercentage = (value: number) => {
-  if (totalData.value === 0) return 0;
-  return ((value / totalData.value) * 100).toFixed(1);
-};
+const tableData = computed(() =>
+  rawData.value.map((item) => ({
+    label: item.label,
+    value: item.total,
+    percent: item.percent,
+  })),
+);
 
 const chartOptions = computed(() => {
   const isDark = theme.global.name.value === "dark";
-
   return {
-    chart: {
-      type: "donut",
-      fontFamily: "Inter, sans-serif",
-    },
+    chart: { type: "donut", fontFamily: "Inter, sans-serif" },
     labels: labels.value,
     colors: chartColors,
     stroke: {
@@ -206,7 +236,6 @@ const chartOptions = computed(() => {
       width: 2,
       colors: [isDark ? "#0f172a" : "#ffffff"],
     },
-
     plotOptions: {
       pie: {
         donut: {
@@ -237,26 +266,20 @@ const chartOptions = computed(() => {
       position: "bottom",
       fontSize: "12px",
       fontWeight: 500,
-      labels: {
-        colors: isDark ? "#cbd5e1" : "#475569",
-      },
-      markers: {
-        width: 10,
-        height: 10,
-        radius: 12,
-      },
-      itemMargin: {
-        horizontal: 10,
-        vertical: 5,
-      },
+      labels: { colors: isDark ? "#cbd5e1" : "#475569" },
+      markers: { width: 10, height: 10, radius: 12 },
+      itemMargin: { horizontal: 10, vertical: 5 },
     },
     tooltip: {
       theme: isDark ? "dark" : "light",
-      y: {
-        formatter: (val: number) => `${val} Orang`,
-      },
+      y: { formatter: (val: number) => `${val} Orang` },
     },
   };
+});
+
+onMounted(() => {
+  branchStore.fetchBranchData();
+  highlightStore.fetchAttendanceToday();
 });
 </script>
 

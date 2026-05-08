@@ -179,11 +179,9 @@ const listBranch = computed(() => {
     value: branch.alias,
   }));
 });
-
 const onSearchBranch = (val: any) => {
   searchBranch.value = val ?? "";
 };
-
 const onChangeBranch = useDebounceFn((val: string) => {
   highlightStore.fetchGender();
 }, 400);
