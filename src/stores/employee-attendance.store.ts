@@ -1,6 +1,8 @@
 import {
   employeeAttendanceRequestApi,
   type EmployeeAttendance,
+  type EmployeeAttendanceDetail,
+  type EmployeeAttendanceDetailParams,
   type EmployeeAttendanceEditParams,
   type EmployeeAttendanceParams,
   type EmployeeAttendanceRecapItem,
@@ -15,8 +17,10 @@ export const useEmployeeAttendanceRequestStore = defineStore(
   () => {
     const employeeAttendance = ref<EmployeeAttendance[]>([]);
     const employeeAttendanceRecap = ref<EmployeeAttendanceRecapItem[]>([]);
+    const employeeAttendanceDetail = ref<EmployeeAttendanceDetail>();
     const isLoading = ref(false);
     const isLoadingEdit = ref(false);
+    const isLoadingDetail = ref(false);
     const isLoadingDestroy = ref(false);
     const serverErrors = reactive<Record<string, string>>({});
     const recapDates = ref<RecapDate[]>([]);
@@ -67,6 +71,11 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       note_out: null,
     });
 
+    const detailParams = reactive<EmployeeAttendanceDetailParams>({
+      id: null,
+      in_out: null,
+    });
+
     const formDialog = ref(false);
 
     async function fetchEmployeeAttendance() {
@@ -95,6 +104,18 @@ export const useEmployeeAttendanceRequestStore = defineStore(
         recapDates.value = res.dates;
       } finally {
         isLoading.value = false;
+      }
+    }
+
+    async function fetchEmployeeAttendanceDetail() {
+      isLoadingDetail.value = true;
+      try {
+        const res = await employeeAttendanceRequestApi.detail({
+          ...detailParams,
+        });
+        employeeAttendanceDetail.value = res.data;
+      } finally {
+        isLoadingDetail.value = false;
       }
     }
 
@@ -157,15 +178,34 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       payloadEdit.note_out = null;
     }
 
+    const getInOutLabelAttendanceDetail = (labels?: {
+      in?: string;
+      out?: string;
+      default?: string;
+    }) => {
+      const config = {
+        in: labels?.in ?? "Informasi Masuk",
+        out: labels?.out ?? "Informasi Pulang",
+        default: labels?.default ?? "-",
+      };
+      if (!detailParams.in_out) return config.default;
+      return (
+        config[detailParams.in_out as keyof typeof config] ?? config.default
+      );
+    };
+
     return {
       employeeAttendance,
       employeeAttendanceRecap,
+      employeeAttendanceDetail,
       isLoading,
       isLoadingEdit,
       isLoadingDestroy,
+      isLoadingDetail,
       totalRecords,
       params,
       recapParams,
+      detailParams,
       formDialog,
       payloadEdit,
       serverErrors,
@@ -177,6 +217,8 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       updateAttendance,
       resetServerErrors,
       fetchEmployeeAttendanceRecap,
+      fetchEmployeeAttendanceDetail,
+      getInOutLabelAttendanceDetail,
     };
   },
 );

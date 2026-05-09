@@ -113,6 +113,7 @@
               prepend-icon="mdi-clock-check"
               to="/dashboard/attendance"
               class="btn-nav-custom"
+              :active="$route.path.startsWith('/dashboard/attendance')"
               >Absensi</v-btn
             >
             <v-btn

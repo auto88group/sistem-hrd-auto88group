@@ -3,7 +3,7 @@
     class="w-full !rounded-[24px] !p-3 border border-slate-100 dark:border-slate-900 transition-all duration-300 hover:shadow-xl shadow-md"
     variant="flat"
   >
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between z-10 relative">
       <h2
         class="text-md font-bold text-slate-800 dark:text-slate-200 tracking-tight"
       >
@@ -59,7 +59,7 @@
     <div class="space-y-3 w-full md:h-100 md:flex md:space-y-0 items-center">
       <div
         v-if="isLoading"
-        class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm rounded-2xl"
+        class="absolute inset-0 z-6 flex items-center justify-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm rounded-2xl"
       >
         <v-progress-circular indeterminate color="indigo" size="36" />
       </div>

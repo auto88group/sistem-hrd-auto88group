@@ -134,7 +134,9 @@
         </div>
 
         <v-btn
-          size="x-small"
+          v-if="item.id"
+          :to="`/dashboard/attendance-today-report/${item.id}/detail/in`"
+          size="small"
           variant="tonal"
           color="text-green-600"
           class="text-none font-weight-bold w-fit"
@@ -177,7 +179,8 @@
     <template #item.info_out="{ item }">
       <div class="flex flex-col gap-1 py-1 text-sm">
         <!-- Spacer tanggal agar sejajar dengan kolom masuk -->
-        <div class="text-xs text-transparent select-none">
+        <div class="flex items-center gap-1 text-slate-500 text-xs">
+          <v-icon size="14">mdi-calendar-outline</v-icon>
           {{ toFullDateWithDay(item.period_date) }}
         </div>
 
@@ -217,6 +220,19 @@
           <v-icon size="13">mdi-note-text-outline</v-icon>
           <span>{{ item.note_out }}</span>
         </div>
+
+        <v-btn
+          v-if="item.id"
+          :to="`/dashboard/attendance-today-report/${item.id}/detail/out`"
+          size="small"
+          variant="tonal"
+          color="text-green-600"
+          class="text-none font-weight-bold w-fit"
+          rounded="lg"
+        >
+          <v-icon start size="14">mdi-eye-outline</v-icon>
+          Detail
+        </v-btn>
       </div>
     </template>
   </v-data-table-server>

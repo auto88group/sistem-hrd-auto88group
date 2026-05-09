@@ -1,5 +1,6 @@
 import api from "../axios";
 
+// REPORT
 export interface EmployeeAttendanceParams {
   draw?: number;
   start?: number;
@@ -18,45 +19,12 @@ export interface EmployeeAttendanceParams {
   type_leave?: number | null;
   type_holiday?: number | null;
 }
-
-export interface EmployeeAttendanceRecapParams {
-  draw?: number;
-  start?: number;
-  length?: number;
-  periodForm?: string[];
-  period?: string;
-  user_id?: number | null;
-  branch_id?: number | null;
-}
-
-export interface EmployeeAttendanceEditParams {
-  id: number | null;
-  user_id: number | null;
-  user_name: string | null;
-  user_full_name: string | null;
-  user_email: string | null;
-  branch_id: number | null;
-  period_date: string | null;
-  hrd_master_shift_id: string | null;
-  working_hour: string | null;
-  time_in: string | null;
-  note_in: string | null;
-  time_out: string | null;
-  note_out: string | null;
-}
-
 export interface EmployeeAttendanceResponse {
   draw: number;
   recordsTotal: number;
   recordsFiltered: number;
   data: EmployeeAttendance[];
 }
-
-export interface DefaultResponse {
-  success: boolean;
-  message: string;
-}
-
 export interface EmployeeAttendance {
   id: number;
   user_id: number;
@@ -112,27 +80,23 @@ export interface EmployeeAttendance {
   modify_by_full_name: string | null;
 }
 
-export interface EmployeeAttendanceDailyStatus {
-  is_holiday: number;
-  is_hadir: number;
-  is_shift: number;
-  is_late: number;
-  is_pc: number;
-  is_tap: number;
-  is_izin: number;
-  is_sakit: number;
-  is_cuti: number;
-  is_alpha: number;
-  lr_type: string | null;
-  lr_type_code: string | null;
-  lr_type_name: string | null;
-  lr_is_full_name: string | null;
-  lr_is_full_day: number;
-  shift_id: number | null;
-  shift_name: string | null;
-  shift_code: string | null;
+// RECAP
+export interface EmployeeAttendanceRecapParams {
+  draw?: number;
+  start?: number;
+  length?: number;
+  periodForm?: string[];
+  period?: string;
+  user_id?: number | null;
+  branch_id?: number | null;
 }
-
+export interface EmployeeAttendanceRecapResponse {
+  draw: number;
+  recordsTotal: number;
+  recordsFiltered: number;
+  dates: RecapDate[];
+  data: EmployeeAttendanceRecapItem[];
+}
 export interface EmployeeAttendanceRecapItem {
   user_id: number;
   user_name: string;
@@ -157,19 +121,86 @@ export interface EmployeeAttendanceRecapItem {
   total_working_hour: string;
   daily: Record<string, EmployeeAttendanceDailyStatus>;
 }
-
-export interface EmployeeAttendanceRecapResponse {
-  draw: number;
-  recordsTotal: number;
-  recordsFiltered: number;
-  dates: RecapDate[];
-  data: EmployeeAttendanceRecapItem[];
+export interface EmployeeAttendanceDailyStatus {
+  is_holiday: number;
+  is_hadir: number;
+  is_shift: number;
+  is_late: number;
+  is_pc: number;
+  is_tap: number;
+  is_izin: number;
+  is_sakit: number;
+  is_cuti: number;
+  is_alpha: number;
+  lr_type: string | null;
+  lr_type_code: string | null;
+  lr_type_name: string | null;
+  lr_is_full_name: string | null;
+  lr_is_full_day: number;
+  shift_id: number | null;
+  shift_name: string | null;
+  shift_code: string | null;
 }
-
 export interface RecapDate {
   date: string;
   is_holiday: number;
   holiday_name: string;
+}
+
+// EDIT
+export interface EmployeeAttendanceEditParams {
+  id: number | null;
+  user_id: number | null;
+  user_name: string | null;
+  user_full_name: string | null;
+  user_email: string | null;
+  branch_id: number | null;
+  period_date: string | null;
+  hrd_master_shift_id: string | null;
+  working_hour: string | null;
+  time_in: string | null;
+  note_in: string | null;
+  time_out: string | null;
+  note_out: string | null;
+}
+
+// DEFAULT
+export interface DefaultResponse {
+  success: boolean;
+  message: string;
+}
+
+// DETAIL
+export interface EmployeeAttendanceDetailParams {
+  id: string | null;
+  in_out: string | null;
+}
+export interface EmployeeAttendanceDetailResponse {
+  success: boolean;
+  message: string;
+  data: EmployeeAttendanceDetail;
+}
+export interface EmployeeAttendanceDetail {
+  id: number;
+  user_id: number;
+  name: string;
+  full_name: string;
+  working_hour: string;
+  time_in: string;
+  time_out: string | null;
+  image_in: string;
+  image_out: string | null;
+  device_in: string | null;
+  device_out: string | null;
+  latitude_in: number;
+  latitude_out: number | null;
+  longitude_in: number;
+  longitude_out: number | null;
+  in_coordinate_name: string;
+  out_coordinate_name: string | null;
+  note_in: string | null;
+  note_out: string | null;
+  created_at: string | null;
 }
 
 export const employeeAttendanceRequestApi = {
@@ -201,5 +232,13 @@ export const employeeAttendanceRequestApi = {
 
   modify(payload: EmployeeAttendanceEditParams) {
     return api.post(`/hrd/employee-attendance/modify`, payload);
+  },
+
+  detail(
+    params: EmployeeAttendanceDetailParams,
+  ): Promise<EmployeeAttendanceDetailResponse> {
+    return api
+      .get(`/hrd/employee-attendance/detail/${params.id}`)
+      .then((res) => res.data);
   },
 };
