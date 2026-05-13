@@ -12,6 +12,9 @@ import {
   type GenderParams,
   type JoinTerminationItem,
   type JoinTerminationParams,
+  type LatePercentageItem,
+  type LatePercentageParams,
+  type LatePercentageResponse,
   type LeaveRequest,
   type LeaveRequestParams,
   type ReligionItem,
@@ -182,6 +185,26 @@ export const useHighlightStore = defineStore("highlight", () => {
     }
   }
 
+  // LATE PERCENTAGE
+  const latePercentage = ref<LatePercentageResponse>([]);
+  const isLoadingLatePercentage = ref(false);
+  const latePercentageParams = reactive<LatePercentageParams>({
+    alias: undefined,
+    period: undefined,
+    periodForm: undefined,
+  });
+  async function fetchLatePercentage() {
+    isLoadingLatePercentage.value = true;
+    try {
+      const res = await highlightApi.getLatePercentage({
+        ...latePercentageParams,
+      });
+      latePercentage.value = res;
+    } finally {
+      isLoadingLatePercentage.value = false;
+    }
+  }
+
   return {
     // LEAVE REQUEST
     leaveRequest,
@@ -236,5 +259,11 @@ export const useHighlightStore = defineStore("highlight", () => {
     isLoadingAttendanceToday,
     attendanceTodayParams,
     fetchAttendanceToday,
+
+    // LATE PERCENTAGE
+    latePercentage,
+    isLoadingLatePercentage,
+    latePercentageParams,
+    fetchLatePercentage,
   };
 });

@@ -1,18 +1,19 @@
 <template>
   <div class="space-y-5">
     <header-employee :hide-fields="['back']" />
+    <dialog-import-user />
     <v-sheet class="p-3 rounded-lg shadow-md">
       <v-tabs v-model="tab" color="primary" class="text-sm" show-arrows>
         <v-tab prepend-icon="mdi-account-group" value="one"
           >Pengguna Aktif</v-tab
         >
 
-        <v-tab prepend-icon="mdi-school" value="two">Pendidikan</v-tab>
+        <!-- <v-tab prepend-icon="mdi-school" value="two">Pendidikan</v-tab>
 
         <v-tab prepend-icon="mdi-map-marker-lock" value="three"
           >Lock Lokasi Absensi</v-tab
         >
-        <v-tab prepend-icon="mdi-list-status" value="four">Status</v-tab>
+        <v-tab prepend-icon="mdi-list-status" value="four">Status</v-tab> -->
       </v-tabs>
 
       <v-divider></v-divider>
@@ -38,6 +39,7 @@
 import HeaderEmployee from "@/components/employee/HeaderEmployee.vue";
 import ActiveUsers from "@/components/employee/ActiveUsers.vue";
 import { ref } from "vue";
+import DialogImportUser from "@/components/employee/DialogImportUser.vue";
 
 const tab = ref("one");
 </script>

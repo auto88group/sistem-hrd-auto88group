@@ -20,6 +20,7 @@
         >Bagan Organisasi</v-btn
       >
       <v-btn
+        @click="isDialogImport = true"
         prepend-icon="mdi-file-import"
         variant="flat"
         class="bg-teal-500 dark:bg-teal-500 text-sm text-white"
@@ -46,10 +47,14 @@
 </template>
 
 <script setup lang="ts">
+import { useImportUserStore } from "@/stores/import-user.store";
 import { useUserStore } from "@/stores/user.store";
+import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 const router = useRouter();
 const userStore = useUserStore();
+const importUserStore = useImportUserStore();
+const { isDialogImport } = storeToRefs(importUserStore);
 
 const items = [
   { title: "Master", disabled: false, href: "/master" },

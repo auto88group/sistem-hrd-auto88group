@@ -156,6 +156,30 @@ const showFilter = ref(false);
 const expandedIndex = ref<number | null>(null);
 
 const searchBranch = ref("");
+// const listBranch = computed(() => {
+//   const keyword = searchBranch.value.toLowerCase();
+
+//   const filtered = branchData.value.filter((branch) => {
+//     if (!keyword) return true;
+
+//     return (
+//       branch.name.toLowerCase().includes(keyword) ||
+//       branch.alias.toLowerCase().includes(keyword)
+//     );
+//   });
+
+//   // group / unique by alias
+//   const uniqueByAlias = Array.from(
+//     new Map(filtered.map((branch) => [branch.alias, branch])).values(),
+//   );
+
+//   return uniqueByAlias.map((branch) => ({
+//     title: branch.name,
+//     alias: branch.alias,
+//     value: branch.alias,
+//   }));
+// });
+
 const listBranch = computed(() => {
   const keyword = searchBranch.value.toLowerCase();
 
@@ -168,13 +192,18 @@ const listBranch = computed(() => {
     );
   });
 
-  // group / unique by alias
-  const uniqueByAlias = Array.from(
-    new Map(filtered.map((branch) => [branch.alias, branch])).values(),
-  );
+  // group by alias, gabungkan name
+  const groupedByAlias = filtered.reduce((acc, branch) => {
+    if (!acc.has(branch.alias)) {
+      acc.set(branch.alias, { ...branch, names: [branch.name] });
+    } else {
+      acc.get(branch.alias).names.push(branch.name);
+    }
+    return acc;
+  }, new Map());
 
-  return uniqueByAlias.map((branch) => ({
-    title: branch.name,
+  return Array.from(groupedByAlias.values()).map((branch) => ({
+    title: branch.names.join(", "),
     alias: branch.alias,
     value: branch.alias,
   }));

@@ -158,6 +158,21 @@ export interface AttendanceTodayItem {
 }
 export type AttendanceTodayResponse = AttendanceTodayItem[];
 
+// LATE PERCENTAGE
+export interface LatePercentageParams {
+  alias?: string;
+  periodForm?: string[];
+  period?: string;
+}
+export interface LatePercentageItem {
+  branch_group_name: string;
+  branch_group_code: string;
+  late_percentage: number;
+  total_present: number;
+  note: string;
+}
+export type LatePercentageResponse = LatePercentageItem[];
+
 export const highlightApi = {
   getLeaveRequest(params: LeaveRequestParams): Promise<LeaveRequestResponse> {
     return api
@@ -220,6 +235,14 @@ export const highlightApi = {
   ): Promise<AttendanceTodayResponse> {
     return api
       .get(`/hrd/highlight/attendance-today`, { params })
+      .then((res) => res.data);
+  },
+
+  getLatePercentage(
+    params?: LatePercentageParams,
+  ): Promise<LatePercentageResponse> {
+    return api
+      .get(`/hrd/highlight/late-percentage`, { params })
       .then((res) => res.data);
   },
 };

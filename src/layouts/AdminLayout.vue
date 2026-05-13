@@ -128,14 +128,14 @@
           </div>
 
           <div v-if="activeGroup === 'master'" class="d-flex flex-wrap">
-            <v-btn
+            <!-- <v-btn
               variant="text"
               size="small"
               prepend-icon="mdi-map-marker"
               to="/absensi"
               class="btn-nav-custom"
               >Lokasi</v-btn
-            >
+            > -->
             <v-btn
               variant="text"
               size="small"
@@ -175,7 +175,7 @@
           </div>
 
           <div v-if="activeGroup === 'setting'" class="d-flex flex-wrap">
-            <v-btn
+            <!-- <v-btn
               to="/absensi"
               variant="text"
               size="small"
@@ -190,7 +190,7 @@
               prepend-icon="mdi-earth"
               class="btn-nav-custom"
               >Umum</v-btn
-            >
+            > -->
             <v-btn
               to="/setting/working-hour"
               :active="$route.path.startsWith('/setting/working-hour')"
@@ -209,7 +209,7 @@
               class="btn-nav-custom"
               >Hari Libur</v-btn
             >
-            <v-btn
+            <!-- <v-btn
               to="/absensi"
               variant="text"
               size="small"
@@ -232,7 +232,7 @@
               prepend-icon="mdi-check-decagram"
               class="btn-nav-custom"
               >Approval</v-btn
-            >
+            > -->
             <v-btn
               to="/setting/shift-schedule"
               :active="$route.path.startsWith('/setting/shift-schedule')"
@@ -356,11 +356,11 @@
                 Master Data</v-list-item
               >
             </template>
-            <v-list-item
+            <!-- <v-list-item
               title="Lokasi"
               value="lokasi"
               active-class="text-indigo-600 dark:text-indigo-200"
-            ></v-list-item>
+            ></v-list-item> -->
             <v-list-item
               to="/master/leave-type"
               :active="$route.path.startsWith('/master/leave-type')"
@@ -410,7 +410,7 @@
                 Pengaturan</v-list-item
               >
             </template>
-            <v-list-item
+            <!-- <v-list-item
               title="Admin"
               active-class="text-indigo-600 dark:text-indigo-200"
               value="admin"
@@ -419,7 +419,7 @@
               title="Umum"
               active-class="text-indigo-600 dark:text-indigo-200"
               value="umum"
-            ></v-list-item>
+            ></v-list-item> -->
             <v-list-item
               to="/setting/working-hour"
               :active="$route.path.startsWith('/setting/working-hour')"

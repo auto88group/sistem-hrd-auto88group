@@ -31,44 +31,63 @@
         v-if="showFilter"
         class="mb-4 px-1 space-y-4 md:space-y-0 md:flex gap-2"
       >
-        <v-select
-          v-model="selectedBranch"
-          :items="branchOptions"
-          label="Pilih Cabang"
+        <v-autocomplete
+          v-model="form.alias"
+          :items="listBranch"
+          :loading="isLoadingBranch"
+          prepend-inner-icon="mdi-map-marker-outline"
+          item-title="alias"
+          item-value="value"
+          placeholder="Lokasi cabang"
           variant="outlined"
           density="compact"
-          hide-details
-          rounded="xl"
-        ></v-select>
-        <v-menu v-model="menuDate" :close-on-content-click="false">
-          <template v-slot:activator="{ props }">
-            <v-text-field
-              v-model="dateRangeText"
-              label="Rentang Tanggal"
-              prepend-inner-icon="mdi-calendar"
-              readonly
+          color="primary"
+          class="custom-input"
+          hide-details="auto"
+          clearable
+          no-filter
+          @update:search="onSearchBranch"
+          @update:model-value="onChangeBranch"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
               v-bind="props"
-              variant="outlined"
-              density="compact"
-              hide-details
-              rounded="xl"
-              class="flex-1"
-            ></v-text-field>
+              :title="item.alias"
+              :subtitle="item.title"
+            >
+            </v-list-item>
           </template>
-
-          <v-date-picker
-            v-model="selectedDates"
-            multiple="range"
-            @update:model-value="onDateChange"
-            color="indigo-600"
-          ></v-date-picker>
-        </v-menu>
+        </v-autocomplete>
+        <date-range-picker
+          v-model="form.periodForm"
+          :max-date="today"
+          @update:model-value="onChangePeriod"
+        />
       </div>
     </v-expand-transition>
-    <div class="w-full">
+
+    <!-- Loading state -->
+    <div
+      v-if="isLoadingLatePercentage"
+      class="flex justify-center items-center h-[350px]"
+    >
+      <v-progress-circular indeterminate color="indigo" size="40" />
+    </div>
+
+    <!-- Empty state -->
+    <div
+      v-else-if="!latePercentage.length"
+      class="flex flex-col justify-center items-center h-[350px] text-slate-400"
+    >
+      <v-icon size="48" class="mb-2">mdi-chart-bar-stacked</v-icon>
+      <span class="text-sm">Tidak ada data tersedia</span>
+    </div>
+
+    <!-- Chart -->
+    <div v-else class="w-full">
       <vue-apex-charts
         type="bar"
-        height="350"
+        :height="chartHeight"
         :options="chartOptions"
         :series="series"
       />
@@ -77,223 +96,181 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import VueApexCharts from "vue3-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import { useTheme } from "vuetify";
+import { useHighlightStore } from "@/stores/highlight.store"; // sesuaikan path
+import { storeToRefs } from "pinia";
+import { useBranchStore } from "@/stores/branch.store";
+import { useDebounceFn } from "@/composables/UseDebounce";
+import { useDateFormatter } from "@/composables/UseDateFormatter";
+import DateRangePicker from "../DateRangePicker.vue";
 
 const theme = useTheme();
-
+const { toRangeYMD } = useDateFormatter();
 const isDark = computed(() => theme.global.name.value === "dark");
+const today = new Date().toISOString().split("T")[0];
 
-interface ApexTooltipOpts {
-  series: any[];
-  seriesIndex: number;
-  dataPointIndex: number;
-  w: any;
-}
-// Data dari JSON Anda
-// 1. Definisikan struktur data agar TypeScript tenang
-interface DataCabang {
-  cabang: string;
-  persentase_penilaian_dan_total_kehadiran_persen: number | null;
-  total_kehadiran: number;
-  keterangan: string; // Pastikan ini ada
-}
+// --- Store ---
+const highlightStore = useHighlightStore();
+const {
+  latePercentage,
+  isLoadingLatePercentage,
+  latePercentageParams: form,
+} = storeToRefs(highlightStore);
+const { fetchLatePercentage } = highlightStore;
 
-interface ApiData {
-  judul: string;
-  data_cabang: DataCabang[];
-}
+const branchStore = useBranchStore();
+const { branchData, isLoadingData: isLoadingBranch } = storeToRefs(branchStore);
+const { fetchBranchData } = branchStore;
 
-// 2. Gunakan interface tersebut pada ref
-const apiData = ref<ApiData>({
-  judul: "Rasio Keterlambatan",
-  data_cabang: [
-    {
-      cabang: "AM",
-      persentase_penilaian_dan_total_kehadiran_persen: 8,
-      total_kehadiran: 283,
-      keterangan: "283 Kehadiran dari 31 Karyawan",
-    },
-    {
-      cabang: "AF",
-      persentase_penilaian_dan_total_kehadiran_persen: 8,
-      total_kehadiran: 214,
-      keterangan: "214 Kehadiran dari 23 Karyawan",
-    },
-    // ... Pastikan semua objek di bawah juga memiliki properti 'keterangan'
-    {
-      cabang: "KIP",
-      persentase_penilaian_dan_total_kehadiran_persen: null,
-      total_kehadiran: 87,
-      keterangan: "87 Kehadiran dari 8 Karyawan",
-    },
-    {
-      cabang: "PAR",
-      persentase_penilaian_dan_total_kehadiran_persen: 54,
-      total_kehadiran: 87,
-      keterangan: "87 Kehadiran dari 8 Karyawan",
-    },
-    {
-      cabang: "SAT",
-      persentase_penilaian_dan_total_kehadiran_persen: null,
-      total_kehadiran: 24,
-      keterangan: "24 Kehadiran dari 2 Karyawan",
-    },
-    {
-      cabang: "STD",
-      persentase_penilaian_dan_total_kehadiran_persen: null,
-      total_kehadiran: 190,
-      keterangan: "190 Kehadiran dari 21 Karyawan",
-    },
-  ],
+const searchBranch = ref("");
+const listBranch = computed(() => {
+  const keyword = searchBranch.value.toLowerCase();
+
+  const filtered = branchData.value.filter((branch) => {
+    if (!keyword) return true;
+
+    return (
+      branch.name.toLowerCase().includes(keyword) ||
+      branch.alias.toLowerCase().includes(keyword)
+    );
+  });
+
+  // group by alias, gabungkan name
+  const groupedByAlias = filtered.reduce((acc, branch) => {
+    if (!acc.has(branch.alias)) {
+      acc.set(branch.alias, { ...branch, names: [branch.name] });
+    } else {
+      acc.get(branch.alias).names.push(branch.name);
+    }
+    return acc;
+  }, new Map());
+
+  return Array.from(groupedByAlias.values()).map((branch) => ({
+    title: branch.names.join(", "),
+    alias: branch.alias,
+    value: branch.alias,
+  }));
 });
+const onSearchBranch = (val: any) => {
+  searchBranch.value = val ?? "";
+};
+const onChangeBranch = useDebounceFn((val: string) => {
+  fetchLatePercentage();
+}, 400);
+
+// --- Filter State ---
 const showFilter = ref(false);
-const menuDate = ref(false);
-const selectedBranch = ref("Semua Cabang");
-const branchOptions = [
-  "Semua Cabang",
-  "AM",
-  "AF",
-  "AS",
-  "BK",
-  "HC",
-  "KIP",
-  "PAR",
-  "SAT",
-  "STD",
-];
 const selectedDates = ref<Date[]>([]);
 
-// Konfigurasi Chart
-const chartOptions = computed<ApexOptions>(() => ({
-  legend: {
-    position: "top",
-    horizontalAlign: "center",
-    markers: {
-      // Ganti 'radius' menjadi 'borderRadius'
-      borderRadius: 4,
-      width: 12,
-      height: 12,
-      ...({ borderRadius: 4 } as any),
-    },
-    labels: {
-      colors: isDark.value ? "#cbd5e1" : "#475569", // Warna teks legend
-    },
-  },
-  chart: {
-    type: "bar",
-    stacked: true, // WAJIB: Agar batang bertumpuk seperti di gambar
-    toolbar: { show: false },
-    fontFamily: "Inter, sans-serif",
-    background: "transparent",
-  },
-  plotOptions: {
-    bar: {
-      horizontal: true,
-      barHeight: "50%", // Sesuaikan ketebalan batang
-      dataLabels: {
-        total: {
-          enabled: true, // Menampilkan teks di ujung kanan batang
-          offsetX: 10,
-          style: {
-            color: isDark.value ? "#60a5fa" : "#2563eb", // Warna biru untuk teks keterangan
-            fontSize: "11px",
-            fontWeight: 500,
-          },
-          formatter: function (val: any, opts?: any) {
-            const index = opts?.dataPointIndex;
-            if (index !== undefined && apiData.value.data_cabang[index]) {
-              return apiData.value.data_cabang[index].keterangan;
-            }
-            return "";
-          },
-        },
-      },
-    },
-  },
-  colors: isDark.value ? ["#475569", "#38bdf8"] : ["#8492a6", "#075985"],
-  grid: {
-    show: true,
-    xaxis: { lines: { show: true } }, // Garis vertikal tipis seperti di gambar
-    yaxis: { lines: { show: false } },
-    borderColor: isDark.value ? "#334155" : "#f1f5f9",
-  },
-  stroke: {
-    show: true,
-    width: 2,
-    colors: ["transparent"],
-  },
-  xaxis: {
-    categories: apiData.value.data_cabang.map((d) => d.cabang),
-    axisBorder: { show: false },
-    axisTicks: { show: false },
-    labels: { style: { colors: isDark.value ? "#94a3b8" : "#64748b" } },
-  },
-  yaxis: {
-    title: { text: "Kode Cabang", style: { fontWeight: 400 } },
-    labels: {
-      style: { fontWeight: 600, colors: isDark.value ? "#94a3b8" : "#64748b" },
-    },
-  },
+// --- Computed: tinggi chart menyesuaikan jumlah data ---
+const chartHeight = computed(() =>
+  Math.max(350, latePercentage.value.length * 60),
+);
 
-  dataLabels: {
-    enabled: true,
-    formatter: (val, opts) => {
-      // Hanya munculkan persentase di bagian "Terlambat" (series index 0)
-      return opts?.seriesIndex === 0 ? `${val}%` : "";
-    },
-    style: {
-      fontSize: "10px",
-      colors: ["#fff"],
-    },
-  },
-  tooltip: {
-    shared: true,
-    intersect: false,
-    theme: isDark.value ? "dark" : "light",
-  },
-}));
-
+// --- Chart Series ---
 const series = computed(() => [
   {
-    name: "Persentase Terlambat",
-    // Kita ambil nilai persentase untuk bagian abu-abu
-    data: apiData.value.data_cabang.map(
-      (d) => d.persentase_penilaian_dan_total_kehadiran_persen ?? 0,
-    ),
-  },
-  {
-    name: "Total Kehadiran",
-    // Bagian biru merepresentasikan sisa dari total kehadiran
-    data: apiData.value.data_cabang.map((d) => d.total_kehadiran),
+    name: "Rasio Keterlambatan (%)",
+    data: latePercentage.value.map((item) => item.late_percentage),
   },
 ]);
 
-// --- Logic Date Filter (Tetap seperti kode awal Anda) ---
-const dateRangeText = computed(() => {
-  if (!selectedDates.value || selectedDates.value.length === 0) return "";
-  const sortedDates = [...selectedDates.value].sort(
-    (a, b) => a.getTime() - b.getTime(),
-  );
-  const format = (d: Date) =>
-    d.toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  if (sortedDates.length === 1) return format(sortedDates[0]);
-  return `${format(sortedDates[0])} - ${format(sortedDates[sortedDates.length - 1])}`;
+// --- Chart Options ---
+const chartOptions = computed<ApexOptions>(() => {
+  const textColor = isDark.value ? "#cbd5e1" : "#334155";
+  const gridColor = isDark.value ? "#1e293b" : "#f1f5f9";
+
+  return {
+    chart: {
+      type: "bar",
+      toolbar: { show: false },
+      background: "transparent",
+    },
+    theme: { mode: isDark.value ? "dark" : "light" },
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        borderRadius: 6,
+        dataLabels: { position: "top" },
+      },
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: (val: number) => `${val}%`,
+      offsetX: 30,
+      style: {
+        fontSize: "12px",
+        colors: [textColor],
+      },
+    },
+    xaxis: {
+      categories: latePercentage.value.map((item) => item.branch_group_code),
+      max: 100,
+      labels: {
+        formatter: (val: string) => `${val}%`,
+        style: { colors: textColor },
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: {
+      labels: {
+        style: { colors: textColor, fontSize: "12px" },
+      },
+    },
+    grid: {
+      borderColor: gridColor,
+      xaxis: { lines: { show: true } },
+      yaxis: { lines: { show: false } },
+    },
+    tooltip: {
+      x: {
+        // ✅ Judul tooltip: "A88KR — Auto 88 Kuburaya"
+        formatter: (val: string, opts?: any) => {
+          const item = latePercentage.value[opts?.dataPointIndex];
+          return item
+            ? `${item.branch_group_code} — ${item.branch_group_name}`
+            : val;
+        },
+      },
+      y: {
+        formatter: (val: number, opts?: any) => {
+          const item = latePercentage.value[opts?.dataPointIndex];
+          return item ? `${val}% — ${item.note}` : `${val}%`;
+        },
+      },
+    },
+    colors: ["#6366f1"],
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "light",
+        type: "horizontal",
+        shadeIntensity: 0.3,
+        gradientToColors: ["#818cf8"],
+        stops: [0, 100],
+      },
+    },
+  };
 });
 
-const onDateChange = (val: any) => {
-  if (val.length === 2) menuDate.value = false;
-};
+const onChangePeriod = useDebounceFn((val: string[]) => {
+  const dates = val.map((v) => new Date(v));
+  form.value.period = toRangeYMD(dates);
+  fetchLatePercentage();
+}, 400);
+
+// --- Init ---
+onMounted(() => {
+  fetchLatePercentage();
+  fetchBranchData();
+});
 </script>
 
 <style scoped>
-/* Transisi halus saat ganti theme */
 .v-card {
   transition:
     background-color 0.3s ease,
