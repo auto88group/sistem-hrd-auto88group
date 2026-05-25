@@ -214,6 +214,7 @@ export async function generateTemplateUser(
 
   inputSheet.columns = INPUT_HEADERS.map((_, i) => ({
     width: INPUT_COL_WIDTHS[i] ?? 15,
+    style: { numFmt: "@" }, // <--- Tambahkan baris ini
   }));
 
   // --- Row 1: Headers ---

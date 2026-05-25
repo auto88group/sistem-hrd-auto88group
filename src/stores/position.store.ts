@@ -16,6 +16,9 @@ export const usePositionStore = defineStore("position", () => {
   });
 
   async function fetchPositionData() {
+    if (positionData.value && positionData.value.length > 0) {
+      return;
+    }
     isLoadingData.value = true;
     try {
       const res = await positionApi.getData({ ...positionDataParams });

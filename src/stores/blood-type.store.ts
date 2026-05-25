@@ -15,6 +15,9 @@ export const useBloodTypeStore = defineStore("blood-type", () => {
   });
 
   async function fetchBloodTypeData() {
+    if (bloodTypeData.value && bloodTypeData.value.length > 0) {
+      return;
+    }
     isLoadingData.value = true;
     try {
       const res = await bloodTypeApi.getData({

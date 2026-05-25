@@ -1395,7 +1395,10 @@ function populateForm() {
   form.master_area_village_id = u.village?.id.toString() ?? null;
   form.level = u.level ?? null;
   form.initial = u.telemarketing?.inisial ?? null;
-  form.sequence = u.telemarketing?.urutan ?? null;
+  form.sequence =
+    u.level == "admin_telemarketing"
+      ? u.urutan
+      : (u.telemarketing?.urutan ?? null);
   form.neighborhood_unit = u.neighborhood_unit ?? "";
   form.community_unit = u.community_unit ?? "";
   form.current_address = u.current_address ?? "";
@@ -1471,7 +1474,7 @@ async function handleSubmit() {
       branch_id: form.branch_id!,
       master_position_id: form.master_position_id!,
       position: form.position,
-      level: userStore.usersSelected!.level,
+      level: form.level ?? "",
 
       // personal
       nik: form.nik || undefined,

@@ -15,6 +15,9 @@ export const useReligionStore = defineStore("religion", () => {
   });
 
   async function fetchReligionData() {
+    if (religionData.value && religionData.value.length > 0) {
+      return;
+    }
     isLoadingData.value = true;
     try {
       const res = await religionApi.getData({

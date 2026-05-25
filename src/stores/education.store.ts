@@ -15,6 +15,10 @@ export const useEducationStore = defineStore("education", () => {
   });
 
   async function fetchEducationData() {
+    if (educationData.value && educationData.value.length > 0) {
+      return;
+    }
+
     isLoadingData.value = true;
     try {
       const res = await educationApi.getData({ ...educationDataParams });

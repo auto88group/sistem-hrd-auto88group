@@ -15,6 +15,9 @@ export const useMaritalStatusStore = defineStore("marital-status", () => {
   });
 
   async function fetchMaritalStatusData() {
+    if (maritalStatusData.value && maritalStatusData.value.length > 0) {
+      return;
+    }
     isLoadingData.value = true;
     try {
       const res = await maritalStatusApi.getData({

@@ -16,9 +16,31 @@
       <v-btn
         prepend-icon="mdi-family-tree"
         variant="flat"
+        :loading="isExporting"
+        @click="handleExport"
         class="bg-amber-300 dark:bg-amber-500 text-sm"
-        >Bagan Organisasi</v-btn
+        >Export Data Karyawan</v-btn
       >
+      <v-snackbar
+        v-model="showErrorSnackbar"
+        color="bg-red-500"
+        elevation="24"
+        location="top"
+        timeout="4000"
+        rounded="lg"
+      >
+        <div class="d-flex align-center">
+          <v-icon icon="mdi-alert-circle" class="me-3"></v-icon>
+          <span class="font-weight-medium">{{ errorMessage }}</span>
+        </div>
+        <template v-slot:actions>
+          <v-btn
+            variant="text"
+            icon="mdi-close"
+            @click="showErrorSnackbar = false"
+          ></v-btn>
+        </template>
+      </v-snackbar>
       <v-btn
         @click="isDialogImport = true"
         prepend-icon="mdi-file-import"
@@ -50,11 +72,13 @@
 import { useImportUserStore } from "@/stores/import-user.store";
 import { useUserStore } from "@/stores/user.store";
 import { storeToRefs } from "pinia";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
 const userStore = useUserStore();
 const importUserStore = useImportUserStore();
-const { isDialogImport } = storeToRefs(importUserStore);
+const { isDialogImport, isExporting, errorMessage } =
+  storeToRefs(importUserStore);
 
 const items = [
   { title: "Master", disabled: false, href: "/master" },
@@ -71,6 +95,20 @@ const handleBack = () => {
   userStore.usersSelected = null;
   router.push("/master/employee");
 };
+
+const handleExport = async () => {
+  await importUserStore.exportData();
+};
+const showErrorSnackbar = computed({
+  // Snackbar muncul jika errorMessage tidak kosong/null
+  get: () => !!errorMessage.value,
+  // Jika snackbar tertutup (karena timeout atau klik X), reset state errorMessage
+  set: (val) => {
+    if (!val) {
+      errorMessage.value = null;
+    }
+  },
+});
 </script>
 
 <style scoped>

@@ -15,6 +15,10 @@ export const useProvinceStore = defineStore("province", () => {
   });
 
   async function fetchProvince() {
+    if (province.value && province.value.length > 0) {
+      return;
+    }
+
     isLoading.value = true;
     try {
       const res = await provinceApi.getData({ ...provinceParams });

@@ -219,6 +219,7 @@ export interface User {
   nik: string;
   number_of_children: number;
   phone_number: string;
+  urutan: number;
   province: {
     id: number;
     name: string;

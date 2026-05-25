@@ -362,27 +362,35 @@
               {{ userStore.usersSelected?.telemarketing?.inisial ?? "-" }}
             </div>
           </v-col>
-
-          <v-col
-            cols="12"
-            md="6"
-            v-if="
-              userStore.usersSelected?.telemarketing &&
-              (userStore.usersSelected.level === 'telemarketing' ||
-                userStore.usersSelected.level === 'admin_telemarketing')
-            "
-          >
-            <div class="text-gray-500 text-sm dark:text-gray-300">Urutan</div>
-            <div class="font-bold text-sm">
-              {{ userStore.usersSelected?.telemarketing?.urutan ?? "-" }}
-            </div>
-          </v-col>
           <v-col cols="12" md="6">
             <div class="text-gray-500 text-sm dark:text-gray-300">Jabatan</div>
             <div class="font-bold text-sm">
               {{ userStore.usersSelected?.position ?? "-" }}
             </div>
           </v-col>
+          <v-col
+            cols="12"
+            md="6"
+            v-if="
+              userStore.usersSelected?.level === 'telemarketing' ||
+              userStore.usersSelected?.level === 'admin_telemarketing'
+            "
+          >
+            <div class="text-gray-500 text-sm dark:text-gray-300">Urutan</div>
+            <div
+              class="font-bold text-sm"
+              v-if="userStore.usersSelected?.level === 'telemarketing'"
+            >
+              {{ userStore.usersSelected?.telemarketing?.urutan ?? "-" }}
+            </div>
+            <div
+              class="font-bold text-sm"
+              v-if="userStore.usersSelected?.level === 'admin_telemarketing'"
+            >
+              {{ userStore.usersSelected?.urutan ?? "-" }}
+            </div>
+          </v-col>
+
           <v-col cols="12" md="6">
             <div class="text-gray-500 text-sm dark:text-gray-300">Cabang</div>
             <div class="font-bold text-sm">
