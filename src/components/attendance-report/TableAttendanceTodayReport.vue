@@ -115,12 +115,34 @@
           <span
             v-if="
               item.lr_type_code != 'T' &&
-              getLateDuration(item.time_in, item.working_hour)
+              getLateDuration(item.time_in, item.working_hour) &&
+              !(
+                item.request_diff_loc_in === 1 &&
+                item.confirm_diff_loc_in_id == null
+              )
             "
             class="text-red-500 font-bold text-xs"
           >
             T: {{ getLateDuration(item.time_in, item.working_hour) }}
           </span>
+
+          <!-- Approval Beda Lokasi Masuk -->
+          <v-btn
+            v-if="
+              item.request_diff_loc_in === 1 &&
+              item.confirm_diff_loc_in_id == null
+            "
+            size="small"
+            color="bg-blue-500 text-white"
+            variant="flat"
+            prepend-icon="mdi-check-decagram"
+            :loading="employeeAttendanceStore.isLoadingApproval"
+            class="text-none w-fit mt-1"
+            rounded="lg"
+            @click="handleApprovalDiffLoc(item.id, 'in')"
+          >
+            Approval Beda Lokasi
+          </v-btn>
         </div>
         <span v-else class="text-slate-400">━</span>
 
@@ -204,13 +226,55 @@
 
           <!-- Pulang Cepat -->
           <span
-            v-if="getEarlyGoHomeDuration(item.time_out, item.working_hour)"
+            v-if="
+              getEarlyGoHomeDuration(item.time_out, item.working_hour) &&
+              !(
+                item.request_diff_loc_out === 1 &&
+                item.confirm_diff_loc_out_id == null
+              )
+            "
             class="text-red-500 font-bold text-xs"
           >
             PC: {{ getEarlyGoHomeDuration(item.time_out, item.working_hour) }}
           </span>
+
+          <!-- Approval Beda Lokasi Pulang -->
+          <v-btn
+            v-if="
+              item.request_diff_loc_out === 1 &&
+              item.confirm_diff_loc_out_id == null
+            "
+            size="small"
+            color="bg-blue-500 text-white"
+            variant="flat"
+            prepend-icon="mdi-check-decagram"
+            :loading="employeeAttendanceStore.isLoadingApproval"
+            class="text-none w-fit mt-1"
+            rounded="lg"
+            @click="handleApprovalDiffLoc(item.id, 'out')"
+          >
+            Approval Beda Lokasi
+          </v-btn>
         </div>
-        <span v-else class="text-slate-400">━</span>
+        <span v-else class="text-slate-400">
+          <!-- Tidak Absen Pulang -->
+          <span
+            v-if="
+              item.created_at &&
+              isDidntCheckOut(
+                item.created_at,
+                item.time_out,
+                item.request_diff_loc_out,
+                item.confirm_diff_loc_out_id,
+              )
+            "
+            class="text-amber-500 font-bold text-xs"
+          >
+            TAP - Tidak Absen Pulang
+          </span>
+
+          <span v-else>━</span>
+        </span>
 
         <!-- Catatan Pulang -->
         <div
@@ -241,6 +305,7 @@
 <script setup lang="ts">
 import { useDateFormatter } from "@/composables/UseDateFormatter";
 import { useFormatName } from "@/composables/useFormatName";
+import { useAppStore } from "@/stores/app";
 import { useEmployeeAttendanceRequestStore } from "@/stores/employee-attendance.store";
 import { computed } from "vue";
 
@@ -249,6 +314,7 @@ const employeeAttendanceStore = useEmployeeAttendanceRequestStore();
 const employee = computed(() => employeeAttendanceStore.employeeAttendance);
 const { toFullDateWithDay } = useDateFormatter();
 const { formatName } = useFormatName();
+const appStore = useAppStore();
 
 const headers = [
   { title: "No", key: "no", sortable: false, align: "center", rowspan: 2 },
@@ -272,6 +338,47 @@ const headers = [
     ],
   },
 ];
+
+function isDidntCheckOut(
+  createdAt: string,
+  timeOut: string | null,
+  requestDiffLocOut?: number | null,
+  confirmDiffLocOutId?: number | null,
+): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const itemDate = new Date(createdAt);
+  itemDate.setHours(0, 0, 0, 0);
+  const isBeforeToday = itemDate < today;
+
+  if (isBeforeToday && !timeOut) return true;
+  if (
+    isBeforeToday &&
+    timeOut &&
+    requestDiffLocOut === 1 &&
+    confirmDiffLocOutId == null
+  )
+    return true;
+
+  return false;
+}
+
+async function handleApprovalDiffLoc(attendanceId: number, type: "in" | "out") {
+  try {
+    const res = await employeeAttendanceStore.approvalDiffLoc({
+      attendance_id: attendanceId,
+      type,
+    });
+    if (res.success) {
+      await employeeAttendanceStore.fetchEmployeeAttendance();
+    }
+    appStore.showSuccessSnackbar = true;
+    appStore.successMessage = res.message ?? "Approval berhasil.";
+  } catch (err: any) {
+    appStore.showErrorSnackbar = true;
+    appStore.errorMessage = err?.message ?? "Terjadi kesalahan.";
+  }
+}
 
 const getRowProps = ({ item }: { item: any }) => {
   if (item.is_holiday == 1) return { class: "holiday-row" };

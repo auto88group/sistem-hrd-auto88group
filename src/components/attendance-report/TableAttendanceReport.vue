@@ -59,9 +59,33 @@
 
     <template #[`item.code`]="{ item }">
       <!-- HADIR -->
+      <div
+        v-if="
+          item.request_diff_loc_in === 1 && item.confirm_diff_loc_in_id == null
+        "
+      >
+        <v-tooltip location="top">
+          <template v-slot:activator="{ props }">
+            <span v-bind="props" class="font-bold text-red-500 cursor-pointer">
+              A
+            </span>
+          </template>
+          Alpa
+        </v-tooltip>
+      </div>
+
       <div v-if="item.time_in">
         <!-- KALAU HADIR -->
-        <span v-if="item.time_in">
+        <!-- HADIR -->
+        <span
+          v-if="
+            item.time_in &&
+            !(
+              item.request_diff_loc_in === 1 &&
+              item.confirm_diff_loc_in_id == null
+            )
+          "
+        >
           <v-tooltip location="top">
             <template v-slot:activator="{ props }">
               <span
@@ -71,13 +95,20 @@
                 H
               </span>
             </template>
-
             Hadir
           </v-tooltip>
         </span>
 
         <!-- KALAU HARI SHIFT -->
-        <span v-if="item.shift_id">
+        <span
+          v-if="
+            item.shift_id &&
+            !(
+              item.request_diff_loc_in === 1 &&
+              item.confirm_diff_loc_in_id == null
+            )
+          "
+        >
           ,
           <v-tooltip location="top">
             <template v-slot:activator="{ props }">
@@ -88,13 +119,20 @@
                 {{ item.shift_code }}
               </span>
             </template>
-
             {{ item.shift_name }}
           </v-tooltip>
         </span>
 
         <!-- KALAU ADA PENGAJUAN IZIN SETENGAH HARI / TELAT -->
-        <span v-if="item.lr_is_full_day == 0">
+        <span
+          v-if="
+            item.lr_is_full_day == 0 &&
+            !(
+              item.request_diff_loc_in === 1 &&
+              item.confirm_diff_loc_in_id == null
+            )
+          "
+        >
           ,
           <v-tooltip location="top">
             <template v-slot:activator="{ props }">
@@ -105,7 +143,6 @@
                 {{ item.lr_type_code }}
               </span>
             </template>
-
             {{ item.lr_type_name }} (Approved)
           </v-tooltip>
         </span>
@@ -115,9 +152,14 @@
           v-if="
             item.lr_type_code != 'T' &&
             item.time_in &&
-            getLateDuration(item.time_in, item.working_hour)
+            getLateDuration(item.time_in, item.working_hour) &&
+            !(
+              item.request_diff_loc_in === 1 &&
+              item.confirm_diff_loc_in_id == null
+            )
           "
-          >,
+        >
+          ,
           <v-tooltip location="top">
             <template v-slot:activator="{ props }">
               <span
@@ -127,7 +169,6 @@
                 T
               </span>
             </template>
-
             Telat
           </v-tooltip>
         </span>
@@ -136,7 +177,11 @@
         <span
           v-if="
             item.time_out &&
-            getEarlyGoHomeDuration(item.time_out, item.working_hour)
+            getEarlyGoHomeDuration(item.time_out, item.working_hour) &&
+            !(
+              item.request_diff_loc_out === 1 &&
+              item.confirm_diff_loc_out_id == null
+            )
           "
           >,
           <v-tooltip location="top">
@@ -155,9 +200,16 @@
         <!-- KALAU TIDAK ABSEN PULANG -->
         <span
           v-if="
-            item.created_at && isDidntCheckOut(item.created_at, item.time_out)
+            item.created_at &&
+            isDidntCheckOut(
+              item.created_at,
+              item.time_out,
+              item.request_diff_loc_out,
+              item.confirm_diff_loc_out_id,
+            )
           "
-          >,
+        >
+          ,
           <v-tooltip location="top">
             <template v-slot:activator="{ props }">
               <span
@@ -168,8 +220,8 @@
               </span>
             </template>
             Tidak Absen Pulang
-          </v-tooltip></span
-        >
+          </v-tooltip>
+        </span>
       </div>
 
       <!-- KODE  PENGAJUAN IZIN FULL DAY -->
@@ -236,12 +288,31 @@
         <span
           v-if="
             item.lr_type_code != 'T' &&
-            getLateDuration(item.time_in, item.working_hour)
+            getLateDuration(item.time_in, item.working_hour) &&
+            !(
+              item.request_diff_loc_in === 1 &&
+              item.confirm_diff_loc_in_id == null
+            )
           "
           class="text-red-500 font-bold"
         >
           T: {{ getLateDuration(item.time_in, item.working_hour) }}
         </span>
+
+        <v-btn
+          v-if="
+            item.request_diff_loc_in === 1 &&
+            item.confirm_diff_loc_in_id == null
+          "
+          class="mt-3 text-sm p-5"
+          color="bg-blue-500 text-white"
+          prepend-icon="mdi-check-decagram"
+          variant="flat"
+          :loading="employeeAttendanceStore.isLoadingApproval"
+          @click="handleApprovalDiffLoc(item.id, 'in')"
+        >
+          Approval<br />Beda Lokasi
+        </v-btn>
       </div>
       <span v-else>━</span>
     </template>
@@ -292,11 +363,32 @@
         </a>
 
         <span
-          v-if="getEarlyGoHomeDuration(item.time_out, item.working_hour)"
+          v-if="
+            getEarlyGoHomeDuration(item.time_out, item.working_hour) &&
+            !(
+              item.request_diff_loc_out === 1 &&
+              item.confirm_diff_loc_out_id == null
+            )
+          "
           class="text-red-500 font-bold"
         >
           PC: {{ getEarlyGoHomeDuration(item.time_out, item.working_hour) }}
         </span>
+
+        <v-btn
+          v-if="
+            item.request_diff_loc_out === 1 &&
+            item.confirm_diff_loc_out_id == null
+          "
+          class="mt-3 text-sm p-5"
+          color="bg-blue-500 text-white"
+          prepend-icon="mdi-check-decagram"
+          variant="flat"
+          :loading="employeeAttendanceStore.isLoadingApproval"
+          @click="handleApprovalDiffLoc(item.id, 'out')"
+        >
+          Approval<br />Beda Lokasi
+        </v-btn>
       </div>
 
       <span v-else>━</span>
@@ -509,16 +601,50 @@ function getEarlyGoHomeDuration(timeOut: string, workingHour: string): string {
   return parts.join(" ");
 }
 
-function isDidntCheckOut(createdAt: string, timeOut: string | null): boolean {
+function isDidntCheckOut(
+  createdAt: string,
+  timeOut: string | null,
+  requestDiffLocOut?: number | null,
+  confirmDiffLocOutId?: number | null,
+): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const itemDate = new Date(createdAt);
   itemDate.setHours(0, 0, 0, 0);
-
   const isBeforeToday = itemDate < today;
 
-  return isBeforeToday && !timeOut;
+  // Kondisi 1: tidak ada time_out sama sekali
+  if (isBeforeToday && !timeOut) return true;
+
+  // Kondisi 2: ada time_out tapi beda lokasi belum di-approve
+  if (
+    isBeforeToday &&
+    timeOut &&
+    requestDiffLocOut === 1 &&
+    confirmDiffLocOutId == null
+  )
+    return true;
+
+  return false;
+}
+
+async function handleApprovalDiffLoc(attendanceId: number, type: "in" | "out") {
+  try {
+    const res = await employeeAttendanceStore.approvalDiffLoc({
+      attendance_id: attendanceId,
+      type: type,
+    });
+
+    if (res.success) {
+      // refresh data tabel
+      await employeeAttendanceStore.fetchEmployeeAttendance();
+    }
+
+    // tampilkan notifikasi (sesuaikan dengan library notif yang kamu pakai)
+    console.log(res.message);
+  } catch (err: any) {
+    console.error(err);
+  }
 }
 </script>
 

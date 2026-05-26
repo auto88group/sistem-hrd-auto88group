@@ -147,9 +147,12 @@ import { useUserStore } from "@/stores/user.store";
 import { storeToRefs } from "pinia";
 import { computed, onMounted, ref, watch } from "vue";
 import DateRangePicker from "../DateRangePicker.vue";
+import { useRoute } from "vue-router";
 
 const { formatName } = useFormatName();
 const { toRangeYMD } = useDateFormatter();
+
+const route = useRoute();
 
 const employeeAttendanceStore = useEmployeeAttendanceRequestStore();
 const userStore = useUserStore();
@@ -265,5 +268,9 @@ async function filter() {
 onMounted(async () => {
   branchStore.fetchBranchData();
   userStore.fetchUsersData();
+
+  if (route.path.includes("dashboard")) {
+    form.value.periodForm = [today, today];
+  }
 });
 </script>

@@ -9,6 +9,7 @@
 </template>
 
 <script setup lang="ts">
+import HeaderAttendanceReport from "@/components/attendance-report/HeaderAttendanceReport.vue";
 import LateRatioStatisticsCard from "@/components/dashboard/LateRatioStatisticsCard.vue";
 import PermitApplicationCard from "@/components/dashboard/PermitApplicationCard.vue";
 import TodayAttendanceCard from "@/components/dashboard/TodayAttendanceCard.vue";

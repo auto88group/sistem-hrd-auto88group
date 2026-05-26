@@ -37,6 +37,8 @@ export interface EmployeeAttendance {
   in_coordinate_id: number;
   in_coordinate_name: string;
   note_in: string | null;
+  request_diff_loc_in: number | null;
+  confirm_diff_loc_in_id: number | null;
   time_out: string | null;
   image_out: string | null;
   device_out: string | null;
@@ -45,6 +47,8 @@ export interface EmployeeAttendance {
   out_coordinate_id: number | null;
   out_coordinate_name: string | null;
   note_out: string | null;
+  request_diff_loc_out: number | null;
+  confirm_diff_loc_out_id: number | null;
   overtime_status: string | null;
   overtime_note: string | null;
   overtime_approved_by: string | null;
@@ -203,6 +207,11 @@ export interface EmployeeAttendanceDetail {
   created_at: string | null;
 }
 
+export interface ApprovalDiffLocParams {
+  attendance_id: number;
+  type: "in" | "out";
+}
+
 export const employeeAttendanceRequestApi = {
   getDatatables(
     params: EmployeeAttendanceParams,
@@ -239,6 +248,12 @@ export const employeeAttendanceRequestApi = {
   ): Promise<EmployeeAttendanceDetailResponse> {
     return api
       .get(`/hrd/employee-attendance/detail/${params.id}`)
+      .then((res) => res.data);
+  },
+
+  approvalDiffLoc(params: ApprovalDiffLocParams): Promise<DefaultResponse> {
+    return api
+      .get("/hrd/employee-attendance/approval-diff-loc", { params })
       .then((res) => res.data);
   },
 };

@@ -1,5 +1,6 @@
 import {
   employeeAttendanceRequestApi,
+  type ApprovalDiffLocParams,
   type EmployeeAttendance,
   type EmployeeAttendanceDetail,
   type EmployeeAttendanceDetailParams,
@@ -22,6 +23,7 @@ export const useEmployeeAttendanceRequestStore = defineStore(
     const isLoadingEdit = ref(false);
     const isLoadingDetail = ref(false);
     const isLoadingDestroy = ref(false);
+    const isLoadingApproval = ref(false);
     const serverErrors = reactive<Record<string, string>>({});
     const recapDates = ref<RecapDate[]>([]);
 
@@ -194,6 +196,16 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       );
     };
 
+    async function approvalDiffLoc(params: ApprovalDiffLocParams) {
+      isLoadingApproval.value = true;
+      try {
+        const res = await employeeAttendanceRequestApi.approvalDiffLoc(params);
+        return res;
+      } finally {
+        isLoadingApproval.value = false;
+      }
+    }
+
     return {
       employeeAttendance,
       employeeAttendanceRecap,
@@ -210,6 +222,8 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       payloadEdit,
       serverErrors,
       recapDates,
+      isLoadingApproval,
+      approvalDiffLoc,
       destroyAttendance,
       modifyAttendance,
       fetchEmployeeAttendance,

@@ -182,6 +182,8 @@
                     prepend-inner-icon="mdi-clock-outline"
                     class="rounded-lg shadow-sm"
                     :error-messages="serverErrors.time_out"
+                    :clearable="!!form.time_out"
+                    @click:clear.stop="onClearTimeOut"
                   >
                     <template v-slot:label> Jam Keluar </template>
                   </v-text-field>
@@ -229,6 +231,50 @@
       </v-card-text>
     </v-card>
   </v-dialog>
+
+  <!-- Confirmation Dialog Clear Time Out -->
+  <v-dialog v-model="showConfirmClearTimeOut" max-width="400" persistent>
+    <v-card rounded="lg">
+      <v-card-title class="flex items-center gap-2 px-6 pt-5 pb-3">
+        <v-icon
+          icon="mdi-alert-circle-outline"
+          color="warning"
+          size="small"
+        ></v-icon>
+        <span class="text-base font-bold">Hapus Jam Keluar?</span>
+      </v-card-title>
+      <v-divider></v-divider>
+      <v-card-text class="px-6 py-4 text-sm text-gray-600">
+        Menghapus jam keluar akan menghapus semua data kepulangan, termasuk:
+        <ul class="mt-2 space-y-1 list-disc list-inside text-gray-500">
+          <li>Foto keluar</li>
+          <li>Koordinat keluar</li>
+          <li>Catatan keluar</li>
+          <li>Data lembur (jika ada)</li>
+        </ul>
+        <p class="mt-3 font-medium text-gray-700">
+          Apakah Anda yakin ingin melanjutkan?
+        </p>
+      </v-card-text>
+      <v-card-actions class="px-6 pb-4 flex justify-end gap-2">
+        <v-btn
+          variant="outlined"
+          color="grey"
+          @click="showConfirmClearTimeOut = false"
+        >
+          Batal
+        </v-btn>
+        <v-btn
+          variant="flat"
+          color="error"
+          prepend-icon="mdi-delete-outline"
+          @click="confirmClearTimeOut"
+        >
+          Ya, Hapus
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -253,6 +299,8 @@ const {
 const shiftStore = useShiftStore();
 const { branchData } = storeToRefs(branchStore);
 const { shiftData } = storeToRefs(shiftStore);
+
+const showConfirmClearTimeOut = ref<boolean>(false); // 🆕
 
 const openTimeIn = ref<boolean>(false);
 const openTimeOut = ref<boolean>(false);
@@ -308,6 +356,18 @@ const listUser = computed(() => {
   }
   return users;
 });
+
+// 🆕 Ganti @click:clear.stop langsung null → buka dialog konfirmasi dulu
+function onClearTimeOut() {
+  showConfirmClearTimeOut.value = true;
+}
+
+// 🆕 Dipanggil saat user klik "Ya, Hapus" di dialog
+function confirmClearTimeOut() {
+  form.value.time_out = null;
+  form.value.note_out = null; // reset note_out di form sekalian
+  showConfirmClearTimeOut.value = false;
+}
 
 const rules = {
   required: (v: any) =>
