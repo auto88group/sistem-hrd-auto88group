@@ -66,17 +66,16 @@
       >
         <v-tooltip location="top">
           <template v-slot:activator="{ props }">
-            <span v-bind="props" class="font-bold text-red-500 cursor-pointer">
-              A
-            </span>
+            <span v-bind="props" class="font-bold text-red-500 cursor-pointer"
+              >A</span
+            >
           </template>
           Alpa
         </v-tooltip>
       </div>
 
       <div v-if="item.time_in">
-        <!-- KALAU HADIR -->
-        <!-- HADIR -->
+        <!-- H: Hadir -->
         <span
           v-if="
             item.time_in &&
@@ -91,15 +90,14 @@
               <span
                 v-bind="props"
                 class="font-bold text-green-500 cursor-pointer"
+                >H</span
               >
-                H
-              </span>
             </template>
             Hadir
           </v-tooltip>
         </span>
 
-        <!-- KALAU HARI SHIFT -->
+        <!-- Shift -->
         <span
           v-if="
             item.shift_id &&
@@ -123,34 +121,38 @@
           </v-tooltip>
         </span>
 
-        <!-- KALAU ADA PENGAJUAN IZIN SETENGAH HARI / TELAT -->
-        <span
-          v-if="
-            item.lr_is_full_day == 0 &&
-            !(
-              item.request_diff_loc_in === 1 &&
-              item.confirm_diff_loc_in_id == null
-            )
-          "
+        <!-- Leave setengah hari (bisa lebih dari satu) -->
+        <template
+          v-for="leave in item.leaves.filter((l) => l.lr_is_full_day == 0)"
+          :key="leave.lr_type_code"
         >
-          ,
-          <v-tooltip location="top">
-            <template v-slot:activator="{ props }">
-              <span
-                v-bind="props"
-                class="font-bold text-green-500 cursor-pointer"
-              >
-                {{ item.lr_type_code }}
-              </span>
-            </template>
-            {{ item.lr_type_name }} (Approved)
-          </v-tooltip>
-        </span>
+          <span
+            v-if="
+              !(
+                item.request_diff_loc_in === 1 &&
+                item.confirm_diff_loc_in_id == null
+              )
+            "
+          >
+            ,
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <span
+                  v-bind="props"
+                  class="font-bold text-green-500 cursor-pointer"
+                >
+                  {{ leave.lr_type_code }}
+                </span>
+              </template>
+              {{ leave.lr_type_name }} (Approved)
+            </v-tooltip>
+          </span>
+        </template>
 
-        <!-- KALAU TELAT -->
+        <!-- Telat -->
         <span
           v-if="
-            item.lr_type_code != 'T' &&
+            !hasLeaveCode(item, 'T') &&
             item.time_in &&
             getLateDuration(item.time_in, item.working_hour) &&
             !(
@@ -165,17 +167,17 @@
               <span
                 v-bind="props"
                 class="font-bold text-amber-500 cursor-pointer"
+                >T</span
               >
-                T
-              </span>
             </template>
             Telat
           </v-tooltip>
         </span>
 
-        <!-- KALAU PULANG LEBIH AWAL -->
+        <!-- Pulang Cepat -->
         <span
           v-if="
+            !hasLeaveCode(item, 'PC') &&
             item.time_out &&
             getEarlyGoHomeDuration(item.time_out, item.working_hour) &&
             !(
@@ -183,21 +185,21 @@
               item.confirm_diff_loc_out_id == null
             )
           "
-          >,
+        >
+          ,
           <v-tooltip location="top">
             <template v-slot:activator="{ props }">
               <span
                 v-bind="props"
                 class="font-bold text-amber-500 cursor-pointer"
+                >PC</span
               >
-                PC
-              </span>
             </template>
             Pulang Cepat
           </v-tooltip>
         </span>
 
-        <!-- KALAU TIDAK ABSEN PULANG -->
+        <!-- TAP: Tidak Absen Pulang -->
         <span
           v-if="
             item.created_at &&
@@ -215,50 +217,56 @@
               <span
                 v-bind="props"
                 class="font-bold text-amber-500 cursor-pointer"
+                >TAP</span
               >
-                TAP
-              </span>
             </template>
             Tidak Absen Pulang
           </v-tooltip>
         </span>
       </div>
 
-      <!-- KODE  PENGAJUAN IZIN FULL DAY -->
-      <div v-else-if="item.lr_is_full_day == 1">
-        <v-tooltip location="top">
-          <template v-slot:activator="{ props }">
-            <span
-              v-bind="props"
-              class="font-bold text-green-500 cursor-pointer"
-            >
-              {{ item.lr_type_code }}
-            </span>
-          </template>
-
-          {{ item.lr_type_name }} (Approved)
-        </v-tooltip>
+      <!-- Leave Full Day (bisa lebih dari satu) -->
+      <div v-else-if="item.leaves.some((l) => l.lr_is_full_day == 1)">
+        <template
+          v-for="(leave, idx) in item.leaves.filter(
+            (l) => l.lr_is_full_day == 1,
+          )"
+          :key="leave.lr_type_code"
+        >
+          <span v-if="idx > 0">, </span>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <span
+                v-bind="props"
+                class="font-bold text-green-500 cursor-pointer"
+              >
+                {{ leave.lr_type_code }}
+              </span>
+            </template>
+            {{ leave.lr_type_name }} (Approved)
+          </v-tooltip>
+        </template>
       </div>
 
-      <!-- ALPA HARI BIASA -->
+      <!-- Alpa hari biasa -->
       <div v-else-if="!item.is_holiday">
         <v-tooltip location="top">
           <template v-slot:activator="{ props }">
-            <span v-bind="props" class="font-bold text-red-500 cursor-pointer">
-              A
-            </span>
+            <span v-bind="props" class="font-bold text-red-500 cursor-pointer"
+              >A</span
+            >
           </template>
           Alpa
         </v-tooltip>
       </div>
 
-      <!-- ALPA HARI SHIFT DI HARI LIBUR -->
+      <!-- Alpa hari shift di hari libur -->
       <div v-else-if="item.is_holiday && item.shift_id">
         <v-tooltip location="top">
           <template v-slot:activator="{ props }">
-            <span v-bind="props" class="font-bold text-red-500 cursor-pointer">
-              A
-            </span>
+            <span v-bind="props" class="font-bold text-red-500 cursor-pointer"
+              >A</span
+            >
           </template>
           Alpa Di Jadwal Shift
         </v-tooltip>
@@ -287,7 +295,6 @@
 
         <span
           v-if="
-            item.lr_type_code != 'T' &&
             getLateDuration(item.time_in, item.working_hour) &&
             !(
               item.request_diff_loc_in === 1 &&
@@ -364,6 +371,7 @@
 
         <span
           v-if="
+            !hasLeaveCode(item, 'PC') &&
             getEarlyGoHomeDuration(item.time_out, item.working_hour) &&
             !(
               item.request_diff_loc_out === 1 &&
@@ -436,7 +444,7 @@
     <template #[`item.actions`]="{ item }">
       <div class="flex justify-end items-center gap-3">
         <v-btn
-          v-if="item.lr_is_full_day != 1"
+          v-if="!item.leaves.some((l) => l.lr_is_full_day == 1)"
           @click="handleEdit(item)"
           icon="mdi-file-edit-outline"
           variant="text"
@@ -457,7 +465,10 @@
 </template>
 
 <script setup lang="ts">
-import type { EmployeeAttendance } from "@/api/modules/employee-attendance.api";
+import type {
+  EmployeeAttendance,
+  EmployeeAttendanceLeave,
+} from "@/api/modules/employee-attendance.api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
 import { useFormatName } from "@/composables/useFormatName";
@@ -489,6 +500,25 @@ const headers = [
   { title: "Modify By", key: "modify_by", sortable: false },
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];
+
+// Helper: ambil leave full day pertama (jika ada)
+function getFullDayLeave(
+  item: EmployeeAttendance,
+): EmployeeAttendanceLeave | null {
+  return item.leaves?.find((l) => l.lr_is_full_day == 1) ?? null;
+}
+
+// Helper: ambil leave setengah hari pertama (jika ada)
+function getHalfDayLeave(
+  item: EmployeeAttendance,
+): EmployeeAttendanceLeave | null {
+  return item.leaves?.find((l) => l.lr_is_full_day == 0) ?? null;
+}
+
+// Helper: cek apakah ada leave dengan type_code tertentu (untuk filter telat)
+function hasLeaveCode(item: EmployeeAttendance, code: string): boolean {
+  return item.leaves?.some((l) => l.lr_type_code === code) ?? false;
+}
 
 const getRowProps = ({ item }: { item: any }) => {
   if (item.is_holiday == 1) {

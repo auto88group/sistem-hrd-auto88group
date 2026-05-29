@@ -95,285 +95,138 @@
     <!-- Kolom tanggal dinamis -->
     <template
       v-for="d in recapDates"
-      :key="date"
+      :key="d.date"
       #[`item.daily.${d.date}`]="{ item }"
     >
-      <template v-if="item.daily?.[d.date]">
-        <!-- KALAU HARI LIBUR -->
-        <span v-if="item.daily[d.date].is_holiday">
-          <!-- KALAU ALPA DI SHIFT PIKET -->
-          <v-tooltip
-            v-if="
-              item.daily[d.date].is_shift == 1 &&
-              item.daily[d.date].is_hadir == 0
-            "
-            location="top"
-          >
-            <template v-slot:activator="{ props }">
-              <span
-                v-bind="props"
-                class="font-bold text-red-500 cursor-pointer"
-              >
-                A
-              </span>
-            </template>
-            Alpa Di Shift Piket
-          </v-tooltip>
-
-          <!-- KALAU LIBUR -->
-          <v-tooltip v-else>
-            <template v-slot:activator="{ props }">
-              <span
-                v-bind="props"
-                class="font-bold text-gray-500 cursor-pointer"
-              >
-                L
-              </span>
-            </template>
-            Libur
-          </v-tooltip>
-
-          <!-- KALAU HADIR DI SHIFT PIKET -->
-          <v-tooltip v-if="item.daily[d.date].is_hadir" location="top">
-            <template v-slot:activator="{ props }">
-              <span
-                v-bind="props"
-                class="font-bold text-green-500 cursor-pointer"
-              >
-                H
-              </span>
-            </template>
-            Hadir
-          </v-tooltip>
-
-          <v-tooltip
-            v-if="
-              item.daily[d.date].is_shift == 1 &&
-              item.daily[d.date].is_hadir == 1
-            "
-            location="top"
-          >
-            <template v-slot:activator="{ props }"
-              >,
-              <span
-                v-bind="props"
-                class="font-bold text-purple-500 cursor-pointer"
-              >
-                {{ item.daily[d.date].shift_code }}
-              </span>
-            </template>
-            {{ item.daily[d.date].shift_name }}
-          </v-tooltip>
-
-          <!-- KALAU TELAT DI APPROVE (IZIN)-->
-          <span v-if="item.daily[d.date].lr_is_full_day == 0">
-            ,
-            <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
-                <span
-                  v-bind="props"
-                  class="font-bold text-green-500 cursor-pointer"
-                >
-                  {{ item.daily[d.date].lr_type_code }}
-                </span>
-              </template>
-
-              {{ item.daily[d.date].lr_type_name }} (Approved)
-            </v-tooltip>
-          </span>
-
-          <!-- KALAU TELAT BIASA -->
-          <span v-else-if="item.daily[d.date].is_late">
-            ,
-            <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
-                <span
-                  v-bind="props"
-                  class="font-bold text-amber-500 cursor-pointer"
-                >
-                  T
-                </span>
-              </template>
-
-              Telat
-            </v-tooltip>
-          </span>
-
-          <!-- KALAU PULANG CEPAT -->
-          <span v-if="item.daily[d.date].is_pc"
-            >,
-            <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
-                <span
-                  v-bind="props"
-                  class="font-bold text-amber-500 cursor-pointer"
-                >
-                  PC
-                </span>
-              </template>
-              Pulang Cepat
-            </v-tooltip>
-          </span>
-        </span>
-
-        <!-- KALAU HADIR -->
-        <span v-else-if="item.daily[d.date].is_hadir">
-          <!-- KALAU HADIR -->
-          <v-tooltip v-if="item.daily[d.date].is_hadir" location="top">
-            <template v-slot:activator="{ props }">
-              <span
-                v-bind="props"
-                class="font-bold text-green-500 cursor-pointer"
-              >
-                H
-              </span>
-            </template>
-            Hadir
-          </v-tooltip>
-
-          <!-- KALAU HADIR DI HARI SHIFT -->
-          <span v-if="item.daily[d.date].is_shift">
-            ,
-            <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
-                <span
-                  v-bind="props"
-                  class="font-bold text-purple-500 cursor-pointer"
-                >
-                  {{ item.daily[d.date].shift_code }}
-                </span>
-              </template>
-
-              {{ item.daily[d.date].shift_name }}
-            </v-tooltip>
-          </span>
-
-          <!-- KALAU TELAT DI APPROVE (IZIN)-->
-          <span v-if="item.daily[d.date].lr_is_full_day == 0">
-            ,
-            <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
-                <span
-                  v-bind="props"
-                  class="font-bold text-green-500 cursor-pointer"
-                >
-                  {{ item.daily[d.date].lr_type_code }}
-                </span>
-              </template>
-
-              {{ item.daily[d.date].lr_type_name }} (Approved)
-            </v-tooltip>
-          </span>
-
-          <!-- KALAU TELAT BIASA -->
-          <span v-else-if="item.daily[d.date].is_late">
-            ,
-            <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
-                <span
-                  v-bind="props"
-                  class="font-bold text-amber-500 cursor-pointer"
-                >
-                  T
-                </span>
-              </template>
-
-              Telat
-            </v-tooltip>
-          </span>
-
-          <!-- KALAU PULANG CEPAT -->
-          <span v-if="item.daily[d.date].is_pc"
-            >,
-            <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
-                <span
-                  v-bind="props"
-                  class="font-bold text-amber-500 cursor-pointer"
-                >
-                  PC
-                </span>
-              </template>
-              Pulang Cepat
-            </v-tooltip>
-          </span>
-
-          <!-- KALAU TIDAP ABSEN PULANG -->
-          <span v-if="item.daily[d.date].is_tap"
-            >,
-            <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
-                <span
-                  v-bind="props"
-                  class="font-bold text-amber-500 cursor-pointer"
-                >
-                  TAP
-                </span>
-              </template>
-              Tidak Absen Pulang
-            </v-tooltip>
-          </span>
-        </span>
-
-        <span
-          v-if="item.daily[d.date].is_izin && item.daily[d.date].lr_is_full_day"
+      <div
+        v-if="item.daily?.[d.date]"
+        class="flex flex-wrap items-center justify-center gap-1"
+      >
+        <v-tooltip
+          v-if="
+            item.daily[d.date].is_holiday &&
+            !item.daily[d.date].is_hadir &&
+            !item.daily[d.date].is_alpha
+          "
+          location="top"
         >
-          <v-tooltip location="top">
-            <template v-slot:activator="{ props }">
-              <span
-                v-bind="props"
-                class="font-bold text-green-500 cursor-pointer"
-              >
-                {{ item.daily[d.date].lr_type_code }}</span
-              >
-            </template>
-            {{ item.daily[d.date].lr_type_name }}
-          </v-tooltip>
-        </span>
+          <template v-slot:activator="{ props }">
+            <span v-bind="props" class="font-bold text-gray-500 cursor-pointer"
+              >L</span
+            >
+          </template>
+          Libur
+        </v-tooltip>
 
-        <span v-if="item.daily[d.date].is_sakit">
-          <v-tooltip location="top">
-            <template v-slot:activator="{ props }">
-              <span
-                v-bind="props"
-                class="font-bold text-green-500 cursor-pointer"
-              >
-                {{ item.daily[d.date].lr_type_code }}</span
-              >
-            </template>
-            {{ item.daily[d.date].lr_type_name }}
-          </v-tooltip>
-        </span>
+        <v-tooltip v-if="item.daily[d.date].is_alpha" location="top">
+          <template v-slot:activator="{ props }">
+            <span v-bind="props" class="font-bold text-red-500 cursor-pointer"
+              >A</span
+            >
+          </template>
+          {{ item.daily[d.date].is_shift ? "Alpa Di Shift Piket" : "Alpa" }}
+        </v-tooltip>
 
-        <span v-else-if="item.daily[d.date].is_cuti">
-          <v-tooltip location="top">
-            <template v-slot:activator="{ props }">
-              <span
-                v-bind="props"
-                class="font-bold text-green-500 cursor-pointer"
-              >
-                {{ item.daily[d.date].lr_type_code }}</span
-              >
-            </template>
-            {{ item.daily[d.date].lr_type_name }}
-          </v-tooltip>
-        </span>
+        <v-tooltip
+          v-if="
+            (item.daily[d.date].is_izin ||
+              item.daily[d.date].is_sakit ||
+              item.daily[d.date].is_cuti) &&
+            item.daily[d.date].lr_is_full_day == 1
+          "
+          location="top"
+        >
+          <template v-slot:activator="{ props }">
+            <span
+              v-bind="props"
+              class="font-bold text-green-500 cursor-pointer"
+            >
+              {{ item.daily[d.date].lr_type_code }}
+            </span>
+          </template>
+          {{ item.daily[d.date].lr_type_name }} (Full Day)
+        </v-tooltip>
 
-        <span v-else-if="item.daily[d.date].is_alpha">
-          <v-tooltip location="top">
-            <template v-slot:activator="{ props }">
-              <span
-                v-bind="props"
-                class="font-bold text-red-500 cursor-pointer"
-              >
-                A</span
-              >
-            </template>
-            Alpa
-          </v-tooltip>
-        </span>
-      </template>
-      <span v-else>-</span>
+        <v-tooltip v-if="item.daily[d.date].is_hadir" location="top">
+          <template v-slot:activator="{ props }">
+            <span v-bind="props" class="font-bold text-green-500 cursor-pointer"
+              >H</span
+            >
+          </template>
+          Hadir
+        </v-tooltip>
+
+        <v-tooltip
+          v-if="item.daily[d.date].is_shift && item.daily[d.date].is_hadir"
+          location="top"
+        >
+          <template v-slot:activator="{ props }">
+            <span
+              v-bind="props"
+              class="font-bold text-purple-500 cursor-pointer"
+            >
+              {{ item.daily[d.date].shift_code }}
+            </span>
+          </template>
+          {{ item.daily[d.date].shift_name }}
+        </v-tooltip>
+
+        <v-tooltip
+          v-if="
+            item.daily[d.date].lr_type_code &&
+            item.daily[d.date].lr_is_full_day == 0
+          "
+          location="top"
+        >
+          <template v-slot:activator="{ props }">
+            <span
+              v-bind="props"
+              class="font-bold text-green-500 cursor-pointer"
+            >
+              {{ item.daily[d.date].lr_type_code }}
+            </span>
+          </template>
+          {{ item.daily[d.date].lr_type_name }} (Approved)
+        </v-tooltip>
+
+        <v-tooltip v-if="item.daily[d.date].is_late" location="top">
+          <template v-slot:activator="{ props }">
+            <span v-bind="props" class="font-bold text-amber-500 cursor-pointer"
+              >T</span
+            >
+          </template>
+          Telat
+          {{
+            item.daily[d.date].late_duration
+              ? ": " + item.daily[d.date].late_duration
+              : ""
+          }}
+        </v-tooltip>
+
+        <v-tooltip v-if="item.daily[d.date].is_pc" location="top">
+          <template v-slot:activator="{ props }">
+            <span v-bind="props" class="font-bold text-amber-500 cursor-pointer"
+              >PC</span
+            >
+          </template>
+          Pulang Cepat
+          {{
+            item.daily[d.date].pc_duration
+              ? ": " + item.daily[d.date].pc_duration
+              : ""
+          }}
+        </v-tooltip>
+
+        <v-tooltip v-if="item.daily[d.date].is_tap" location="top">
+          <template v-slot:activator="{ props }">
+            <span v-bind="props" class="font-bold text-amber-500 cursor-pointer"
+              >TAP</span
+            >
+          </template>
+          Tidak Absen Pulang
+        </v-tooltip>
+      </div>
+      <span v-else class="text-gray-400">-</span>
     </template>
   </v-data-table-server>
 </template>

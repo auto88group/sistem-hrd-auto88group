@@ -33,6 +33,8 @@ export interface LeaveRequestCreateUpdatePayload {
   hrd_leave_type_id: number | null;
   start_date: string | null;
   end_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
   total_days: number | null;
   reason: string | null;
   attachment: File[] | null;
@@ -58,6 +60,8 @@ export interface LeaveRequest {
 
   start_date: string;
   end_date: string;
+  start_time: string | null;
+  end_time: string | null;
   total_days: number | null;
 
   status: string;

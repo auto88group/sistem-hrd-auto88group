@@ -55,6 +55,8 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
     hrd_leave_type_id: null,
     start_date: null,
     end_date: null,
+    start_time: null,
+    end_time: null,
     total_days: null,
     reason: null,
     attachment: null,
@@ -96,9 +98,9 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
   async function createLeaveRequest() {
     isLoadingCreateEdit.value = true;
     try {
-      if (payloadCreateUpdate.hrd_leave_type_id != 1) {
-        countDays();
-      }
+      // if (payloadCreateUpdate.hrd_leave_type_id != 1) {
+      countDays();
+      // }
 
       const formData = toFormData(payloadCreateUpdate);
       const res = await leaveRequestApi.createLeaveRequest(formData);
@@ -185,6 +187,8 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
       hrd_leave_type_id: null,
       start_date: null,
       end_date: null,
+      start_time: null,
+      end_time: null,
       total_days: null,
       reason: null,
       attachment: null,

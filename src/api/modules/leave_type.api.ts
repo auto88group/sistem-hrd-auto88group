@@ -54,6 +54,7 @@ export interface LeaveType {
   is_full_day: number;
   max_day: number;
   max_hour: number;
+  change_time: string;
   back_date: number;
   file_upload: number;
   deduct_leave: number;

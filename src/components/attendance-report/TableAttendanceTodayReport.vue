@@ -114,7 +114,7 @@
           <!-- Terlambat -->
           <span
             v-if="
-              item.lr_type_code != 'T' &&
+              !hasLeaveCode(item, 'T') &&
               getLateDuration(item.time_in, item.working_hour) &&
               !(
                 item.request_diff_loc_in === 1 &&
@@ -227,6 +227,7 @@
           <!-- Pulang Cepat -->
           <span
             v-if="
+              !hasLeaveCode(item, 'PC') &&
               getEarlyGoHomeDuration(item.time_out, item.working_hour) &&
               !(
                 item.request_diff_loc_out === 1 &&
@@ -303,6 +304,7 @@
 </template>
 
 <script setup lang="ts">
+import type { EmployeeAttendance } from "@/api/modules/employee-attendance.api";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
 import { useFormatName } from "@/composables/useFormatName";
 import { useAppStore } from "@/stores/app";
@@ -361,6 +363,10 @@ function isDidntCheckOut(
     return true;
 
   return false;
+}
+
+function hasLeaveCode(item: EmployeeAttendance, code: string): boolean {
+  return item.leaves?.some((l) => l.lr_type_code === code) ?? false;
 }
 
 async function handleApprovalDiffLoc(attendanceId: number, type: "in" | "out") {

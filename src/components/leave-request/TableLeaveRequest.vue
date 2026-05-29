@@ -428,7 +428,11 @@
 
           <!-- BUTTON UPDATE DAN DELETE KHUSUS NON CUTI -->
           <v-btn
-            v-if="item.deduct_leave != 1 && item.has_deduct_no_file != 1"
+            v-if="
+              item.deduct_leave != 1 &&
+              item.has_deduct_no_file != 1 &&
+              !isFullyApproved(item)
+            "
             icon="mdi-file-edit-outline"
             variant="text"
             density="comfortable"
@@ -436,7 +440,11 @@
             @click="handleEdit(item)"
           />
           <v-btn
-            v-if="item.deduct_leave != 1 && item.has_deduct_no_file != 1"
+            v-if="
+              item.deduct_leave != 1 &&
+              item.has_deduct_no_file != 1 &&
+              !isFullyApproved(item)
+            "
             icon="mdi-delete-outline"
             variant="text"
             density="comfortable"
@@ -447,13 +455,7 @@
 
           <!-- BUTTON UPDATE DAN DELETE KHUSUS CUTI -->
           <v-btn
-            v-if="
-              item.deduct_leave == 1 &&
-              !(
-                item.status_hrd === 'approved' &&
-                (item.status_2 === null || item.status_2 === 'approved')
-              )
-            "
+            v-if="item.deduct_leave == 1 && !isFullyApproved(item)"
             icon="mdi-file-edit-outline"
             variant="text"
             density="comfortable"
@@ -461,13 +463,7 @@
             @click="handleEdit(item)"
           />
           <v-btn
-            v-if="
-              item.deduct_leave == 1 &&
-              !(
-                item.status_hrd === 'approved' &&
-                (item.status_2 === null || item.status_2 === 'approved')
-              )
-            "
+            v-if="item.deduct_leave == 1 && !isFullyApproved(item)"
             icon="mdi-delete-outline"
             variant="text"
             density="comfortable"
@@ -504,6 +500,14 @@ const { ask } = useConfirmDialog();
 const { toFullDateWithDay, toFullDate } = useDateFormatter();
 
 const emit = defineEmits(["edit"]);
+
+function isFullyApproved(item: any): boolean {
+  return (
+    (item.status === null || item.status === "approved") &&
+    (item.status_2 === null || item.status_2 === "approved") &&
+    item.status_hrd === "approved"
+  );
+}
 
 function handleInfo(item: any) {
   leaveRequestStore.leaveRequestSelected = item;
@@ -602,6 +606,7 @@ async function handleRestoreLeave(id: number) {
 }
 
 function handleEdit(item: any) {
+  console.log(item);
   const {
     id,
     user_id,
@@ -611,6 +616,8 @@ function handleEdit(item: any) {
     hrd_leave_type_id,
     start_date,
     end_date,
+    start_time,
+    end_time,
     total_days,
     reason,
   } = item;
@@ -623,6 +630,8 @@ function handleEdit(item: any) {
     hrd_leave_type_id,
     start_date,
     end_date,
+    start_time,
+    end_time,
     total_days,
     reason,
   });

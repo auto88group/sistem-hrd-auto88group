@@ -2,6 +2,7 @@ import {
   employeeAttendanceRequestApi,
   type ApprovalDiffLocParams,
   type EmployeeAttendance,
+  type EmployeeAttendanceLeave,
   type EmployeeAttendanceDetail,
   type EmployeeAttendanceDetailParams,
   type EmployeeAttendanceEditParams,

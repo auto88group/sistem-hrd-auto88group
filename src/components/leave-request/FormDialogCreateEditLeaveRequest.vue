@@ -75,6 +75,7 @@
               clearable
               no-filter
               @update:search="onSearchLeaveType"
+              @update:modelValue="onSelectLeaveType"
               :rules="[rules.required]"
               :error-messages="serverErrors.branch_id"
             >
@@ -93,7 +94,7 @@
               :error-messages="serverErrors.start_date"
             >
               <template v-slot:label>
-                Tanggal Mulai<span class="text-red-500">*</span>
+                Tanggal <span class="text-red-500">*</span>
               </template>
             </app-date-picker>
           </v-col>
@@ -110,6 +111,84 @@
                 Tanggal Selesai<span class="text-red-500">*</span>
               </template>
             </app-date-picker>
+          </v-col>
+
+          <v-col v-if="isShowStartTime" cols="12" md="6">
+            <v-menu
+              v-model="openStartTime"
+              :close-on-content-click="false"
+              transition="scale-transition"
+            >
+              <template #activator="{ props }">
+                <div class="space-y-1">
+                  <v-text-field
+                    v-model="form.start_time"
+                    readonly
+                    v-bind="props"
+                    variant="outlined"
+                    density="compact"
+                    color="blue-darken-1"
+                    :rules="[rules.required]"
+                    hide-details="auto"
+                    prepend-inner-icon="mdi-clock-outline"
+                    class="rounded-lg shadow-sm"
+                    :error-messages="serverErrors.time_in"
+                  >
+                    <template v-slot:label>
+                      Jam Masuk<span class="text-red-500">*</span>
+                    </template>
+                  </v-text-field>
+                </div>
+              </template>
+
+              <v-card class="rounded-xl elevation-12">
+                <v-time-picker
+                  v-model="form.start_time"
+                  format="24hr"
+                  color="blue-darken-1"
+                  @update:minute="openStartTime = false"
+                />
+              </v-card>
+            </v-menu>
+          </v-col>
+
+          <v-col v-if="isShowEndTime" cols="12" md="6">
+            <v-menu
+              v-model="openEndTime"
+              :close-on-content-click="false"
+              transition="scale-transition"
+            >
+              <template #activator="{ props }">
+                <div class="space-y-1">
+                  <v-text-field
+                    v-model="form.end_time"
+                    readonly
+                    v-bind="props"
+                    variant="outlined"
+                    density="compact"
+                    color="blue-darken-1"
+                    :rules="[rules.required]"
+                    hide-details="auto"
+                    prepend-inner-icon="mdi-clock-outline"
+                    class="rounded-lg shadow-sm"
+                    :error-messages="serverErrors.end_in"
+                  >
+                    <template v-slot:label>
+                      Jam Pulang<span class="text-red-500">*</span>
+                    </template>
+                  </v-text-field>
+                </div>
+              </template>
+
+              <v-card class="rounded-xl elevation-12">
+                <v-time-picker
+                  v-model="form.end_time"
+                  format="24hr"
+                  color="blue-darken-1"
+                  @update:minute="openEndTime = false"
+                />
+              </v-card>
+            </v-menu>
           </v-col>
 
           <v-col cols="12">
@@ -191,7 +270,7 @@ import { useLeaveRequestStore } from "@/stores/leave-request.store";
 import { useLeaveTypeStore } from "@/stores/leave_type.store";
 import { useUserStore } from "@/stores/user.store";
 import { storeToRefs } from "pinia";
-import { onMounted } from "vue";
+import { nextTick, onMounted, watch } from "vue";
 import { computed, ref } from "vue";
 import AppDatePicker from "../AppDatePicker.vue";
 import { useAppStore } from "@/stores/app";
@@ -211,6 +290,11 @@ const searchLeaveType = ref("");
 
 const isSelectingUser = ref(false);
 const selectedUserText = ref<string>("");
+
+const isShowStartTime = ref(false);
+const openStartTime = ref<boolean>(false);
+const isShowEndTime = ref(false);
+const openEndTime = ref<boolean>(false);
 
 const rules = {
   required: (v: any) =>
@@ -267,6 +351,8 @@ const listLeaveType = computed(() => {
       title: leaveType.name,
       value: leaveType.id,
       backDate: leaveType.back_date,
+      isFullDay: leaveType.is_full_day,
+      changeTime: leaveType.change_time,
     }));
 });
 
@@ -291,6 +377,51 @@ const onClearUser = async () => {
     search: "",
   });
 };
+
+function applyLeaveTypeVisibility(selectedValue: any) {
+  if (!selectedValue) {
+    isShowStartTime.value = false;
+    isShowEndTime.value = false;
+    form.value.start_time = null;
+    form.value.end_time = null;
+    return;
+  }
+
+  const selectedItem = listLeaveType.value.find(
+    (item) => item.value === selectedValue,
+  );
+
+  if (selectedItem?.isFullDay == 0) {
+    isShowStartTime.value = selectedItem?.changeTime === "start";
+    isShowEndTime.value = selectedItem?.changeTime === "end";
+  } else {
+    isShowStartTime.value = false;
+    isShowEndTime.value = false;
+    form.value.start_time = null;
+    form.value.end_time = null;
+  }
+}
+
+// Panggil dari handler select
+const onSelectLeaveType = (selectedValue: any) => {
+  applyLeaveTypeVisibility(selectedValue);
+};
+
+watch(
+  () => leaveRequestStore.createEditDialog,
+  (isOpen) => {
+    if (isOpen) {
+      // listLeaveType mungkin belum terisi, tunggu sebentar
+      nextTick(() => {
+        applyLeaveTypeVisibility(form.value.hrd_leave_type_id);
+      });
+    } else {
+      // Reset saat dialog ditutup
+      isShowStartTime.value = false;
+      isShowEndTime.value = false;
+    }
+  },
+);
 
 function closeDialog() {
   imagePreview.value = null;

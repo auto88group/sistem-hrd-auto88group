@@ -1,5 +1,12 @@
 import api from "../axios";
 
+export interface EmployeeAttendanceLeave {
+  lr_type_code: string;
+  lr_type: string;
+  lr_type_name: string;
+  lr_is_full_day: number;
+}
+
 // REPORT
 export interface EmployeeAttendanceParams {
   draw?: number;
@@ -72,9 +79,6 @@ export interface EmployeeAttendance {
   branch_alias: string;
   branch_code: string;
   period_date: string;
-  lr_type_code: string | null;
-  lr_type_name: string | null;
-  lr_is_full_day: number | null;
   is_holiday: number | null;
   shift_id: number | null;
   shift_name: string | null;
@@ -82,6 +86,10 @@ export interface EmployeeAttendance {
   modify_by: number | null;
   modify_by_name: string | null;
   modify_by_full_name: string | null;
+
+  // ── BARU: leaves sebagai array ──
+  leaves: EmployeeAttendanceLeave[]; // array, bisa kosong []
+  leave_types: string[]; // ['sakit', 'izin', ...] lowercase
 }
 
 // RECAP
@@ -144,6 +152,11 @@ export interface EmployeeAttendanceDailyStatus {
   shift_id: number | null;
   shift_name: string | null;
   shift_code: string | null;
+
+  late_duration_sec?: number;
+  late_duration?: string;
+  pc_duration_sec?: number;
+  pc_duration?: string;
 }
 export interface RecapDate {
   date: string;
