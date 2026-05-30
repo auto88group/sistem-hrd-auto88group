@@ -144,11 +144,7 @@ export interface EmployeeAttendanceDailyStatus {
   is_sakit: number;
   is_cuti: number;
   is_alpha: number;
-  lr_type: string | null;
-  lr_type_code: string | null;
-  lr_type_name: string | null;
-  lr_is_full_name: string | null;
-  lr_is_full_day: number;
+  lr_types: EmployeeAttendanceLeave[];
   shift_id: number | null;
   shift_name: string | null;
   shift_code: string | null;

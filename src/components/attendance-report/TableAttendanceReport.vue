@@ -371,7 +371,6 @@
 
         <span
           v-if="
-            !hasLeaveCode(item, 'PC') &&
             getEarlyGoHomeDuration(item.time_out, item.working_hour) &&
             !(
               item.request_diff_loc_out === 1 &&

@@ -127,25 +127,24 @@
           {{ item.daily[d.date].is_shift ? "Alpa Di Shift Piket" : "Alpa" }}
         </v-tooltip>
 
-        <v-tooltip
-          v-if="
-            (item.daily[d.date].is_izin ||
-              item.daily[d.date].is_sakit ||
-              item.daily[d.date].is_cuti) &&
-            item.daily[d.date].lr_is_full_day == 1
-          "
-          location="top"
+        <template
+          v-for="lr in item.daily[d.date].lr_types.filter(
+            (l) => l.lr_is_full_day == 1,
+          )"
+          :key="lr.lr_type_code"
         >
-          <template v-slot:activator="{ props }">
-            <span
-              v-bind="props"
-              class="font-bold text-green-500 cursor-pointer"
-            >
-              {{ item.daily[d.date].lr_type_code }}
-            </span>
-          </template>
-          {{ item.daily[d.date].lr_type_name }} (Full Day)
-        </v-tooltip>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <span
+                v-bind="props"
+                class="font-bold text-green-500 cursor-pointer"
+              >
+                {{ lr.lr_type_code }}
+              </span>
+            </template>
+            {{ lr.lr_type_name }} (Full Day)
+          </v-tooltip>
+        </template>
 
         <v-tooltip v-if="item.daily[d.date].is_hadir" location="top">
           <template v-slot:activator="{ props }">
@@ -171,23 +170,24 @@
           {{ item.daily[d.date].shift_name }}
         </v-tooltip>
 
-        <v-tooltip
-          v-if="
-            item.daily[d.date].lr_type_code &&
-            item.daily[d.date].lr_is_full_day == 0
-          "
-          location="top"
+        <template
+          v-for="lr in item.daily[d.date].lr_types.filter(
+            (l) => l.lr_is_full_day == 0,
+          )"
+          :key="lr.lr_type_code"
         >
-          <template v-slot:activator="{ props }">
-            <span
-              v-bind="props"
-              class="font-bold text-green-500 cursor-pointer"
-            >
-              {{ item.daily[d.date].lr_type_code }}
-            </span>
-          </template>
-          {{ item.daily[d.date].lr_type_name }} (Approved)
-        </v-tooltip>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <span
+                v-bind="props"
+                class="font-bold text-green-500 cursor-pointer"
+              >
+                {{ lr.lr_type_code }}
+              </span>
+            </template>
+            {{ lr.lr_type_name }} (Approved)
+          </v-tooltip>
+        </template>
 
         <v-tooltip v-if="item.daily[d.date].is_late" location="top">
           <template v-slot:activator="{ props }">
