@@ -39,10 +39,10 @@ export const useHolidayStore = defineStore("holiday", () => {
     }
   }
 
-  async function fetchHolidayByMonth(params?: number) {
+  async function fetchHolidayByMonth(month?: number, year?: number) {
     isLoadingByMonth.value = true;
     try {
-      const res = await holidayApi.getHolidayByMonth(params);
+      const res = await holidayApi.getHolidayByMonth(month, year);
       holidayByMonth.value = res.data;
     } finally {
       isLoadingByMonth.value = false;

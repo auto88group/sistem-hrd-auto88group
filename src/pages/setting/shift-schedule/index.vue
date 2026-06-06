@@ -1,6 +1,28 @@
 <template>
   <div class="space-y-5">
     <confirm-dialog />
+
+    <v-snackbar
+      v-model="appStore.showErrorSnackbar"
+      color="bg-red-500"
+      elevation="24"
+      location="top"
+      timeout="4000"
+      rounded="lg"
+    >
+      <div class="d-flex align-center">
+        <v-icon icon="mdi-alert-circle" class="me-3"></v-icon>
+        <span class="font-weight-medium">{{ appStore.errorMessage }}</span>
+      </div>
+      <template v-slot:actions>
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="appStore.showErrorSnackbar = false"
+        ></v-btn>
+      </template>
+    </v-snackbar>
+
     <!-- ───── Snackbar Error ───── -->
     <v-snackbar
       v-model="showErrorSnackbar"
@@ -66,6 +88,9 @@ import HeaderShiftSchedule from "@/components/shift-schedule/HeaderShiftSchedule
 
 import TableShiftSchedule from "@/components/shift-schedule/TableShiftSchedule.vue";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { useAppStore } from "@/stores/app";
+
+const appStore = useAppStore();
 
 import { ref } from "vue";
 

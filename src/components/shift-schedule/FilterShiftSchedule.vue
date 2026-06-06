@@ -77,13 +77,17 @@ import { useDebounceFn } from "@/composables/UseDebounce";
 import { useFormatName } from "@/composables/useFormatName";
 import { useShiftScheduleStore } from "@/stores/shift-schedule.store";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
+import { useAppStore } from "@/stores/app.ts";
+import { useHolidayStore } from "@/stores/holiday.store.ts";
 
 const { formatName } = useFormatName();
 
 const { toRangeYMD } = useDateFormatter();
 const shiftScheduleStore = useShiftScheduleStore();
+const holidayStore = useHolidayStore();
 const branchStore = useBranchStore();
 const userStore = useUserStore();
+const appStore = useAppStore();
 
 const isSelecting = ref(false);
 const selectedUserText = ref<string>("");
@@ -154,11 +158,27 @@ function onSelectUser(value: number | null) {
 }
 
 const onChangePeriod = useDebounceFn((val: string[]) => {
-  const dates = val.map((v) => new Date(v));
+  if (!val || val.length < 2) return;
 
-  shiftScheduleStore.params.period = toRangeYMD(dates);
+  const [start, end] = val.map((v) => new Date(v));
 
+  const isSameMonth = start.getMonth() === end.getMonth();
+  const isSameYear = start.getFullYear() === end.getFullYear();
+
+  if (!isSameMonth || !isSameYear) {
+    appStore.showErrorSnackbar = true;
+    appStore.errorMessage = "Periode harus dalam bulan dan tahun yang sama.";
+
+    // Reset form.period ke kosong
+    form.period = [];
+    return;
+  }
+
+  shiftScheduleStore.params.period = toRangeYMD([start, end]);
   shiftScheduleStore.fetchShiftSchedule?.();
+  const month = start.getMonth() + 1;
+  const year = start.getFullYear();
+  holidayStore.fetchHolidayByMonth(month, year);
 }, 400);
 
 watch(

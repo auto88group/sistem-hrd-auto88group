@@ -57,9 +57,12 @@ export const holidayApi = {
     return api.get("/hrd/holidays", { params }).then((res) => res.data);
   },
 
-  getHolidayByMonth(params?: number): Promise<HolidayByMonthResponse> {
+  getHolidayByMonth(
+    month?: number,
+    year?: number,
+  ): Promise<HolidayByMonthResponse> {
     return api
-      .get(`/hrd/holidays/month?month=${params}`)
+      .get(`/hrd/holidays/month?month=${month}&year=${year}`)
       .then((res) => res.data);
   },
 

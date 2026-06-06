@@ -22,6 +22,10 @@
       <v-divider></v-divider>
 
       <v-card-text class="p-4">
+        <p class="text-red-500 text-xs">
+          *Pastikan user belum memiliki shift pada tanggal tersebut, karena data
+          shift yang sudah ada akan diganti.
+        </p>
         <v-form ref="formRef">
           <v-row class="gy-4">
             <v-col cols="12" v-if="!isEditMode">
