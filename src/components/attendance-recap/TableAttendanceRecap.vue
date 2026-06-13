@@ -14,7 +14,7 @@
         <th rowspan="2">No</th>
         <th rowspan="2">Nama</th>
         <th rowspan="1" colspan="2" class="text-center">Cabang</th>
-        <th rowspan="1" colspan="10" class="text-center">Rekap</th>
+        <th rowspan="1" colspan="12" class="text-center">Rekap</th>
         <th rowspan="1" class="text-center" :colspan="recapDates.length">
           Tanggal
         </th>
@@ -27,6 +27,8 @@
         <th>PC</th>
         <th>TAP</th>
         <th>I</th>
+        <th title="Izin Telat">I.T</th>
+        <th title="Izin Pulang Cepat">I.PC</th>
         <th>S</th>
         <th>C</th>
         <th>A</th>
@@ -34,6 +36,7 @@
         <th class="text-nowrap">Total Jam Kerja</th>
         <th
           v-for="d in recapDates"
+          :key="d.date"
           class="text-nowrap"
           :class="d.is_holiday ? 'bg-red-200' : ''"
         >
@@ -86,6 +89,30 @@
       </span>
     </template>
 
+    <template #[`item.i_telat`]="{ item }">
+      <v-tooltip v-if="item.i_telat > 0" location="top">
+        <template #activator="{ props }">
+          <span v-bind="props" class="font-bold text-blue-500 cursor-pointer">
+            {{ item.i_telat }}
+          </span>
+        </template>
+        Izin Telat
+      </v-tooltip>
+      <span v-else>{{ item.i_telat }}</span>
+    </template>
+
+    <template #[`item.i_pc`]="{ item }">
+      <v-tooltip v-if="item.i_pc > 0" location="top">
+        <template #activator="{ props }">
+          <span v-bind="props" class="font-bold text-blue-500 cursor-pointer">
+            {{ item.i_pc }}
+          </span>
+        </template>
+        Izin Pulang Cepat
+      </v-tooltip>
+      <span v-else>{{ item.i_pc }}</span>
+    </template>
+
     <template #[`item.total_working_hour`]="{ item }">
       <span class="text-nowrap">
         {{ toReadableTime(item.total_working_hour) }}
@@ -102,6 +129,7 @@
         v-if="item.daily?.[d.date]"
         class="flex flex-wrap items-center justify-center gap-1"
       >
+        <!-- Libur -->
         <v-tooltip
           v-if="
             item.daily[d.date].is_holiday &&
@@ -118,6 +146,7 @@
           Libur
         </v-tooltip>
 
+        <!-- Alpa -->
         <v-tooltip v-if="item.daily[d.date].is_alpha" location="top">
           <template v-slot:activator="{ props }">
             <span v-bind="props" class="font-bold text-red-500 cursor-pointer"
@@ -127,6 +156,7 @@
           {{ item.daily[d.date].is_shift ? "Alpa Di Shift Piket" : "Alpa" }}
         </v-tooltip>
 
+        <!-- Leave full day -->
         <template
           v-for="lr in item.daily[d.date].lr_types.filter(
             (l) => l.lr_is_full_day == 1,
@@ -137,7 +167,7 @@
             <template v-slot:activator="{ props }">
               <span
                 v-bind="props"
-                class="font-bold text-green-500 cursor-pointer"
+                class="font-bold text-blue-500 cursor-pointer"
               >
                 {{ lr.lr_type_code }}
               </span>
@@ -146,6 +176,7 @@
           </v-tooltip>
         </template>
 
+        <!-- Hadir -->
         <v-tooltip v-if="item.daily[d.date].is_hadir" location="top">
           <template v-slot:activator="{ props }">
             <span v-bind="props" class="font-bold text-green-500 cursor-pointer"
@@ -155,6 +186,7 @@
           Hadir
         </v-tooltip>
 
+        <!-- Shift -->
         <v-tooltip
           v-if="item.daily[d.date].is_shift && item.daily[d.date].is_hadir"
           location="top"
@@ -170,6 +202,7 @@
           {{ item.daily[d.date].shift_name }}
         </v-tooltip>
 
+        <!-- Leave tidak full day -->
         <template
           v-for="lr in item.daily[d.date].lr_types.filter(
             (l) => l.lr_is_full_day == 0,
@@ -180,15 +213,24 @@
             <template v-slot:activator="{ props }">
               <span
                 v-bind="props"
-                class="font-bold text-green-500 cursor-pointer"
+                :class="[
+                  'font-bold cursor-pointer',
+                  lr.lr_type_id == 1 || lr.lr_type_id == 11
+                    ? 'text-blue-500'
+                    : 'text-green-500',
+                ]"
               >
                 {{ lr.lr_type_code }}
               </span>
             </template>
-            {{ lr.lr_type_name }} (Approved)
+            {{ lr.lr_type_name }}
+            <span v-if="lr.lr_type_id == 1"> (Izin Telat)</span>
+            <span v-else-if="lr.lr_type_id == 11"> (Izin Pulang Cepat)</span>
+            <span v-else> (Approved)</span>
           </v-tooltip>
         </template>
 
+        <!-- Telat -->
         <v-tooltip v-if="item.daily[d.date].is_late" location="top">
           <template v-slot:activator="{ props }">
             <span v-bind="props" class="font-bold text-amber-500 cursor-pointer"
@@ -203,6 +245,7 @@
           }}
         </v-tooltip>
 
+        <!-- Pulang Cepat -->
         <v-tooltip v-if="item.daily[d.date].is_pc" location="top">
           <template v-slot:activator="{ props }">
             <span v-bind="props" class="font-bold text-amber-500 cursor-pointer"
@@ -217,6 +260,7 @@
           }}
         </v-tooltip>
 
+        <!-- Tidak Absen Pulang -->
         <v-tooltip v-if="item.daily[d.date].is_tap" location="top">
           <template v-slot:activator="{ props }">
             <span v-bind="props" class="font-bold text-amber-500 cursor-pointer"
@@ -225,6 +269,32 @@
           </template>
           Tidak Absen Pulang
         </v-tooltip>
+
+        <!-- Izin Telat (non-full day) -->
+        <!-- <v-tooltip
+          v-if="item.daily[d.date].is_izin_telat && !item.daily[d.date].is_late"
+          location="top"
+        >
+          <template v-slot:activator="{ props }">
+            <span v-bind="props" class="font-bold text-blue-500 cursor-pointer"
+              >IT</span
+            >
+          </template>
+          Izin Telat
+        </v-tooltip> -->
+
+        <!-- Izin Pulang Cepat (non-full day) -->
+        <!-- <v-tooltip
+          v-if="item.daily[d.date].is_izin_pc && !item.daily[d.date].is_pc"
+          location="top"
+        >
+          <template v-slot:activator="{ props }">
+            <span v-bind="props" class="font-bold text-blue-500 cursor-pointer"
+              >IPC</span
+            >
+          </template>
+          Izin Pulang Cepat
+        </v-tooltip> -->
       </div>
       <span v-else class="text-gray-400">-</span>
     </template>
@@ -238,14 +308,12 @@ import { useTimeFormatter } from "@/composables/useTimeFormatter";
 import { useEmployeeAttendanceRequestStore } from "@/stores/employee-attendance.store";
 import { storeToRefs } from "pinia";
 import { computed } from "vue";
-import { useDisplay } from "vuetify";
 
 const { formatName } = useFormatName();
 const { toReadableTime } = useTimeFormatter();
+const { toFullDateWithDay } = useDateFormatter();
 
-const { toFullDateWithDay, toFullDate } = useDateFormatter();
 const employeeAttendanceStore = useEmployeeAttendanceRequestStore();
-const { mdAndUp } = useDisplay();
 const {
   employeeAttendanceRecap,
   totalRecords,
@@ -256,56 +324,97 @@ const {
 
 // ── Static headers ───────────────────────────────────────────────────────────
 const staticHeaders = [
+  { title: "No", key: "no", width: "60", sortable: false },
+  { title: "Nama", key: "user_full_name", nowrap: true, sortable: false },
+  { title: "Branch", key: "branch_alias", nowrap: true, sortable: false },
   {
-    title: "No",
-    key: "no",
-    width: "60",
-    sortable: false,
-  },
-  {
-    title: "Nama",
-    key: "user_full_name",
-    nowrap: true,
-    sortable: false,
-  },
-  {
-    title: "Branch",
-    key: "branch_alias",
-    nowrap: true,
-    sortable: false,
-  },
-  {
-    title: "Departemen / Team",
+    title: "Departemen/Team",
     key: "branch_name",
     sortable: false,
     width: "160",
   },
-  { title: "H", key: "h", sortable: false, align: "center", width: "50" },
+  {
+    title: "H",
+    key: "h",
+    sortable: false,
+    align: "center" as const,
+    width: "50",
+  },
   {
     title: "T",
     key: "t",
     sortable: false,
-    align: "center",
+    align: "center" as const,
     width: "140",
   },
-  { title: "PC", key: "pc", sortable: false, align: "center", width: "140" },
-  { title: "TAP", key: "tap", sortable: false, align: "center", width: "60" },
-  { title: "I", key: "i", sortable: false, align: "center", width: "50" },
-  { title: "S", key: "s", sortable: false, align: "center", width: "50" },
-  { title: "C", key: "c", sortable: false, align: "center", width: "50" },
-  { title: "A", key: "a", sortable: false, align: "center", width: "50" },
+  {
+    title: "PC",
+    key: "pc",
+    sortable: false,
+    align: "center" as const,
+    width: "140",
+  },
+  {
+    title: "TAP",
+    key: "tap",
+    sortable: false,
+    align: "center" as const,
+    width: "60",
+  },
+  {
+    title: "I",
+    key: "i",
+    sortable: false,
+    align: "center" as const,
+    width: "50",
+  },
+  {
+    title: "I.T",
+    key: "i_telat",
+    sortable: false,
+    align: "center" as const,
+    width: "50",
+  },
+  {
+    title: "I.PC",
+    key: "i_pc",
+    sortable: false,
+    align: "center" as const,
+    width: "50",
+  },
+  {
+    title: "S",
+    key: "s",
+    sortable: false,
+    align: "center" as const,
+    width: "50",
+  },
+  {
+    title: "C",
+    key: "c",
+    sortable: false,
+    align: "center" as const,
+    width: "50",
+  },
+  {
+    title: "A",
+    key: "a",
+    sortable: false,
+    align: "center" as const,
+    width: "50",
+  },
   {
     title: "Libur",
     key: "holiday",
     sortable: false,
-    align: "center",
+    align: "center" as const,
     width: "50",
   },
   {
     title: "Total Jam Kerja",
     key: "total_working_hour",
     sortable: false,
-    align: "center",
+    align: "center" as const,
     minWidth: "120",
   },
 ];
@@ -313,11 +422,11 @@ const staticHeaders = [
 // ── Dynamic date headers ─────────────────────────────────────────────────────
 const dynamicDateHeaders = computed(() =>
   (recapDates.value ?? []).map((d) => ({
-    title: toFullDateWithDay(d.date), // "01\nMei"
+    title: toFullDateWithDay(d.date),
     key: `daily.${d.date}`,
     sortable: false,
     align: "center" as const,
-    cellProps: d.is_holiday ? { class: "!text-black  !bg-red-100" } : {},
+    cellProps: d.is_holiday ? { class: "!text-black !bg-red-100" } : {},
   })),
 );
 
@@ -341,30 +450,21 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
 <style scoped>
 .custom-header-table th,
 .custom-header-table td {
-  border: 1px solid #cbe3f1; /* grey */
+  border: 1px solid #cbe3f1;
 }
-
-/* Optional: header lebih tegas */
 .custom-header-table th {
   font-weight: 600;
 }
-
-/* Gunakan deep selector agar tembus ke dalam komponen Vuetify */
 :deep(.v-data-table__thead) {
   background-color: #e3f2fd;
 }
-
-/* Penyesuaian untuk Dark Theme */
 :deep(.v-theme--dark thead.v-data-table__thead) {
-  background-color: #1a237e; /* Biru gelap yang lembut untuk mata */
+  background-color: #1a237e;
 }
-
 :deep(thead.v-data-table__thead th) {
   font-weight: bold !important;
-  /* Jika ingin warna teks biru tua di light mode */
   color: #1976d2 !important;
 }
-
 :deep(.v-theme--dark thead.v-data-table__thead th) {
   color: #bbdefb !important;
 }

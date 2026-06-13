@@ -392,8 +392,11 @@ function applyLeaveTypeVisibility(selectedValue: any) {
   );
 
   if (selectedItem?.isFullDay == 0) {
-    isShowStartTime.value = selectedItem?.changeTime === "start";
     isShowEndTime.value = selectedItem?.changeTime === "end";
+    isShowStartTime.value = false;
+
+    form.value.start_time = null;
+    if (!isShowEndTime.value) form.value.end_time = null;
   } else {
     isShowStartTime.value = false;
     isShowEndTime.value = false;

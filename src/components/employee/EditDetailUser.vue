@@ -507,17 +507,12 @@
           <v-row gap="15">
             <v-col cols="12" md="6">
               <v-text-field
-                v-model.number="form.employee_id"
+                v-model="form.employee_id"
                 variant="outlined"
                 density="compact"
-                type="number"
-                min="0"
                 hide-details="auto"
-                :rules="[rules.required]"
               >
-                <template v-slot:label>
-                  ID Karyawan <span class="text-red-500">*</span>
-                </template>
+                <template v-slot:label> ID Karyawan </template>
               </v-text-field>
             </v-col>
             <v-col cols="12" md="6">
@@ -1185,7 +1180,7 @@ const form = reactive({
   name: "",
   full_name: "",
   hrd_master_education_id: null as number | null,
-  employee_id: 0 as number,
+  employee_id: "" as string,
   front_title: "",
   back_title: "",
   phone_number: "",

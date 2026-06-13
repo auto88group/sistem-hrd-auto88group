@@ -547,11 +547,9 @@
           <v-row gap="15">
             <v-col cols="12" md="6">
               <v-text-field
-                v-model.number="form.employee_id"
+                v-model="form.employee_id"
                 variant="outlined"
                 density="compact"
-                type="number"
-                min="0"
                 hide-details="auto"
                 :rules="[rules.required]"
               >
@@ -577,12 +575,8 @@
                 clearable
                 no-filter
                 @update:search="onSearchPrimaryApprover"
-                :error-messages="serverErrors.primary_approver_id"
-                :rules="[rules.required]"
               >
-                <template v-slot:label>
-                  Atasan 1 <span class="text-red-500">*</span>
-                </template>
+                <template v-slot:label> Atasan 1 </template>
                 <template v-slot:item="{ props, item }">
                   <v-list-item
                     v-bind="props"
@@ -1183,7 +1177,7 @@ const form = reactive({
   password: "",
   password_confirmation: "",
   hrd_master_education_id: null as number | null,
-  employee_id: null as number | null,
+  employee_id: null as string | null,
   front_title: "",
   back_title: "",
   phone_number: "",

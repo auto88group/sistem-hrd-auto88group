@@ -109,6 +109,7 @@ export interface EmployeeAttendanceRecapResponse {
   dates: RecapDate[];
   data: EmployeeAttendanceRecapItem[];
 }
+
 export interface EmployeeAttendanceRecapItem {
   user_id: number;
   user_name: string;
@@ -126,6 +127,8 @@ export interface EmployeeAttendanceRecapItem {
   pc_duration: string;
   tap: number;
   i: number;
+  i_telat: number; // izin telat (lr_type_id = 1)
+  i_pc: number; // izin pulang cepat (lr_type_id = 11)
   s: number;
   c: number;
   a: number;
@@ -133,6 +136,7 @@ export interface EmployeeAttendanceRecapItem {
   total_working_hour: string;
   daily: Record<string, EmployeeAttendanceDailyStatus>;
 }
+
 export interface EmployeeAttendanceDailyStatus {
   is_holiday: number;
   is_hadir: number;
@@ -141,6 +145,8 @@ export interface EmployeeAttendanceDailyStatus {
   is_pc: number;
   is_tap: number;
   is_izin: number;
+  is_izin_telat: number; // izin telat (lr_type_id = 1)
+  is_izin_pc: number; // izin pulang cepat (lr_type_id = 11)
   is_sakit: number;
   is_cuti: number;
   is_alpha: number;
@@ -154,10 +160,19 @@ export interface EmployeeAttendanceDailyStatus {
   pc_duration_sec?: number;
   pc_duration?: string;
 }
+
+export interface EmployeeAttendanceLeave {
+  lr_type_id: number;
+  lr_type_code: string;
+  lr_type: string;
+  lr_type_name: string;
+  lr_is_full_day: number;
+}
+
 export interface RecapDate {
   date: string;
   is_holiday: number;
-  holiday_name: string;
+  holiday_name: string | null;
 }
 
 // EDIT

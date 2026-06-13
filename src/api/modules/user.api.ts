@@ -20,7 +20,7 @@ export interface UserDataParams {
 
 export interface UserCreateUpdateParams {
   // required
-  employee_id: number;
+  employee_id: string;
   full_name: string;
   name: string;
   email: string;
@@ -164,7 +164,7 @@ export interface User {
   email: string;
   emergency_contact_name: string;
   emergency_phone_number: string;
-  employee_id: number;
+  employee_id: string;
   face_id: string;
   front_title: string;
   full_name: string;
