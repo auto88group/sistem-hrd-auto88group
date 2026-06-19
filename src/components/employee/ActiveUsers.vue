@@ -122,10 +122,6 @@
         </div>
       </template>
 
-      <template #[`item.gender`]="{ item }">
-        {{ item.gender === "M" ? "L" : "P" }}
-      </template>
-
       <!-- STATUS -->
       <template #[`item.status`]="{ item }">
         <v-chip
@@ -135,6 +131,22 @@
         >
           {{ statusLabel(item.status_id) }}
         </v-chip>
+      </template>
+
+      <template #[`item.join_date`]="{ item }">
+        <span class="text-green-600 font-bold text-sm">
+          {{ toFullDate(item.join_date ?? item.created_at) }}
+        </span>
+      </template>
+
+      <template #[`item.effective_end_date`]="{ item }">
+        <span
+          v-if="[3, 4, 5].includes(item.status_id)"
+          class="text-red-500 font-bold text-sm"
+        >
+          {{ toFullDate(item.effective_end_date) }}
+        </span>
+        <span v-else class="text-gray-400 text-sm">-</span>
       </template>
 
       <!-- PROSPECT -->
@@ -337,7 +349,9 @@ import ConfirmDialog from "../ConfirmDialog.vue";
 import { storeToRefs } from "pinia";
 import AppDatePicker from "../AppDatePicker.vue";
 import type { VForm } from "vuetify/components";
+import { useDateFormatter } from "@/composables/UseDateFormatter.ts";
 
+const { toFullDate } = useDateFormatter();
 const apiUrl = import.meta.env.VITE_API_URL;
 const { formatName } = useFormatName();
 const store = useUserStore();
@@ -353,9 +367,18 @@ const { ask } = useConfirmDialog();
 
 onMounted(() => store.fetchUsers());
 
-function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
+function onTableOptionsChange(options: any) {
   store.params.length = options.itemsPerPage;
   store.params.start = (options.page - 1) * options.itemsPerPage;
+
+  if (options.sortBy.length > 0) {
+    store.params.sortBy = options.sortBy[0].key;
+    store.params.sortDirection = options.sortBy[0].order;
+  } else {
+    store.params.sortBy = "id";
+    store.params.sortDirection = "desc";
+  }
+
   store.fetchUsers();
 }
 
@@ -373,12 +396,13 @@ const successMessage = ref("");
 const headers = [
   { title: "No", key: "no", sortable: false, width: "60px" },
   { title: "Foto", key: "foto", sortable: false },
-  { title: "ID", key: "employee_id", sortable: false },
+  { title: "ID", key: "employee_id", sortable: true },
   { title: "Karyawan", key: "karyawan", sortable: false },
   { title: "Cabang", key: "cabang", sortable: false },
-  { title: "Jabatan", key: "position", sortable: false },
-  { title: "L/P", key: "gender", sortable: false },
-  { title: "Status", key: "status", sortable: false },
+  { title: "Jabatan", key: "position", sortable: true },
+  { title: "Status", key: "status", sortable: true },
+  { title: "Tanggal Masuk", key: "join_date", sortable: true },
+  { title: "Tanggal Keluar", key: "effective_end_date", sortable: false },
   { title: "Prospek", key: "prospect", sortable: false, align: "center" },
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];

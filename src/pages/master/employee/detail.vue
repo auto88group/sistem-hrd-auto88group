@@ -27,7 +27,7 @@
           ></v-tab>
           <v-tab
             :disabled="isCreate"
-            text="Data Karir Pekerjaan"
+            text="Data Promosi/Demosi/Mutasi"
             value="job-career"
           ></v-tab>
           <v-tab

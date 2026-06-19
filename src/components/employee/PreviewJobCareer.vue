@@ -182,19 +182,9 @@
             </template>
             <div class="flex flex-col">
               <span class="text-gray-500 text-sm dark:text-gray-300"
-                >Tanggal Mulai</span
+                >Catatan</span
               >
-              <span class="font-bold text-sm">
-                {{ toFullDate(item.start_date) ?? "-" }}
-              </span>
-            </div>
-            <div class="flex flex-col">
-              <span class="text-gray-500 text-sm dark:text-gray-300"
-                >Tanggal Berakhir</span
-              >
-              <span class="font-bold text-sm">
-                {{ toFullDate(item.end_date) ?? "-" }}
-              </span>
+              <span class="font-bold text-sm">{{ item.note ?? "-" }}</span>
             </div>
             <div class="flex flex-col">
               <span class="text-gray-500 text-sm dark:text-gray-300"
@@ -209,9 +199,19 @@
             </div>
             <div class="flex flex-col">
               <span class="text-gray-500 text-sm dark:text-gray-300"
-                >Keterangan Status</span
+                >Tanggal Mulai</span
               >
-              <span class="font-bold text-sm">{{ item.note ?? "-" }}</span>
+              <span class="font-bold text-sm">
+                {{ toFullDate(item.start_date) ?? "-" }}
+              </span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-gray-500 text-sm dark:text-gray-300"
+                >Tanggal Berakhir</span
+              >
+              <span class="font-bold text-sm">
+                {{ toFullDate(item.end_date) ?? "-" }}
+              </span>
             </div>
             <div class="flex flex-col">
               <span class="text-gray-500 text-sm dark:text-gray-300"
@@ -295,8 +295,8 @@
         <span class="text-base font-bold">
           {{
             isEditMode
-              ? "Edit Data Karir Pekerjaan"
-              : "Tambah Data Karir Pekerjaan"
+              ? "Edit Data Promosi/Demosi/Mutasi"
+              : "Tambah Data Promosi/Demosi/Mutasi"
           }}
         </span>
         <v-spacer></v-spacer>
@@ -398,13 +398,10 @@
               hide-details="auto"
               clearable
               no-filter
-              :rules="[rules.required]"
               @update:search="onSearchPrimaryApprover"
               :error-messages="serverErrors.primary_approver_id"
             >
-              <template v-slot:label>
-                Atasan 1<span class="text-red-500">*</span>
-              </template>
+              <template v-slot:label> Atasan 1 </template>
               <template v-slot:item="{ props, item }">
                 <v-list-item
                   v-bind="props"
@@ -448,33 +445,19 @@
               </template>
             </v-autocomplete>
 
-            <app-date-picker
-              id="start_date"
-              v-model="form.start_date"
+            <v-text-field
+              id="note"
+              v-model="form.note"
               variant="outlined"
               density="compact"
               hide-details="auto"
               :rules="[rules.required]"
-              :error-messages="serverErrors.start_date"
+              :error-messages="serverErrors.note"
             >
               <template v-slot:label>
-                Tanggal Mulai<span class="text-red-500">*</span>
+                Catatan<span class="text-red-500">*</span>
               </template>
-            </app-date-picker>
-
-            <app-date-picker
-              id="end_date"
-              v-model="form.end_date"
-              variant="outlined"
-              density="compact"
-              hide-details="auto"
-              :rules="[rules.required]"
-              :error-messages="serverErrors.end_date"
-            >
-              <template v-slot:label>
-                Tanggal Berakhir<span class="text-red-500">*</span>
-              </template>
-            </app-date-picker>
+            </v-text-field>
 
             <v-select
               v-model="form.status_id"
@@ -492,19 +475,133 @@
               </template>
             </v-select>
 
-            <v-text-field
-              id="note"
-              v-model="form.note"
-              variant="outlined"
-              density="compact"
-              hide-details="auto"
-              :rules="[rules.required]"
-              :error-messages="serverErrors.note"
+            <!-- Status 1 (Kontrak) atau 6 (Training): ada start & end -->
+            <template
+              v-if="[1, 6].includes(form.status_id ?? 0)"
+              :key="'kontrak-training'"
             >
-              <template v-slot:label>
-                Catatan Status<span class="text-red-500">*</span>
-              </template>
-            </v-text-field>
+              <app-date-picker
+                id="start_date"
+                v-model="form.start_date"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                :rules="[rules.required]"
+                :error-messages="serverErrors.start_date"
+              >
+                <template v-slot:label>
+                  {{
+                    form.status_id === 6
+                      ? "Tanggal Mulai Training"
+                      : "Tanggal Mulai Kontrak"
+                  }}
+                  <span class="text-red-500">*</span>
+                </template>
+              </app-date-picker>
+
+              <app-date-picker
+                id="end_date"
+                v-model="form.end_date"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                :rules="[rules.required]"
+                :disabled="!form.start_date"
+                :min="form.start_date"
+                clearable
+                :error-messages="serverErrors.end_date"
+              >
+                <template v-slot:label>
+                  {{
+                    form.status_id === 6
+                      ? "Tanggal Selesai Training"
+                      : "Tanggal Selesai Kontrak"
+                  }}
+                  <span class="text-red-500">*</span>
+                </template>
+              </app-date-picker>
+            </template>
+
+            <!-- Status 2 (Tetap): hanya start_date -->
+            <template v-else-if="form.status_id === 2" :key="'tetap'">
+              <app-date-picker
+                id="start_date"
+                v-model="form.start_date"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                :rules="[rules.required]"
+                :error-messages="serverErrors.start_date"
+              >
+                <template v-slot:label>
+                  Tanggal Ditetapkan <span class="text-red-500">*</span>
+                </template>
+              </app-date-picker>
+            </template>
+
+            <!-- Status 3 (Resign) atau 4 (Dikeluarkan): hanya end_date -->
+            <template
+              v-else-if="[3, 4].includes(form.status_id ?? 0)"
+              :key="'resign-dikeluarkan'"
+            >
+              <app-date-picker
+                id="end_date"
+                v-model="form.end_date"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                :rules="[rules.required]"
+                clearable
+                :error-messages="serverErrors.end_date"
+              >
+                <template v-slot:label>
+                  Tanggal Keluar <span class="text-red-500">*</span>
+                </template>
+              </app-date-picker>
+            </template>
+
+            <!-- Status 5 (Pensiun): hanya end_date -->
+            <template v-else-if="form.status_id === 5" :key="'pensiun'">
+              <app-date-picker
+                id="end_date"
+                v-model="form.end_date"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                :rules="[rules.required]"
+                clearable
+                :error-messages="serverErrors.end_date"
+              >
+                <template v-slot:label>
+                  Tanggal Pensiun <span class="text-red-500">*</span>
+                </template>
+              </app-date-picker>
+            </template>
+
+            <!-- Belum pilih status: tampilkan keduanya tanpa rules -->
+            <template v-else :key="'default'">
+              <app-date-picker
+                id="start_date"
+                v-model="form.start_date"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                :error-messages="serverErrors.start_date"
+              >
+                <template v-slot:label>Tanggal Mulai</template>
+              </app-date-picker>
+
+              <app-date-picker
+                id="end_date"
+                v-model="form.end_date"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                :error-messages="serverErrors.end_date"
+              >
+                <template v-slot:label>Tanggal Berakhir</template>
+              </app-date-picker>
+            </template>
 
             <div class="flex flex-col gap-1 col-span-2">
               <v-file-input
@@ -582,7 +679,7 @@
 
 <script setup lang="ts">
 import { useJobCareerStore } from "@/stores/job-career.store";
-import { computed, nextTick, onMounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import ConfirmDialog from "../ConfirmDialog.vue";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useRoute } from "vue-router";
@@ -765,7 +862,15 @@ const rules = {
   required: (v: any) =>
     (v !== null && v !== undefined && v !== "") || "Wajib diisi",
 };
-
+const isSettingForm = ref(false);
+watch(
+  () => form.status_id,
+  () => {
+    if (isSettingForm.value) return; // skip saat sedang set form edit
+    form.start_date = "";
+    form.end_date = "";
+  },
+);
 // ─────────────────────────────────────────────────────────────
 // 6. FILE HELPER FUNCTIONS
 // ─────────────────────────────────────────────────────────────
@@ -809,6 +914,7 @@ function removeAttachment() {
 // 8. COMPUTED (list dropdown)
 // ─────────────────────────────────────────────
 const employeeStatusOptions = [
+  { label: "Training", value: 6 },
   { label: "Kontrak", value: 1 },
   { label: "Tetap", value: 2 },
   { label: "Resign", value: 3 },
@@ -836,6 +942,7 @@ function openAddDialog(userId: any) {
 }
 function openEditDialog(item: any) {
   isEditMode.value = true;
+  isSettingForm.value = true;
   Object.assign(form, {
     id: item.id,
     user_id: item.user_id,
@@ -859,6 +966,10 @@ function openEditDialog(item: any) {
     is_active: item.is_active ?? "",
     attachment: [],
     attachment_existing: item.attachment ?? null,
+  });
+
+  nextTick(() => {
+    isSettingForm.value = false; // ← reset setelah Vue selesai update
   });
   dialog.value = true;
 }

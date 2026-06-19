@@ -38,15 +38,16 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       user_id: null,
       branch_id: null,
 
-      type_present: 1,
-      type_late: 1,
-      type_go_home_early: 1,
-      type_didnt_check_out: 1,
-      type_negligent: 1,
-      type_sick: 1,
-      type_permit: 1,
-      type_leave: 1,
-      type_holiday: 1,
+      type_present: 0,
+      type_late: 0,
+      type_go_home_early: 0,
+      type_didnt_check_out: 0,
+      type_negligent: 0,
+      type_sick: 0,
+      type_permit: 0,
+      type_leave: 0,
+      type_holiday: 0,
+      type_belum_absen: 0,
     });
 
     const recapParams = reactive<EmployeeAttendanceRecapParams>({

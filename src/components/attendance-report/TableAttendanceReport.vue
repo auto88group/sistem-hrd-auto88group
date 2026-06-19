@@ -252,11 +252,17 @@
       <div v-else-if="!item.is_holiday">
         <v-tooltip location="top">
           <template v-slot:activator="{ props }">
-            <span v-bind="props" class="font-bold text-red-500 cursor-pointer"
-              >A</span
+            <span
+              v-bind="props"
+              :class="[
+                'font-bold cursor-pointer',
+                isToday(item.period_date) ? 'text-gray-400' : 'text-red-500',
+              ]"
             >
+              {{ isToday(item.period_date) ? "BA" : "A" }}
+            </span>
           </template>
-          Alpa
+          {{ isToday(item.period_date) ? "Belum Absen" : "Alpa" }}
         </v-tooltip>
       </div>
 
@@ -500,18 +506,8 @@ const headers = [
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];
 
-// Helper: ambil leave full day pertama (jika ada)
-function getFullDayLeave(
-  item: EmployeeAttendance,
-): EmployeeAttendanceLeave | null {
-  return item.leaves?.find((l) => l.lr_is_full_day == 1) ?? null;
-}
-
-// Helper: ambil leave setengah hari pertama (jika ada)
-function getHalfDayLeave(
-  item: EmployeeAttendance,
-): EmployeeAttendanceLeave | null {
-  return item.leaves?.find((l) => l.lr_is_full_day == 0) ?? null;
+function isToday(date: string): boolean {
+  return date === new Date().toISOString().split("T")[0];
 }
 
 // Helper: cek apakah ada leave dengan type_code tertentu (untuk filter telat)

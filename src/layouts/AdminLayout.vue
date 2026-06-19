@@ -192,6 +192,15 @@
               >Umum</v-btn
             > -->
             <v-btn
+              to="/setting/coordinate"
+              :active="$route.path.startsWith('/setting/coordinate')"
+              variant="text"
+              size="small"
+              prepend-icon="mdi-timer-outline"
+              class="btn-nav-custom"
+              >Koordinate Absen</v-btn
+            >
+            <v-btn
               to="/setting/working-hour"
               :active="$route.path.startsWith('/setting/working-hour')"
               variant="text"
@@ -420,6 +429,13 @@
               active-class="text-indigo-600 dark:text-indigo-200"
               value="umum"
             ></v-list-item> -->
+            <v-list-item
+              to="/setting/coordinate"
+              :active="$route.path.startsWith('/setting/coordinate')"
+              title="Koordinate Absen"
+              active-class="text-indigo-600 dark:text-indigo-200"
+              value="coordinate"
+            ></v-list-item>
             <v-list-item
               to="/setting/working-hour"
               :active="$route.path.startsWith('/setting/working-hour')"

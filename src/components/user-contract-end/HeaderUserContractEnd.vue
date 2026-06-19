@@ -4,7 +4,7 @@
   >
     <div>
       <p class="text-lg font-bold m-0 text-indigo-500">
-        Daftar Karyawan Habis Kontrak
+        Daftar Karyawan Habis Kontrak/Training
       </p>
       <v-breadcrumbs
         :items="items"

@@ -841,6 +841,37 @@
               </v-col>
             </template>
 
+            <template v-if="form.status_id === 6">
+              <v-col cols="12" md="6">
+                <app-date-picker
+                  v-model="form.effective_start_date"
+                  variant="outlined"
+                  density="compact"
+                  :rules="[rules.required]"
+                  clearable
+                >
+                  <template v-slot:label>
+                    Tanggal Mulai Training <span class="text-red-500">*</span>
+                  </template>
+                </app-date-picker>
+              </v-col>
+              <v-col cols="12" md="6">
+                <app-date-picker
+                  v-model="form.effective_end_date"
+                  variant="outlined"
+                  density="compact"
+                  :rules="[rules.required]"
+                  :disabled="!form.effective_start_date"
+                  :min="form.effective_start_date"
+                  clearable
+                >
+                  <template v-slot:label>
+                    Tanggal Selesai Training <span class="text-red-500">*</span>
+                  </template>
+                </app-date-picker>
+              </v-col>
+            </template>
+
             <!-- Status 2: Tetap -->
             <template v-else-if="form.status_id === 2">
               <v-col cols="12" md="6">
@@ -1101,6 +1132,7 @@ const listGender = [
 ];
 
 const employeeStatusOptions = [
+  { label: "Training", value: 6 },
   { label: "Kontrak", value: 1 },
   { label: "Tetap", value: 2 },
   { label: "Resign", value: 3 },

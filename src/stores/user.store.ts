@@ -43,7 +43,10 @@ export const useUserStore = defineStore("user", () => {
     hrd_master_education_id: undefined,
     status_id: undefined,
     gender: undefined,
-    show_deleted: false,
+    only_deleted: false,
+    sortBy: "id",
+    sortDirection: "desc",
+    only_active: true,
   });
   const userDataParams = reactive<UserDataParams>({
     search: "",
@@ -214,7 +217,7 @@ export const useUserStore = defineStore("user", () => {
   }
 
   function toggleShowDeleted() {
-    params.show_deleted = !params.show_deleted;
+    params.only_deleted = !params.only_deleted;
     params.start = 0;
     fetchUsers();
   }

@@ -535,9 +535,7 @@
                 @click:clear="onClearPrimaryApprover"
                 :error-messages="serverErrors.primary_approver_id"
               >
-                <template v-slot:label>
-                  Atasan 1<span class="text-red-500">*</span>
-                </template>
+                <template v-slot:label> Atasan 1 </template>
                 <template v-slot:item="{ props, item }">
                   <v-list-item
                     v-bind="props"
@@ -770,6 +768,38 @@
                 >
                   <template v-slot:label>
                     Tanggal Selesai Kontrak <span class="text-red-500">*</span>
+                  </template>
+                </app-date-picker>
+              </v-col>
+            </template>
+
+            <!-- Status 1: Kontrak -->
+            <template v-if="form.status_id === 6">
+              <v-col cols="12" md="6">
+                <app-date-picker
+                  v-model="form.effective_start_date"
+                  variant="outlined"
+                  density="compact"
+                  :rules="[rules.required]"
+                  clearable
+                >
+                  <template v-slot:label>
+                    Tanggal Mulai Training <span class="text-red-500">*</span>
+                  </template>
+                </app-date-picker>
+              </v-col>
+              <v-col cols="12" md="6">
+                <app-date-picker
+                  v-model="form.effective_end_date"
+                  variant="outlined"
+                  density="compact"
+                  :rules="[rules.required]"
+                  :disabled="!form.effective_start_date"
+                  :min="form.effective_start_date"
+                  clearable
+                >
+                  <template v-slot:label>
+                    Tanggal Selesai Training <span class="text-red-500">*</span>
                   </template>
                 </app-date-picker>
               </v-col>
@@ -1244,6 +1274,7 @@ const rules = {
 };
 
 const employeeStatusOptions = [
+  { label: "Training", value: 6 },
   { label: "Kontrak", value: 1 },
   { label: "Tetap", value: 2 },
   { label: "Resign", value: 3 },

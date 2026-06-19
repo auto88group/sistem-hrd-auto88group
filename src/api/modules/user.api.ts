@@ -9,7 +9,10 @@ export interface UserDatatablesParams {
   hrd_master_education_id?: number;
   status_id?: number;
   gender?: string;
-  show_deleted?: boolean;
+  sortBy?: string;
+  sortDirection?: string;
+  only_active?: boolean;
+  only_deleted?: boolean;
 }
 export interface UserDataParams {
   search?: string;
@@ -249,6 +252,7 @@ export interface User {
   };
   zip_code: string;
   deleted?: number | null;
+  created_at: string;
 }
 
 export const userApi = {

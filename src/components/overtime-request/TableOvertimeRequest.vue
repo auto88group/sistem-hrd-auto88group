@@ -506,16 +506,18 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
 function getDuration(workingHour: any, timeOut: any) {
   if (!workingHour || !timeOut) return "-";
 
-  const endWork = workingHour.split(" - ")[1]; // "18:00:00"
+  const endWork = workingHour.split(" - ")[1];
 
-  const toSeconds = (time: any) => {
-    const [h, m, s] = time.split(":").map(Number);
+  const toSeconds = (time: string) => {
+    // Tambahkan default parameter = 0 untuk h, m, dan s
+    // sehingga jika formatnya "14:00", nilai s akan otomatis menjadi 0, bukan NaN
+    const [h = 0, m = 0, s = 0] = time.split(":").map(Number);
     return h * 3600 + m * 60 + s;
   };
 
   const diff = toSeconds(timeOut) - toSeconds(endWork);
 
-  if (diff <= 0) return "-"; // belum overtime
+  if (diff <= 0) return "-"; // belum overtime atau malah pulang cepat
 
   const h = Math.floor(diff / 3600);
   const m = Math.floor((diff % 3600) / 60);

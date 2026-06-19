@@ -1,6 +1,11 @@
 // src/composables/useEmployeeStatus.ts
 
 const STATUS_MAP: Record<number, { label: string; container: string }> = {
+  6: {
+    label: "Training",
+    container:
+      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  },
   1: {
     label: "Kontrak",
     container:

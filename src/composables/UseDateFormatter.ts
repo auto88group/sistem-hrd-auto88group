@@ -33,7 +33,11 @@ const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 export function useDateFormatter() {
   const toDayMonthYear = (dateString: string | undefined | null): string => {
     if (!dateString) return "-";
-    const parts = dateString.split("-");
+
+    // Hapus bagian waktu jika ada (pisahkan berdasarkan 'T' dan ambil bagian pertamanya saja)
+    const dateOnly = dateString.split("T")[0];
+
+    const parts = dateOnly.split("-");
     if (parts.length !== 3) return dateString;
     const [year, month, day] = parts;
     return `${day}-${month}-${year}`;
@@ -41,7 +45,11 @@ export function useDateFormatter() {
 
   const toFullDate = (dateString: string | undefined | null): string => {
     if (!dateString) return "-";
-    const parts = dateString.split("-");
+
+    // Lakukan hal yang sama di sini
+    const dateOnly = dateString.split("T")[0];
+
+    const parts = dateOnly.split("-");
     if (parts.length !== 3) return dateString;
     const [year, month, day] = parts;
     const monthIndex = parseInt(month, 10) - 1;

@@ -36,6 +36,15 @@
         }}</span>
       </div>
     </template>
+    <template #[`item.status_id`]="{ item }">
+      <v-chip
+        variant="tonal"
+        :color="item.status_id === 1 ? 'text-amber-500' : 'text-blue-500'"
+        class="font-semibold"
+      >
+        {{ item.status_id === 1 ? "Kontrak" : "Training" }}
+      </v-chip>
+    </template>
 
     <template #[`item.effective_start_date`]="{ item }">
       <span class="text-green-600 font-bold">{{
@@ -99,19 +108,12 @@ const { formatName } = useFormatName();
 
 const headers = [
   { title: "No", key: "no", sortable: false, align: "center" },
-  { title: "Nama", key: "name", sortable: false },
-  { title: "Cabang", key: "branch_name", sortable: false },
-  { title: "Jabatan", key: "position", sortable: false },
-  {
-    title: "Tanggal Mulai Kontrak",
-    key: "effective_start_date",
-    sortable: false,
-  },
-  {
-    title: "Tanggal Berakhir Kontrak",
-    key: "effective_end_date",
-    sortable: false,
-  },
+  { title: "Nama", key: "name", sortable: true },
+  { title: "Cabang", key: "branch_name", sortable: true },
+  { title: "Jabatan", key: "position", sortable: true },
+  { title: "Status", key: "status_id", sortable: true },
+  { title: "Tanggal Mulai", key: "effective_start_date", sortable: true },
+  { title: "Tanggal Berakhir", key: "effective_end_date", sortable: true },
   { title: "Keterangan", key: "note", sortable: false },
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];
@@ -128,9 +130,19 @@ function isDatePassed(dateStr: string | null): boolean {
   return inputDate < today;
 }
 
-function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
+function onTableOptionsChange(options: any) {
+  params.value.draw = (params.value.draw ?? 1) + 1;
   params.value.length = options.itemsPerPage;
   params.value.start = (options.page - 1) * options.itemsPerPage;
+
+  if (options.sortBy.length > 0) {
+    params.value.sortBy = options.sortBy[0].key;
+    params.value.sortDirection = options.sortBy[0].order;
+  } else {
+    params.value.sortBy = "effective_end_date";
+    params.value.sortDirection = "asc";
+  }
+
   userContractEndStore.fetchUsers();
 }
 </script>

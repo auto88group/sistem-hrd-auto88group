@@ -138,6 +138,7 @@ export interface EmployeeStatusParams {
 export interface EmployeeStatusItem {
   status: string;
   total: number;
+  color: string;
 }
 export type EmployeeStatusResponse = EmployeeStatusItem[];
 

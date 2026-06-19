@@ -25,6 +25,7 @@ export interface EmployeeAttendanceParams {
   type_permit?: number | null;
   type_leave?: number | null;
   type_holiday?: number | null;
+  type_belum_absen?: number | null;
 }
 export interface EmployeeAttendanceResponse {
   draw: number;

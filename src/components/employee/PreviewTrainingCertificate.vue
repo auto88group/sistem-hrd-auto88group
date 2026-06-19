@@ -235,21 +235,19 @@
       <v-card-text class="px-6 py-4">
         <v-form ref="formRef">
           <div class="space-y-3 md:space-y-0 md:grid grid-cols-2 gap-4">
-            <div class="md:col-span-2">
-              <v-text-field
-                id="certificate_name"
-                v-model="form.certificate_name"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                :rules="[rules.required]"
-                :error-messages="serverErrors.certificate_name"
-              >
-                <template v-slot:label>
-                  Nama Sertifikat/Pelatihan<span class="text-red-500">*</span>
-                </template>
-              </v-text-field>
-            </div>
+            <v-text-field
+              id="certificate_name"
+              v-model="form.certificate_name"
+              variant="outlined"
+              density="compact"
+              hide-details="auto"
+              :rules="[rules.required]"
+              :error-messages="serverErrors.certificate_name"
+            >
+              <template v-slot:label>
+                Nama Sertifikat/Pelatihan<span class="text-red-500">*</span>
+              </template>
+            </v-text-field>
 
             <v-text-field
               id="organizer"
@@ -271,12 +269,9 @@
               variant="outlined"
               density="compact"
               hide-details="auto"
-              :rules="[rules.required]"
               :error-messages="serverErrors.issue_date"
             >
-              <template v-slot:label
-                >Tanggal Berlaku<span class="text-red-500">*</span></template
-              >
+              <template v-slot:label>Tanggal Berlaku</template>
             </app-date-picker>
 
             <app-date-picker
@@ -285,12 +280,9 @@
               variant="outlined"
               density="compact"
               hide-details="auto"
-              :rules="[rules.required]"
               :error-messages="serverErrors.expiry_date"
             >
-              <template v-slot:label
-                >Tanggal Berakhir<span class="text-red-500">*</span></template
-              >
+              <template v-slot:label>Tanggal Berakhir</template>
             </app-date-picker>
 
             <v-text-field
@@ -299,15 +291,12 @@
               variant="outlined"
               density="compact"
               hide-details="auto"
-              :rules="[rules.required]"
               :error-messages="serverErrors.notes"
             >
-              <template v-slot:label
-                >Catatan<span class="text-red-500">*</span></template
-              >
+              <template v-slot:label>Catatan</template>
             </v-text-field>
 
-            <div class="flex flex-col gap-1 col-span-2">
+            <div class="flex flex-col gap-1">
               <v-file-input
                 id="attachment"
                 v-model="form.attachment"

@@ -22,8 +22,9 @@ export const useUserContractEndStore = defineStore("user-contract-end", () => {
     length: 10,
     user_id: undefined,
     branch_id: undefined,
+    sortBy: "effective_end_date",
+    sortDirection: "asc",
   });
-
   const highlightParams = reactive<UserContractEndHightlightParams>({
     branch_id: undefined,
   });

@@ -99,6 +99,12 @@ const router = createRouter({
           redirect: "/setting/working-hour",
         },
         {
+          path: "/setting/coordinate",
+          name: "Koordinate Absen",
+          component: () => import("@/pages/setting/coordinate/index.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
           path: "/setting/working-hour",
           name: "Jam Kerja",
           component: () => import("@/pages/setting/working-hour/index.vue"),

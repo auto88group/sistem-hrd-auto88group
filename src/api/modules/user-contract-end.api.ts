@@ -6,6 +6,8 @@ export interface UserContractEndDatatablesParams {
   length?: number;
   user_id?: number;
   branch_id?: number;
+  sortBy?: string;
+  sortDirection?: string;
 }
 export interface UserContractEndHightlightParams {
   branch_id?: number;

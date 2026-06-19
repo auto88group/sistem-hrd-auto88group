@@ -10,7 +10,14 @@
           />
         </v-col>
         <v-col cols="12">
-          <v-row no-gutters>
+          <v-radio-group
+            v-model="selectedType"
+            inline
+            hide-details
+            density="compact"
+            color="primary"
+            @update:model-value="onChangeType"
+          >
             <v-col
               v-for="item in checkboxOptions"
               :key="item.key"
@@ -18,17 +25,14 @@
               sm="4"
               md="3"
             >
-              <v-checkbox
-                v-model="form[item.key as keyof typeof form]"
+              <v-radio
                 :label="item.label"
-                :true-value="1"
-                :false-value="0"
+                :value="item.key"
                 density="compact"
-                color="primary"
-                hide-details
+                @click="onClickRadio(item.key)"
               />
             </v-col>
-          </v-row>
+          </v-radio-group>
         </v-col>
         <v-col cols="12" md="6">
           <v-autocomplete
@@ -107,6 +111,10 @@
       class="md:w-[50%] lg:w-[30%] flex flex-col justify-center p-3 bg-gray-100 dark:bg-gray-800 rounded-xl"
     >
       <v-row class="m-0">
+        <v-col cols="4"><span class="font-bold">BA</span></v-col>
+        <v-col cols="8">: Belum Absen</v-col>
+      </v-row>
+      <v-row class="m-0">
         <v-col cols="4"><span class="font-bold">H</span></v-col>
         <v-col cols="8">: Hadir</v-col>
       </v-row>
@@ -147,12 +155,13 @@ import { useUserStore } from "@/stores/user.store";
 import { storeToRefs } from "pinia";
 import { computed, onMounted, ref, watch } from "vue";
 import DateRangePicker from "../DateRangePicker.vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 const { formatName } = useFormatName();
 const { toRangeYMD } = useDateFormatter();
 
 const route = useRoute();
+const router = useRouter();
 
 const employeeAttendanceStore = useEmployeeAttendanceRequestStore();
 const userStore = useUserStore();
@@ -164,13 +173,31 @@ const selectedUserText = ref<string>("");
 const searchBranch = ref("");
 
 const today = new Date().toISOString().split("T")[0];
+const selectedType = ref<string | null>(null);
 
+function onChangeType(val: string | null) {
+  // Reset semua ke 0 dulu
+  checkboxOptions.forEach((option) => {
+    (form.value as any)[option.key] = 0;
+  });
+  // Set yang dipilih ke 1
+  if (val) {
+    (form.value as any)[val] = 1;
+  }
+}
+function onClickRadio(key: string) {
+  if (selectedType.value === key) {
+    selectedType.value = null;
+    onChangeType(null);
+  }
+}
 const checkboxOptions = [
   { key: "type_present", label: "Hadir" },
+  { key: "type_belum_hadir", label: "Belum Hadir" },
   { key: "type_late", label: "Terlambat" },
   { key: "type_go_home_early", label: "Pulang Awal" },
   { key: "type_didnt_check_out", label: "Tidak Check Out" },
-  { key: "type_negligent", label: "Mangkir" },
+  { key: "type_negligent", label: "Alpa" },
   { key: "type_sick", label: "Sakit" },
   { key: "type_permit", label: "Izin" },
   { key: "type_leave", label: "Cuti" },
@@ -262,6 +289,20 @@ watch(
 );
 
 async function filter() {
+  const currentQuery = { ...route.query };
+
+  checkboxOptions.forEach((option) => {
+    const value = form.value[option.key as keyof typeof form.value];
+    if (value === 1) {
+      currentQuery[option.key] = value.toString(); // Tambahkan ke URL jika dicentang
+    } else {
+      delete currentQuery[option.key]; // Hapus dari URL jika tidak dicentang biar rapi
+    }
+  });
+
+  // Replace URL tanpa me-reload halaman
+  router.replace({ query: currentQuery }).catch(() => {});
+
   employeeAttendanceStore.fetchEmployeeAttendance();
 }
 
@@ -272,5 +313,26 @@ onMounted(async () => {
   if (route.path.includes("dashboard")) {
     form.value.periodForm = [today, today];
   }
+
+  // 1. Cek apakah ada minimal SATU parameter type_... di URL
+  const hasTypeFilterInUrl = checkboxOptions.some(
+    (option) => route.query[option.key] !== undefined,
+  );
+
+  // 2. Jika ada parameter di URL, timpa semua nilai checkbox
+  if (hasTypeFilterInUrl) {
+    checkboxOptions.forEach((option) => {
+      const queryValue = route.query[option.key];
+      (form.value as any)[option.key] =
+        queryValue !== undefined ? Number(queryValue) : 0;
+    });
+
+    // Sync selectedType dari URL
+    const active = checkboxOptions.find((o) => route.query[o.key] === "1");
+    selectedType.value = active?.key ?? null;
+  }
+
+  // 🔥 TAMBAHAN UTAMA: Langsung panggil API absensi setelah form selesai di-update dari URL
+  employeeAttendanceStore.fetchEmployeeAttendance();
 });
 </script>

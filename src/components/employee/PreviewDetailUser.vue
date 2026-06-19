@@ -449,6 +449,33 @@
             </v-col>
           </template>
 
+          <!-- Status 1: Kontrak → Tanggal Mulai + Tanggal Selesai -->
+          <template v-if="userStore.usersSelected?.status_id === 6">
+            <v-col cols="12" md="6">
+              <div class="text-gray-500 text-sm dark:text-gray-300">
+                Tanggal Mulai Training
+              </div>
+              <div class="font-bold text-sm">
+                {{
+                  toDayMonthYear(
+                    userStore.usersSelected?.effective_start_date,
+                  ) ?? "-"
+                }}
+              </div>
+            </v-col>
+            <v-col cols="12" md="6">
+              <div class="text-gray-500 text-sm dark:text-gray-300">
+                Tanggal Selesai Training
+              </div>
+              <div class="font-bold text-sm">
+                {{
+                  toDayMonthYear(userStore.usersSelected?.effective_end_date) ??
+                  "-"
+                }}
+              </div>
+            </v-col>
+          </template>
+
           <!-- Status 2: Tetap → Tanggal Ditetapkan -->
           <template v-else-if="userStore.usersSelected?.status_id === 2">
             <v-col cols="12" md="6">

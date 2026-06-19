@@ -140,14 +140,24 @@
       ></v-autocomplete>
     </div>
 
-    <div>
+    <div class="flex flex-col gap-1">
       <v-checkbox
-        v-model="form.show_deleted"
-        label="Tampilkan User Dihapus"
+        v-model="form.only_active"
+        label="Hanya Aktif"
+        color="text-green-500"
+        hide-details
+        density="compact"
+        class="mt-0"
+        @update:model-value="if (form.only_active) form.only_deleted = false;"
+      ></v-checkbox>
+      <v-checkbox
+        v-model="form.only_deleted"
+        label="Hanya Dihapus"
         color="text-red-500"
         hide-details
         density="compact"
         class="mt-0"
+        @update:model-value="if (form.only_deleted) form.only_active = false;"
       ></v-checkbox>
     </div>
 
@@ -313,7 +323,8 @@ const form = reactive<Partial<UserDatatablesParams>>({
   hrd_master_education_id: undefined,
   status_id: undefined,
   gender: undefined,
-  show_deleted: false,
+  only_active: true,
+  only_deleted: false,
 });
 </script>
 

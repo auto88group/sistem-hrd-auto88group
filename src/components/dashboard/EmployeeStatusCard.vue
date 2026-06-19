@@ -88,7 +88,14 @@
           :key="index"
           class="flex flex-col p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50"
         >
-          <span class="text-xs text-slate-500 dark:text-slate-200 font-medium">
+          <span
+            class="text-xs font-medium"
+            :class="{
+              'text-amber-500': item.color === 'amber',
+              'text-green-500': item.color === 'green',
+              'text-blue-500': item.color === 'blue',
+            }"
+          >
             {{ item.status }}
           </span>
           <span class="text-lg font-bold text-slate-800 dark:text-white">
@@ -168,9 +175,16 @@ const onChangeBranch = useDebounceFn((val: string) => {
 
 const series = computed(() => chartData.value.map((item) => item.total));
 const chartOptions = computed(() => ({
-  // ... (sama persis seperti sebelumnya, hanya ganti chartData → chartData.value)
   labels: chartData.value.map((item) => item.status),
-  // ...
+  colors: chartData.value.map((item) => {
+    const colorMap: Record<string, string> = {
+      amber: "#de8c02",
+      green: "#22C55E",
+      blue: "#3B82F6",
+    };
+    return colorMap[item.color] ?? "#6366F1";
+  }),
+  // ... opsi lainnya
 }));
 
 onMounted(() => {

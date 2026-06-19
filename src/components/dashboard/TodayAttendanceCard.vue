@@ -116,7 +116,8 @@
             <tr
               v-for="(item, index) in tableData"
               :key="index"
-              class="group even:bg-slate-50/50 dark:even:bg-slate-800/30"
+              class="group even:bg-slate-50/50 dark:even:bg-slate-800/30 cursor-pointer"
+              @click="onClickRow(item.label)"
             >
               <td class="pl-2 py-2.5 flex items-center gap-3">
                 <div
@@ -155,12 +156,14 @@ import { storeToRefs } from "pinia";
 import { useHighlightStore } from "@/stores/highlight.store";
 import { useBranchStore } from "@/stores/branch.store";
 import { useDebounceFn } from "@/composables/UseDebounce";
+import { useRouter } from "vue-router";
 
 const theme = useTheme();
 const apexchart = VueApexCharts;
 
 const highlightStore = useHighlightStore();
 const branchStore = useBranchStore();
+const router = useRouter();
 
 const {
   attendanceToday: rawData,
@@ -231,6 +234,61 @@ const tableData = computed(() =>
   })),
 );
 
+const onClickRow = (label: string) => {
+  if (label === "Hadir") {
+    router.push({
+      path: "/dashboard/attendance-today-report",
+      query: {
+        type_present: 1,
+      },
+    });
+  }
+
+  if (label === "Terlambat") {
+    router.push({
+      path: "/dashboard/attendance-today-report",
+      query: {
+        type_late: 1,
+      },
+    });
+  }
+
+  if (label === "Belum Absen") {
+    router.push({
+      path: "/dashboard/attendance-today-report",
+      query: {
+        type_belum_hadir: 1,
+      },
+    });
+  }
+
+  if (label === "Cuti") {
+    router.push({
+      path: "/dashboard/attendance-today-report",
+      query: {
+        type_leave: 1,
+      },
+    });
+  }
+
+  if (label === "Izin") {
+    router.push({
+      path: "/dashboard/attendance-today-report",
+      query: {
+        type_permit: 1,
+      },
+    });
+  }
+
+  if (label === "Sakit") {
+    router.push({
+      path: "/dashboard/attendance-today-report",
+      query: {
+        type_sick: 1,
+      },
+    });
+  }
+};
 const chartOptions = computed(() => {
   const isDark = theme.global.name.value === "dark";
   return {
