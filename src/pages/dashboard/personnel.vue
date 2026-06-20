@@ -12,6 +12,7 @@
     <employee-master-approval-card />
     <employee-status-card />
     <education-statistics-card />
+    <statistic-file-completeness-card />
   </div>
 </template>
 
@@ -23,5 +24,6 @@ import ExpiringContractsCard from "@/components/dashboard/ExpiringContractsCard.
 import GenderStatisticsCard from "@/components/dashboard/GenderStatisticsCard.vue";
 import JoinTerminationCard from "@/components/dashboard/JoinTerminationCard.vue";
 import ReligionStatisticsCard from "@/components/dashboard/ReligionStatisticsCard.vue";
+import StatisticFileCompletenessCard from "@/components/dashboard/StatisticFileCompletenessCard.vue";
 import TotalEmployeesCard from "@/components/dashboard/TotalEmployeesCard.vue";
 </script>

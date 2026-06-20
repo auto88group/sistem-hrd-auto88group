@@ -28,6 +28,8 @@ export const useRemainingLeaveStore = defineStore("remaining-leave", () => {
     length: 10,
     user_id: undefined,
     branch_id: undefined,
+    sortBy: "id", // ← tambah
+    sortDirection: "asc", // ← tambah
   });
 
   const detailParams = reactive<RemainingLeaveDetailParams>({

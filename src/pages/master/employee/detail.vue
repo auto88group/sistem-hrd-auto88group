@@ -42,8 +42,13 @@
           ></v-tab>
           <v-tab
             :disabled="isCreate"
-            text="Kelengkapan File"
+            text="Data Pribadi"
             value="file-completeness"
+          ></v-tab>
+          <v-tab
+            :disabled="isCreate"
+            text="Data Personalia"
+            value="file-personnel"
           ></v-tab>
         </v-tabs>
 
@@ -80,6 +85,10 @@
           <v-tabs-window-item value="file-completeness">
             <detail-file-completeness />
           </v-tabs-window-item>
+
+          <v-tabs-window-item value="file-personnel">
+            <detail-file-personnel />
+          </v-tabs-window-item>
         </v-tabs-window>
       </div>
     </v-card>
@@ -99,6 +108,7 @@ import DetailJobCareer from "@/components/employee/DetailJobCareer.vue";
 import DetailTrainingCertificate from "@/components/employee/DetailTrainingCertificate.vue";
 import DetailAccountAccess from "@/components/employee/DetailAccountAccess.vue";
 import DetailFileCompleteness from "@/components/employee/DetailFileCompleteness.vue";
+import DetailFilePersonnel from "@/components/employee/DetailFilePersonnel.vue";
 
 const tab = ref("detail-user");
 const route = useRoute();

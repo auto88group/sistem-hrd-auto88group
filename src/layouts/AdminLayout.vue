@@ -400,6 +400,56 @@
             ></v-list-item>
           </v-list-group>
 
+          <v-list-group value="manage-attendance">
+            <template v-slot:activator="{ props }">
+              <v-list-item v-bind="props">
+                <template v-slot:prepend>
+                  <v-icon
+                    icon="mdi-calendar-check"
+                    size="25"
+                    class="!text-indigo-600 !opacity-100 mr-1"
+                  />
+                </template>
+                Kelola Absensi</v-list-item
+              >
+            </template>
+            <v-list-item
+              to="/manage-attendance/attendance-report"
+              :active="
+                $route.path.startsWith('/manage-attendance/attendance-report')
+              "
+              active-class="text-indigo-600"
+              title="Laporan Absensi"
+              value="laporan-absensi"
+            ></v-list-item>
+            <v-list-item
+              to="/manage-attendance/attendance-recap"
+              :active="
+                $route.path.startsWith('/manage-attendance/attendance-recap')
+              "
+              title="Rekap Absensi"
+              value="rekap-absensi"
+            ></v-list-item>
+            <v-list-item
+              to="/manage-attendance/overtime-request"
+              :active="
+                $route.path.startsWith('/manage-attendance/overtime-request')
+              "
+              title="Pengajuan Lembur"
+              active-class="text-indigo-600"
+              value="lembur"
+            ></v-list-item>
+            <v-list-item
+              to="/manage-attendance/leave-request"
+              :active="
+                $route.path.startsWith('/manage-attendance/leave-request')
+              "
+              title="Pengajuan Izin"
+              active-class="text-indigo-600"
+              value="izin"
+            ></v-list-item>
+          </v-list-group>
+
           <v-list-group value="setting">
             <template v-slot:activator="{ props }">
               <v-list-item
@@ -473,56 +523,6 @@
               value="jadwal-shift"
             ></v-list-item>
           </v-list-group>
-
-          <v-list-group value="manage-attendance">
-            <template v-slot:activator="{ props }">
-              <v-list-item v-bind="props">
-                <template v-slot:prepend>
-                  <v-icon
-                    icon="mdi-calendar-check"
-                    size="25"
-                    class="!text-indigo-600 !opacity-100 mr-1"
-                  />
-                </template>
-                Kelola Absensi</v-list-item
-              >
-            </template>
-            <v-list-item
-              to="/manage-attendance/attendance-report"
-              :active="
-                $route.path.startsWith('/manage-attendance/attendance-report')
-              "
-              active-class="text-indigo-600"
-              title="Laporan Absensi"
-              value="laporan-absensi"
-            ></v-list-item>
-            <v-list-item
-              to="/manage-attendance/attendance-recap"
-              :active="
-                $route.path.startsWith('/manage-attendance/attendance-recap')
-              "
-              title="Rekap Absensi"
-              value="rekap-absensi"
-            ></v-list-item>
-            <v-list-item
-              to="/manage-attendance/overtime-request"
-              :active="
-                $route.path.startsWith('/manage-attendance/overtime-request')
-              "
-              title="Pengajuan Lembur"
-              active-class="text-indigo-600"
-              value="lembur"
-            ></v-list-item>
-            <v-list-item
-              to="/manage-attendance/leave-request"
-              :active="
-                $route.path.startsWith('/manage-attendance/leave-request')
-              "
-              title="Pengajuan Izin"
-              active-class="text-indigo-600"
-              value="izin"
-            ></v-list-item>
-          </v-list-group>
         </v-list>
       </v-navigation-drawer>
 
@@ -569,12 +569,12 @@ const showScrollTop = ref(false);
 const menuItems = [
   { value: "dashboard", label: "Dashboard", icon: "mdi-view-dashboard" },
   { value: "master", label: "Master Data", icon: "mdi-database" },
-  { value: "setting", label: "Pengaturan", icon: "mdi-cog" },
   {
     value: "manage-attendance",
     label: "Kelola Absensi",
     icon: "mdi-calendar-check",
   },
+  { value: "setting", label: "Pengaturan", icon: "mdi-cog" },
 ];
 
 const handleScroll = () => {

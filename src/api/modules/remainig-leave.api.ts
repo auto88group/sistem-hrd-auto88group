@@ -5,6 +5,8 @@ export interface RemainingLeaveDatatablesParams {
   length?: number;
   user_id?: number;
   branch_id?: number;
+  sortBy?: string;
+  sortDirection?: string;
 }
 
 export interface RemainingLeaveDetailParams {
@@ -94,7 +96,9 @@ export interface RemainingLeave {
   branch_name: string;
   branch_alias: string;
   branch_code: string;
-  DT_RowIndex: 1;
+  join_date: string | null; // ← tambah
+  valid_until: string | null; // ← tambah
+  DT_RowIndex: number; // ← fix: was literal `1`, seharusnya `number`
 }
 
 export const remainingLeaveApi = {

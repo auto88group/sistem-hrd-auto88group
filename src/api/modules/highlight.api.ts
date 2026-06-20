@@ -174,6 +174,30 @@ export interface LatePercentageItem {
 }
 export type LatePercentageResponse = LatePercentageItem[];
 
+// STATISTIC FILE COMPLETENESS
+export interface StatisticFileCompletenessParams {
+  alias?: string;
+}
+
+export interface CategoryBreakdownItem {
+  category_id: number;
+  category_name: string;
+  uploaded_count: number;
+  missing_count: number;
+}
+
+export interface StatisticFileCompletenessData {
+  total_employees: number;
+  complete_employees_count: number;
+  incomplete_employees_count: number;
+  category_breakdown: CategoryBreakdownItem[];
+}
+
+export interface StatisticFileCompletenessResponse {
+  success: boolean;
+  data: StatisticFileCompletenessData;
+}
+
 export const highlightApi = {
   getLeaveRequest(params: LeaveRequestParams): Promise<LeaveRequestResponse> {
     return api
@@ -244,6 +268,14 @@ export const highlightApi = {
   ): Promise<LatePercentageResponse> {
     return api
       .get(`/hrd/highlight/late-percentage`, { params })
+      .then((res) => res.data);
+  },
+
+  getStatisticFileCompleteness(
+    params?: StatisticFileCompletenessParams,
+  ): Promise<StatisticFileCompletenessResponse> {
+    return api
+      .get(`/hrd/highlight/statistic-file-completeness`, { params })
       .then((res) => res.data);
   },
 };

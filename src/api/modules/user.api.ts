@@ -13,6 +13,8 @@ export interface UserDatatablesParams {
   sortDirection?: string;
   only_active?: boolean;
   only_deleted?: boolean;
+  hrd_file_category_id?: number;
+  file_status?: string;
 }
 export interface UserDataParams {
   search?: string;

@@ -3,23 +3,28 @@ import api from "../axios";
 export interface FileCompletenessSelectedParams {
   user_id?: string;
 }
+
 export interface FileCompletenessCreateUpdateParams {
   // required
   user_id: number;
+  hrd_file_category_id: number;
   name: string;
-
   // optional
   file?: File;
+  file_preview?: string | null;
 }
+
 export interface FileCompletenessSelectedResponse {
   success: boolean;
   data: FileCompleteness[];
 }
+
 export interface FileCompletenessCreateUpdateResponse {
   success: boolean;
   message: string;
   data: FileCompleteness;
 }
+
 export interface FileCompletenessDestroyResponse {
   success: boolean;
   message: string;
@@ -27,8 +32,12 @@ export interface FileCompletenessDestroyResponse {
 
 export interface FileCompleteness {
   id: number;
+  user_id: number;
+  hrd_file_category_id: number;
+  category_name: string;
+  is_mandatory: boolean;
   name: string;
-  file?: File;
+  file?: string | null;
 }
 
 export const fileCompletenessApi = {

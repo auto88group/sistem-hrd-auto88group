@@ -21,6 +21,9 @@ import {
   type ReligionParams,
   type UserDataApprovalItem,
   type UserDataApprovalParams,
+  type StatisticFileCompletenessParams,
+  type StatisticFileCompletenessData,
+  type StatisticFileCompletenessResponse,
 } from "@/api/modules/highlight.api";
 import { defineStore } from "pinia";
 import { ref, reactive } from "vue";
@@ -205,6 +208,28 @@ export const useHighlightStore = defineStore("highlight", () => {
     }
   }
 
+  // STATISTIC FILE COMPLETENESS
+  const statisticFileCompleteness = ref<StatisticFileCompletenessData | null>(
+    null,
+  );
+  const isLoadingStatisticFileCompleteness = ref(false);
+  const statisticFileCompletenessParams =
+    reactive<StatisticFileCompletenessParams>({
+      alias: undefined,
+    });
+
+  async function fetchStatisticFileCompleteness() {
+    isLoadingStatisticFileCompleteness.value = true;
+    try {
+      const res = await highlightApi.getStatisticFileCompleteness({
+        ...statisticFileCompletenessParams,
+      });
+      statisticFileCompleteness.value = res.data;
+    } finally {
+      isLoadingStatisticFileCompleteness.value = false;
+    }
+  }
+
   return {
     // LEAVE REQUEST
     leaveRequest,
@@ -265,5 +290,11 @@ export const useHighlightStore = defineStore("highlight", () => {
     isLoadingLatePercentage,
     latePercentageParams,
     fetchLatePercentage,
+
+    // STATISTIC FILE COMPLETENESS
+    statisticFileCompleteness,
+    isLoadingStatisticFileCompleteness,
+    statisticFileCompletenessParams,
+    fetchStatisticFileCompleteness,
   };
 });

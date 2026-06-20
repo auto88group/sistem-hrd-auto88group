@@ -341,7 +341,7 @@ import { onMounted, computed, ref } from "vue";
 import FilterUsers from "./FilterUsers.vue";
 import { useUserStore } from "@/stores/user.store";
 import type { UserDatatablesParams } from "@/api/modules/user.api";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useEmployeeStatus } from "@/composables/UseEmployeeStatus";
 import { useFormatName } from "@/composables/useFormatName";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
@@ -355,6 +355,7 @@ const { toFullDate } = useDateFormatter();
 const apiUrl = import.meta.env.VITE_API_URL;
 const { formatName } = useFormatName();
 const store = useUserStore();
+const route = useRoute();
 const {
   users: karyawan,
   userDestoryParams,
@@ -365,7 +366,19 @@ const router = useRouter();
 const { statusLabel, statusColor } = useEmployeeStatus();
 const { ask } = useConfirmDialog();
 
-onMounted(() => store.fetchUsers());
+onMounted(() => {
+  // Tangkap parameter dari URL jika ada
+  if (route.query.hrd_file_category_id) {
+    store.params.hrd_file_category_id = Number(
+      route.query.hrd_file_category_id,
+    );
+  }
+  if (route.query.file_status) {
+    store.params.file_status = String(route.query.file_status);
+  }
+
+  store.fetchUsers();
+});
 
 function onTableOptionsChange(options: any) {
   store.params.length = options.itemsPerPage;

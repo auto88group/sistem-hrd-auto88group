@@ -272,7 +272,7 @@
                     v-else
                     class="h-40 flex items-center justify-center border rounded bg-gray-100 dark:bg-gray-800 text-gray-400 text-xs italic"
                   >
-                    Tidak ada sertifikat
+                    Tidak ada lampiran
                   </div>
                 </div>
               </div>

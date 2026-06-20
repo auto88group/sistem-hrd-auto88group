@@ -1,5 +1,5 @@
 <template>
-  <div v-if="fileCompletenessStore.isLoadingSelected">
+  <div v-if="filePersonnelStore.isLoadingSelected">
     <v-card v-for="n in 3" :key="n" flat class="p-3">
       <v-skeleton-loader
         type="heading, divider, list-item-two-line@3"
@@ -9,7 +9,6 @@
   </div>
 
   <v-card v-else flat class="p-1 md:p-3 space-y-3">
-    <!-- ───── Toolbar ───── -->
     <div class="flex justify-end w-full gap-2">
       <v-btn
         color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
@@ -24,9 +23,7 @@
         prepend-icon="mdi-pencil-box"
         variant="flat"
         @click="
-          openAddDialog(
-            fileCompletenessStore.fileCompletenessSelectedParams.user_id,
-          )
+          openAddDialog(filePersonnelStore.filePersonnelSelectedParams.user_id)
         "
       >
         Tambah Data
@@ -35,7 +32,6 @@
 
     <confirm-dialog />
 
-    <!-- ───── Snackbar Error ───── -->
     <v-snackbar
       v-model="showErrorSnackbar"
       color="bg-red-500"
@@ -57,7 +53,6 @@
       </template>
     </v-snackbar>
 
-    <!-- ───── Snackbar Success ───── -->
     <v-snackbar
       v-model="showSuccessSnackbar"
       color="bg-green-500"
@@ -80,73 +75,7 @@
     </v-snackbar>
 
     <div
-      v-if="
-        !fileCompletenessStore.isLoadingSelected &&
-        !fileCategoryStore.isLoadingFetch
-      "
-      class="w-full"
-    >
-      <v-alert
-        v-if="missingMandatoryCategories.length > 0"
-        type="error"
-        variant="tonal"
-        class="mb-4 rounded-xl border"
-        border="start"
-      >
-        <div class="font-bold text-sm text-red-700 dark:text-red-400 mb-2">
-          Perhatian! Ada dokumen WAJIB yang belum diunggah:
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <v-chip
-            v-for="cat in missingMandatoryCategories"
-            :key="cat.id"
-            color="red"
-            size="small"
-            variant="flat"
-            class="font-medium font-semibold"
-          >
-            {{ cat.name }}
-          </v-chip>
-        </div>
-      </v-alert>
-
-      <v-alert
-        v-else-if="
-          fileCategoryStore.categories.length > 0 &&
-          completedCategories.length > 0
-        "
-        type="success"
-        variant="tonal"
-        class="mb-4 rounded-xl border"
-        border="start"
-      >
-        <div class="font-bold text-sm text-green-700 dark:text-green-400">
-          Semua dokumen WAJIB sudah terunggah
-        </div>
-      </v-alert>
-
-      <div
-        v-if="missingOptionalCategories.length > 0"
-        class="mb-4 px-2 flex flex-wrap items-center gap-2"
-      >
-        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-          Dokumen opsional belum diunggah:
-        </span>
-        <v-chip
-          v-for="cat in missingOptionalCategories"
-          :key="cat.id"
-          size="x-small"
-          variant="outlined"
-          color="grey"
-        >
-          {{ cat.name }}
-        </v-chip>
-      </div>
-    </div>
-
-    <!-- ───── Empty State ───── -->
-    <div
-      v-if="fileCompletenessStore.fileCompletenessSelected.length === 0"
+      v-if="filePersonnelStore.filePersonnelSelected.length === 0"
       class="flex flex-col items-center justify-center py-16 text-gray-400 border-2 border-dashed rounded-xl dark:border-gray-700"
     >
       <v-icon
@@ -154,16 +83,17 @@
         size="56"
         class="mb-3 opacity-40"
       />
-      <span class="text-base font-medium">Belum ada file yang diunggah</span>
+      <span class="text-base font-medium"
+        >Belum ada file personalia yang diunggah</span
+      >
       <span class="text-sm mt-1 opacity-70"
         >Klik "Tambah Data" untuk mengunggah file</span
       >
     </div>
 
-    <!-- ───── Grid File ───── -->
     <v-row v-else>
       <v-col
-        v-for="item in fileCompletenessStore.fileCompletenessSelected"
+        v-for="item in filePersonnelStore.filePersonnelSelected"
         :key="item.id"
         cols="12"
         sm="6"
@@ -171,7 +101,6 @@
         lg="4"
       >
         <v-card elevation="2" rounded="xl" class="overflow-hidden group">
-          <!-- ── Badge kategori di atas ── -->
           <div class="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
               <v-icon icon="mdi-tag" size="16" color="indigo" />
@@ -201,7 +130,6 @@
             </v-chip>
           </div>
 
-          <!-- ── Thumbnail ── -->
           <div
             class="relative mx-4 mb-2 aspect-[4/3] overflow-hidden rounded-lg border bg-gray-50 dark:bg-gray-800"
           >
@@ -240,7 +168,6 @@
               <span class="text-sm mt-2 text-gray-400">Belum ada file</span>
             </div>
 
-            <!-- Overlay aksi -->
             <div
               class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3"
             >
@@ -263,13 +190,12 @@
                 color="red"
                 variant="elevated"
                 size="small"
-                :loading="fileCompletenessStore.isLoadingDestroy"
+                :loading="filePersonnelStore.isLoadingDestroy"
                 @click="handleDelete(item.id)"
               />
             </div>
           </div>
 
-          <!-- ── Nama file ── -->
           <div class="px-4 pb-4">
             <p
               class="text-base font-bold text-gray-800 dark:text-gray-100 truncate"
@@ -282,7 +208,6 @@
     </v-row>
   </v-card>
 
-  <!-- ───── Dialog Tambah/Edit File ───── -->
   <v-dialog v-model="dialog" max-width="700" scrollable>
     <v-card rounded="lg">
       <v-card-title class="flex items-center gap-2 px-6 pt-5 pb-3">
@@ -291,9 +216,9 @@
           color="primary"
           size="small"
         />
-        <span class="text-base font-bold">{{
-          isEditMode ? "Edit File" : "Tambah File"
-        }}</span>
+        <span class="text-base font-bold">
+          {{ isEditMode ? "Edit File Personnel" : "Tambah File Personnel" }}
+        </span>
         <v-spacer />
         <v-btn
           icon="mdi-close"
@@ -307,19 +232,18 @@
       <v-card-text class="px-6 py-4">
         <v-form ref="formRef">
           <div class="space-y-3 md:space-y-0 md:grid grid-cols-2 gap-4">
-            <!-- Kategori -->
             <div class="md:col-span-2">
               <v-select
-                v-model="form.hrd_file_category_id"
-                :items="fileCategoryStore.categories"
+                v-model="form.hrd_file_personnel_category_id"
+                :items="filePersonnelCategoryStore.categories"
                 item-title="name"
                 item-value="id"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-                :loading="fileCategoryStore.isLoadingFetch"
+                :loading="filePersonnelCategoryStore.isLoadingFetch"
                 :rules="[rules.required]"
-                :error-messages="serverErrors.hrd_file_category_id"
+                :error-messages="serverErrors.hrd_file_personnel_category_id"
               >
                 <template v-slot:label>
                   Kategori<span class="text-red-500">*</span>
@@ -327,7 +251,6 @@
               </v-select>
             </div>
 
-            <!-- Nama -->
             <div class="md:col-span-2">
               <v-text-field
                 v-model="form.name"
@@ -343,7 +266,6 @@
               </v-text-field>
             </div>
 
-            <!-- File -->
             <div class="flex flex-col gap-1 col-span-2">
               <v-file-input
                 v-model="form.file"
@@ -355,9 +277,9 @@
                 prepend-inner-icon="mdi-paperclip"
                 :error-messages="serverErrors.file"
               >
-                <template v-slot:label
-                  >Lampiran<span class="text-red-500">*</span></template
-                >
+                <template v-slot:label>
+                  Lampiran<span class="text-red-500">*</span>
+                </template>
               </v-file-input>
 
               <div
@@ -391,8 +313,8 @@
           :prepend-icon="isEditMode ? 'mdi-content-save' : 'mdi-plus'"
           :loading="
             isEditMode
-              ? fileCompletenessStore.isLoadingUpdate
-              : fileCompletenessStore.isLoadingCreate
+              ? filePersonnelStore.isLoadingUpdate
+              : filePersonnelStore.isLoadingCreate
           "
           @click="submitForm"
         >
@@ -402,7 +324,6 @@
     </v-card>
   </v-dialog>
 
-  <!-- ───── Dialog Kelola Kategori ───── -->
   <v-dialog v-model="categoryDialog" max-width="600" scrollable>
     <v-card rounded="lg">
       <v-card-title
@@ -455,12 +376,12 @@
                     hide-details
                   >
                     <template v-slot:label>
-                      <span class="text-sm"
-                        >Tandai sebagai dokumen
-                        <b class="text-red-500">Wajib</b></span
-                      >
+                      <span class="text-sm">
+                        Tandai sebagai dokumen <b class="text-red-500">Wajib</b>
+                      </span>
                     </template>
                   </v-switch>
+
                   <div class="flex gap-2">
                     <v-btn
                       v-if="isEditCategoryMode"
@@ -478,8 +399,8 @@
                       variant="flat"
                       :loading="
                         isEditCategoryMode
-                          ? fileCategoryStore.isLoadingUpdate
-                          : fileCategoryStore.isLoadingCreate
+                          ? filePersonnelCategoryStore.isLoadingUpdate
+                          : filePersonnelCategoryStore.isLoadingCreate
                       "
                       @click="submitCategoryForm"
                     >
@@ -497,19 +418,19 @@
             Daftar Kategori
           </h3>
           <v-chip size="small" variant="tonal" color="indigo">
-            {{ fileCategoryStore.categories.length }} Kategori
+            {{ filePersonnelCategoryStore.categories.length }} Kategori
           </v-chip>
         </div>
 
         <div
-          v-if="fileCategoryStore.isLoadingFetch"
+          v-if="filePersonnelCategoryStore.isLoadingFetch"
           class="flex justify-center py-8"
         >
           <v-progress-circular indeterminate color="indigo" />
         </div>
 
         <div
-          v-else-if="fileCategoryStore.categories.length === 0"
+          v-else-if="filePersonnelCategoryStore.categories.length === 0"
           class="flex flex-col items-center justify-center py-8 text-gray-400 border-2 border-dashed rounded-lg dark:border-gray-700"
         >
           <v-icon
@@ -522,7 +443,7 @@
 
         <div v-else class="space-y-2">
           <v-card
-            v-for="cat in fileCategoryStore.categories"
+            v-for="cat in filePersonnelCategoryStore.categories"
             :key="cat.id"
             border
             flat
@@ -532,21 +453,25 @@
               class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
             >
               <div class="flex flex-col gap-1">
-                <span class="font-medium text-gray-800 dark:text-gray-100">{{
-                  cat.name
-                }}</span>
-                <v-chip
-                  size="x-small"
-                  variant="flat"
-                  :color="
-                    cat.is_mandatory
-                      ? 'bg-red-100 text-red-600'
-                      : 'grey-lighten-4 text-grey-darken-1'
-                  "
-                  class="font-medium w-fit"
-                >
-                  {{ cat.is_mandatory ? "Dokumen Wajib" : "Dokumen Opsional" }}
-                </v-chip>
+                <span class="font-medium text-gray-800 dark:text-gray-100">
+                  {{ cat.name }}
+                </span>
+                <div class="flex items-center gap-2">
+                  <v-chip
+                    size="x-small"
+                    variant="flat"
+                    :color="
+                      cat.is_mandatory
+                        ? 'bg-red-100 text-red-600'
+                        : 'grey-lighten-4 text-grey-darken-1'
+                    "
+                    class="font-medium w-fit"
+                  >
+                    {{
+                      cat.is_mandatory ? "Dokumen Wajib" : "Dokumen Opsional"
+                    }}
+                  </v-chip>
+                </div>
               </div>
 
               <div class="flex items-center gap-1 sm:gap-2">
@@ -567,11 +492,12 @@
                       size="small"
                       variant="text"
                       :color="cat.is_mandatory ? 'red' : 'grey-lighten-1'"
-                      :loading="fileCategoryStore.isLoadingToggle"
+                      :loading="filePersonnelCategoryStore.isLoadingToggle"
                       @click="handleToggleMandatory(cat.id)"
                     />
                   </template>
                 </v-tooltip>
+
                 <v-btn
                   icon="mdi-pencil"
                   size="small"
@@ -584,7 +510,7 @@
                   size="small"
                   variant="text"
                   color="red-darken-1"
-                  :loading="fileCategoryStore.isLoadingDestroy"
+                  :loading="filePersonnelCategoryStore.isLoadingDestroy"
                   @click="handleDeleteCategory(cat.id)"
                 />
               </div>
@@ -597,17 +523,17 @@
 </template>
 
 <script setup lang="ts">
-import { useFileCompletenessStore } from "@/stores/file-completeness.store";
-import { useFileCategoryStore } from "@/stores/file-category.store";
-import { computed, onMounted, reactive, ref } from "vue";
+import { useFilePersonnelStore } from "@/stores/file-personnel.store";
+import { useFilePersonnelCategoryStore } from "@/stores/file-personnel-category.store";
+import { onMounted, reactive, ref } from "vue";
 import ConfirmDialog from "../ConfirmDialog.vue";
 import { useRoute } from "vue-router";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
-import type { FileCategory } from "@/api/modules/file-category.api.ts";
+import type { FilePersonnelCategory } from "@/api/modules/file-personnel-category.api";
 
 const { ask } = useConfirmDialog();
-const fileCompletenessStore = useFileCompletenessStore();
-const fileCategoryStore = useFileCategoryStore();
+const filePersonnelStore = useFilePersonnelStore();
+const filePersonnelCategoryStore = useFilePersonnelCategoryStore();
 const route = useRoute();
 const userId = route.params.id;
 const apiUrl = import.meta.env.VITE_API_URL ?? "";
@@ -634,7 +560,7 @@ const formRef = ref();
 const defaultForm = () => ({
   id: null as number | null,
   user_id: null as number | null,
-  hrd_file_category_id: null as number | null,
+  hrd_file_personnel_category_id: null as number | null,
   name: "",
   file: [] as File[],
   file_existing: null as any,
@@ -643,38 +569,15 @@ const defaultForm = () => ({
 
 const form = reactive(defaultForm());
 const serverErrors = reactive<Record<string, string>>({});
-
 const rules = { required: (v: any) => !!v || "Field ini wajib diisi" };
-
-// ───── LOGIKA STATUS KELENGKAPAN KATEGORI ─────
-const uploadedCategoryIds = computed(() => {
-  return fileCompletenessStore.fileCompletenessSelected.map(
-    (item) => item.hrd_file_category_id,
-  );
-});
-
-const missingMandatoryCategories = computed(() => {
-  return fileCategoryStore.categories.filter(
-    (cat) => cat.is_mandatory && !uploadedCategoryIds.value.includes(cat.id),
-  );
-});
-
-const missingOptionalCategories = computed(() => {
-  return fileCategoryStore.categories.filter(
-    (cat) => !cat.is_mandatory && !uploadedCategoryIds.value.includes(cat.id),
-  );
-});
-
-const completedCategories = computed(() => {
-  return fileCategoryStore.categories.filter((cat) =>
-    uploadedCategoryIds.value.includes(cat.id),
-  );
-});
 
 function buildFormData(): FormData {
   const fd = new FormData();
   fd.append("user_id", String(form.user_id));
-  fd.append("hrd_file_category_id", String(form.hrd_file_category_id));
+  fd.append(
+    "hrd_file_personnel_category_id",
+    String(form.hrd_file_personnel_category_id),
+  );
   fd.append("name", form.name);
   const file = Array.isArray(form.file) ? form.file[0] : form.file;
   if (file instanceof File) fd.append("file", file);
@@ -691,11 +594,11 @@ async function submitForm() {
 
   try {
     const result = isEditMode.value
-      ? await fileCompletenessStore.updateFileCompleteness(
+      ? await filePersonnelStore.updateFilePersonnel(
           Number(form.id),
           buildFormData(),
         )
-      : await fileCompletenessStore.createFileCompleteness(buildFormData());
+      : await filePersonnelStore.createFilePersonnel(buildFormData());
 
     result.success
       ? showSuccess(result.message)
@@ -734,7 +637,7 @@ function getStorageUrl(
 ): string | null {
   if (!filename) return null;
   if (filename instanceof File) return URL.createObjectURL(filename);
-  return `${apiUrl}/image/file-completeness/${userId}/${filename}`;
+  return `${apiUrl}/image/file-personnel/${userId}/${filename}`;
 }
 
 function isImageFile(filename: string | File): boolean {
@@ -754,7 +657,7 @@ function openEditDialog(item: any) {
   Object.assign(form, {
     id: item.id,
     user_id: item.user_id,
-    hrd_file_category_id: item.hrd_file_category_id,
+    hrd_file_personnel_category_id: item.hrd_file_personnel_category_id,
     name: item.name,
     file: [],
     file_existing: item.file ?? null,
@@ -777,7 +680,7 @@ async function handleDelete(id: number) {
   });
   if (confirmed) {
     try {
-      await fileCompletenessStore.destroyFileCompleteness(id);
+      await filePersonnelStore.destroyFilePersonnel(id);
       showSuccess("Data berhasil dihapus.");
     } catch (err: any) {
       showError(err?.message ?? "Gagal menghapus data ini.");
@@ -805,8 +708,8 @@ const categoryServerErrors = reactive<Record<string, string>>({});
 
 function openCategoryDialog() {
   categoryDialog.value = true;
-  if (fileCategoryStore.categories.length === 0)
-    fileCategoryStore.fetchCategories();
+  if (filePersonnelCategoryStore.categories.length === 0)
+    filePersonnelCategoryStore.fetchCategories();
 }
 
 function resetCategoryForm() {
@@ -818,7 +721,7 @@ function resetCategoryForm() {
   );
 }
 
-function editCategory(cat: FileCategory) {
+function editCategory(cat: FilePersonnelCategory) {
   isEditCategoryMode.value = true;
   Object.assign(categoryForm, {
     id: cat.id,
@@ -840,8 +743,11 @@ async function submitCategoryForm() {
       is_mandatory: Boolean(categoryForm.is_mandatory),
     };
     const result = isEditCategoryMode.value
-      ? await fileCategoryStore.updateCategory(Number(categoryForm.id), params)
-      : await fileCategoryStore.createCategory(params);
+      ? await filePersonnelCategoryStore.updateCategory(
+          Number(categoryForm.id),
+          params,
+        )
+      : await filePersonnelCategoryStore.createCategory(params);
 
     showSuccess(result.message);
     resetCategoryForm();
@@ -860,7 +766,7 @@ async function submitCategoryForm() {
 
 async function handleToggleMandatory(id: number) {
   try {
-    await fileCategoryStore.toggleMandatory(id);
+    await filePersonnelCategoryStore.toggleMandatory(id);
   } catch (err: any) {
     showError(err?.message ?? "Gagal mengubah status mandatory.");
   }
@@ -875,7 +781,7 @@ async function handleDeleteCategory(id: number) {
   });
   if (!confirmed) return;
   try {
-    const result = await fileCategoryStore.destroyCategory(id);
+    const result = await filePersonnelCategoryStore.destroyCategory(id);
     showSuccess(result.message);
   } catch (err: any) {
     showError(err?.message ?? "Gagal menghapus kategori.");
@@ -883,11 +789,10 @@ async function handleDeleteCategory(id: number) {
 }
 
 onMounted(async () => {
-  await fileCategoryStore.fetchCategories();
-  if (fileCompletenessStore.fileCompletenessSelected.length === 0) {
-    fileCompletenessStore.fileCompletenessSelectedParams.user_id =
-      userId as string;
-    await fileCompletenessStore.fetchFileCompletenessSelected();
+  await filePersonnelCategoryStore.fetchCategories();
+  if (filePersonnelStore.filePersonnelSelected.length === 0) {
+    filePersonnelStore.filePersonnelSelectedParams.user_id = userId as string;
+    await filePersonnelStore.fetchFilePersonnelSelected();
   }
 });
 </script>

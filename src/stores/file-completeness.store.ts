@@ -42,7 +42,14 @@ export const useFileCompletenessStore = defineStore("file-completeness", () => {
       const index = fileCompletenessSelected.value.findIndex(
         (u) => u.id === id,
       );
-      if (index !== -1) fileCompletenessSelected.value[index] = res.data;
+      if (index !== -1) {
+        // pertahankan category_name & is_mandatory dari data lama
+        // lalu timpa dengan data baru dari response
+        fileCompletenessSelected.value[index] = {
+          ...fileCompletenessSelected.value[index],
+          ...res.data,
+        };
+      }
 
       return res;
     } catch (err: any) {

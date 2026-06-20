@@ -447,7 +447,10 @@
     </template>
 
     <template #[`item.actions`]="{ item }">
-      <div class="flex justify-end items-center gap-3">
+      <div
+        class="flex justify-end items-center gap-3"
+        v-if="authStore.level == 'programmer'"
+      >
         <v-btn
           v-if="!item.leaves.some((l) => l.lr_is_full_day == 1)"
           @click="handleEdit(item)"
@@ -478,6 +481,7 @@ import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
 import { useFormatName } from "@/composables/useFormatName";
 import { useAppStore } from "@/stores/app";
+import { useAuthStore } from "@/stores/auth.store";
 import { useEmployeeAttendanceRequestStore } from "@/stores/employee-attendance.store";
 import { computed } from "vue";
 
@@ -488,23 +492,36 @@ const { toFullDateWithDay } = useDateFormatter();
 const { formatName } = useFormatName();
 const { ask } = useConfirmDialog();
 const appStore = useAppStore();
+const authStore = useAuthStore();
 
-const headers = [
-  { title: "No", key: "no", sortable: false, align: "center" },
-  { title: "Tanggal", key: "period_date", sortable: false },
-  { title: "Nama", key: "user_name", sortable: false },
-  { title: "Cabang", key: "branch_name", sortable: false },
-  { title: "Kode", key: "code", sortable: false },
-  { title: "Jam Kerja", key: "working_hour", sortable: false },
-  { title: "Absen Masuk", key: "time_in", sortable: false },
-  { title: "Foto Masuk", key: "image_in", sortable: false },
-  { title: "Catatan Masuk", key: "note_in", sortable: false },
-  { title: "Absen Pulang", key: "time_out", sortable: false },
-  { title: "Foto Pulang", key: "image_out", sortable: false },
-  { title: "Catatan Keluar", key: "note_out", sortable: false },
-  { title: "Modify By", key: "modify_by", sortable: false },
-  { title: "Aksi", key: "actions", sortable: false, align: "end" },
-];
+const headers = computed(() => {
+  const items = [
+    { title: "No", key: "no", sortable: false, align: "center" },
+    { title: "Tanggal", key: "period_date", sortable: false },
+    { title: "Nama", key: "user_name", sortable: false },
+    { title: "Cabang", key: "branch_name", sortable: false },
+    { title: "Kode", key: "code", sortable: false },
+    { title: "Jam Kerja", key: "working_hour", sortable: false },
+    { title: "Absen Masuk", key: "time_in", sortable: false },
+    { title: "Foto Masuk", key: "image_in", sortable: false },
+    { title: "Catatan Masuk", key: "note_in", sortable: false },
+    { title: "Absen Pulang", key: "time_out", sortable: false },
+    { title: "Foto Pulang", key: "image_out", sortable: false },
+    { title: "Catatan Keluar", key: "note_out", sortable: false },
+    { title: "Modify By", key: "modify_by", sortable: false },
+  ];
+
+  if (authStore.level === "programmer") {
+    items.push({
+      title: "Aksi",
+      key: "actions",
+      sortable: false,
+      align: "end",
+    });
+  }
+
+  return items;
+});
 
 function isToday(date: string): boolean {
   return date === new Date().toISOString().split("T")[0];

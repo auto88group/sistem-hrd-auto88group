@@ -47,6 +47,8 @@ export const useUserStore = defineStore("user", () => {
     sortBy: "id",
     sortDirection: "desc",
     only_active: true,
+    hrd_file_category_id: undefined,
+    file_status: undefined,
   });
   const userDataParams = reactive<UserDataParams>({
     search: "",
