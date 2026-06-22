@@ -47,10 +47,12 @@
     <header-attendance-report />
     <table-attendance-report />
     <form-dialog-edit-attendance />
+    <form-dialog-delete-photo />
   </div>
 </template>
 
 <script setup lang="ts">
+import FormDialogDeletePhoto from "@/components/attendance-report/FormDialogDeletePhoto.vue";
 import FormDialogEditAttendance from "@/components/attendance-report/FormDialogEditAttendance.vue";
 import HeaderAttendanceReport from "@/components/attendance-report/HeaderAttendanceReport.vue";
 import TableAttendanceReport from "@/components/attendance-report/TableAttendanceReport.vue";

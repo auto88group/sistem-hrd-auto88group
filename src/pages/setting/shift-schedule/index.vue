@@ -79,10 +79,12 @@
       :show-error="showError"
       :show-success="showSuccess"
     />
+    <form-dialog-import-shift />
   </div>
 </template>
 <script setup lang="ts">
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import FormDialogImportShift from "@/components/shift-schedule/FormDialogImportShift.vue";
 import FormDialogShiftSchedule from "@/components/shift-schedule/FormDialogShiftSchedule.vue";
 import HeaderShiftSchedule from "@/components/shift-schedule/HeaderShiftSchedule.vue";
 

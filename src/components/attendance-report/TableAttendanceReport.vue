@@ -286,7 +286,7 @@
     <template #[`item.time_in`]="{ item }">
       <div
         v-if="item.time_in"
-        class="flex flex-col justify-center items-center w-fit"
+        class="flex flex-col justify-center items-start w-fit"
       >
         <span class="font-bold"> {{ item.time_in }} WIB </span>
 
@@ -299,6 +299,7 @@
           <span>Lokasi</span>
         </a>
 
+        <!-- Telat biasa (belum approved) -->
         <span
           v-if="
             getLateDuration(item.time_in, item.working_hour) &&
@@ -310,6 +311,21 @@
           class="text-red-500 font-bold"
         >
           T: {{ getLateDuration(item.time_in, item.working_hour) }}
+        </span>
+
+        <!-- ✅ Telat approved (ada leave 'T') → dihitung dari default_working_hour -->
+        <span
+          v-if="
+            hasLeaveCode(item, 'T') &&
+            item.default_working_hour &&
+            getLateDurationFromDefault(item.time_in, item.default_working_hour)
+          "
+          class="text-green-500 font-bold"
+        >
+          T (A):
+          {{
+            getLateDurationFromDefault(item.time_in, item.default_working_hour)
+          }}
         </span>
 
         <v-btn
@@ -333,12 +349,12 @@
     <template #[`item.image_in`]="{ item }">
       <div v-if="item.image_in" class="p-3">
         <a
-          :href="`${baseUrl}/image/employee-attendance/${item.user_id}/${item.image_in}`"
+          :href="getImageUrl(item.user_id, item.image_in)"
           target="_blank"
           class="text-decoration-none"
         >
           <v-img
-            :src="`${baseUrl}/image/employee-attendance/${item.user_id}/${item.image_in}`"
+            :src="getImageUrl(item.user_id, item.image_in)"
             alt="gambar absen masuk"
             class="cursor-pointer"
             height="100"
@@ -362,7 +378,7 @@
     <template #[`item.time_out`]="{ item }">
       <div
         v-if="item.time_out"
-        class="flex flex-col justify-center items-center w-fit"
+        class="flex flex-col justify-center items-start w-fit"
       >
         <span class="font-bold"> {{ item.time_out }} WIB </span>
         <a
@@ -375,6 +391,7 @@
           <span>Lokasi</span>
         </a>
 
+        <!-- PC biasa (belum approved) -->
         <span
           v-if="
             getEarlyGoHomeDuration(item.time_out, item.working_hour) &&
@@ -386,6 +403,27 @@
           class="text-red-500 font-bold"
         >
           PC: {{ getEarlyGoHomeDuration(item.time_out, item.working_hour) }}
+        </span>
+
+        <!-- ✅ PC approved (ada leave 'PC') → dihitung dari default_working_hour -->
+        <span
+          v-if="
+            hasLeaveCode(item, 'PC') &&
+            item.default_working_hour &&
+            getEarlyGoHomeDurationFromDefault(
+              item.time_out,
+              item.default_working_hour,
+            )
+          "
+          class="text-green-500 font-bold"
+        >
+          PC (A):
+          {{
+            getEarlyGoHomeDurationFromDefault(
+              item.time_out,
+              item.default_working_hour,
+            )
+          }}
         </span>
 
         <v-btn
@@ -410,14 +448,13 @@
     <template #[`item.image_out`]="{ item }">
       <div v-if="item.image_out" class="p-3">
         <a
-          v-if="item.image_out"
-          :href="`${baseUrl}/image/employee-attendance/${item.user_id}/${item.image_out}`"
+          :href="getImageUrl(item.user_id, item.image_out)"
           target="_blank"
           class="text-decoration-none"
         >
           <v-img
-            :src="`${baseUrl}/image/employee-attendance/${item.user_id}/${item.image_out}`"
-            alt="gambar absen masuk"
+            :src="getImageUrl(item.user_id, item.image_out)"
+            alt="gambar absen pulang"
             class="cursor-pointer"
             height="100"
             width="100"
@@ -522,6 +559,30 @@ const headers = computed(() => {
 
   return items;
 });
+
+function getImageUrl(userId: number, fileName: string): string {
+  if (!fileName) return "";
+  if (fileName.startsWith("deleted-")) {
+    return `${baseUrl}/img/${fileName}`;
+  }
+  return `${baseUrl}/image/employee-attendance/${userId}/${fileName}`;
+}
+
+function getLateDurationFromDefault(
+  timeIn: string,
+  defaultWorkingHour: string,
+): string {
+  if (!timeIn || !defaultWorkingHour) return "";
+  return getLateDuration(timeIn, defaultWorkingHour);
+}
+
+function getEarlyGoHomeDurationFromDefault(
+  timeOut: string,
+  defaultWorkingHour: string,
+): string {
+  if (!timeOut || !defaultWorkingHour) return "";
+  return getEarlyGoHomeDuration(timeOut, defaultWorkingHour);
+}
 
 function isToday(date: string): boolean {
   return date === new Date().toISOString().split("T")[0];

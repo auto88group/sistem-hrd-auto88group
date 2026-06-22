@@ -16,9 +16,10 @@
           prepend-icon="mdi-upload"
           variant="flat"
           class="bg-green-500 dark:bg-green-500 text-sm text-white"
+          @click="openImportDialog"
         >
-          Import Data Shift</v-btn
-        >
+          Import Data Shift
+        </v-btn>
         <v-btn
           @click="handleAdd()"
           prepend-icon="mdi-plus"
@@ -33,9 +34,15 @@
 </template>
 
 <script setup lang="ts">
+import { useShiftScheduleStore } from "@/stores/shift-schedule.store.ts";
 import FilterShiftSchedule from "./FilterShiftSchedule.vue";
 
+const shiftStore = useShiftScheduleStore();
 const emit = defineEmits(["add"]);
+
+const openImportDialog = () => {
+  shiftStore.isImportDialogOpen = true;
+};
 
 const items = [
   { title: "Master", disabled: false, href: "/master" },

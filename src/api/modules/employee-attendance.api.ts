@@ -36,6 +36,7 @@ export interface EmployeeAttendanceResponse {
 export interface EmployeeAttendance {
   id: number;
   user_id: number;
+  default_working_hour: string;
   working_hour: string;
   time_in: string;
   image_in: string;
@@ -236,6 +237,25 @@ export interface ApprovalDiffLocParams {
   attendance_id: number;
   type: "in" | "out";
 }
+export interface DeletePhotoParams {
+  user_id: number | null;
+  start_date: string | null; // "YYYY-MM-DD"
+  end_date: string | null; // "YYYY-MM-DD"
+  type: "in" | "out" | "both";
+}
+
+export interface DeletePhotoData {
+  start_date: string; // ganti dari period
+  end_date: string; // tambah
+  type: string;
+  total_found: number;
+  total_updated: number;
+}
+export interface DeletePhotoResponse {
+  success: boolean;
+  message: string;
+  data: DeletePhotoData;
+}
 
 export const employeeAttendanceRequestApi = {
   getDatatables(
@@ -279,6 +299,12 @@ export const employeeAttendanceRequestApi = {
   approvalDiffLoc(params: ApprovalDiffLocParams): Promise<DefaultResponse> {
     return api
       .get("/hrd/employee-attendance/approval-diff-loc", { params })
+      .then((res) => res.data);
+  },
+
+  deletePhoto(payload: DeletePhotoParams): Promise<DeletePhotoResponse> {
+    return api
+      .post("/hrd/employee-attendance/delete-photo", payload)
       .then((res) => res.data);
   },
 };

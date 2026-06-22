@@ -1,8 +1,8 @@
 import {
   employeeAttendanceRequestApi,
   type ApprovalDiffLocParams,
+  type DeletePhotoParams,
   type EmployeeAttendance,
-  type EmployeeAttendanceLeave,
   type EmployeeAttendanceDetail,
   type EmployeeAttendanceDetailParams,
   type EmployeeAttendanceEditParams,
@@ -10,6 +10,7 @@ import {
   type EmployeeAttendanceRecapItem,
   type EmployeeAttendanceRecapParams,
   type RecapDate,
+  type DeletePhotoResponse,
 } from "@/api/modules/employee-attendance.api";
 import { defineStore } from "pinia";
 import { ref, reactive } from "vue";
@@ -79,6 +80,35 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       id: null,
       in_out: null,
     });
+
+    const isLoadingDeletePhoto = ref(false);
+    const payloadDeletePhoto = reactive<DeletePhotoParams>({
+      user_id: null,
+      start_date: null,
+      end_date: null,
+      type: "both",
+    });
+
+    const formDialogDeletePhoto = ref(false);
+
+    // action baru
+    async function deletePhoto(): Promise<DeletePhotoResponse> {
+      isLoadingDeletePhoto.value = true;
+      try {
+        return await employeeAttendanceRequestApi.deletePhoto({
+          ...payloadDeletePhoto,
+        });
+      } finally {
+        isLoadingDeletePhoto.value = false;
+      }
+    }
+
+    function clearPayloadDeletePhoto() {
+      payloadDeletePhoto.user_id = null;
+      payloadDeletePhoto.start_date = null;
+      payloadDeletePhoto.end_date = null;
+      payloadDeletePhoto.type = "both";
+    }
 
     const formDialog = ref(false);
 
@@ -216,11 +246,14 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       isLoadingEdit,
       isLoadingDestroy,
       isLoadingDetail,
+      isLoadingDeletePhoto,
       totalRecords,
       params,
       recapParams,
       detailParams,
       formDialog,
+      formDialogDeletePhoto,
+      payloadDeletePhoto,
       payloadEdit,
       serverErrors,
       recapDates,
@@ -235,6 +268,8 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       fetchEmployeeAttendanceRecap,
       fetchEmployeeAttendanceDetail,
       getInOutLabelAttendanceDetail,
+      deletePhoto,
+      clearPayloadDeletePhoto,
     };
   },
 );

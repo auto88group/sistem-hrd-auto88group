@@ -8,12 +8,23 @@
           class="m-0 p-0 text-gray-500 dark:text-gray-300 text-sm"
         ></v-breadcrumbs>
       </div>
+      <v-btn
+        color="bg-red-300 dark:bg-red-500"
+        variant="flat"
+        prepend-icon="mdi-trash-can"
+        @click="store.formDialogDeletePhoto = true"
+      >
+        Hapus Foto Absensi
+      </v-btn>
     </div>
     <filter-attendance-report />
   </v-card>
 </template>
 <script setup lang="ts">
+import { useEmployeeAttendanceRequestStore } from "@/stores/employee-attendance.store.ts";
 import FilterAttendanceReport from "./FilterAttendanceReport.vue";
+
+const store = useEmployeeAttendanceRequestStore();
 
 const items = [
   { title: "Kelola Absensi", disabled: false, href: "/manage-attendance" },

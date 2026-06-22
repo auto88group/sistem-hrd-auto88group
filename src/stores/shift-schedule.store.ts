@@ -3,6 +3,7 @@ import {
   type ShiftSchedule,
   type ShiftScheduleDatatablesParams,
   type ShiftScheduleStorePayload,
+  type ShiftScheduleTemplateParams,
   type ShiftScheduleUpdatePayload,
 } from "@/api/modules/shift-schedule.api";
 import { defineStore } from "pinia";
@@ -15,6 +16,9 @@ export const useShiftScheduleStore = defineStore("shift-schedule", () => {
   const isLoadingUpdate = ref(false);
   const isLoadingDestroy = ref(false);
   const totalRecords = ref(0);
+
+  const isImportDialogOpen = ref(false);
+  const isLoadingDownloadTemplate = ref(false);
 
   const params = reactive<ShiftScheduleDatatablesParams>({
     draw: 1,
@@ -64,6 +68,24 @@ export const useShiftScheduleStore = defineStore("shift-schedule", () => {
     }
   }
 
+  async function downloadTemplate(payload: ShiftScheduleTemplateParams) {
+    isLoadingDownloadTemplate.value = true;
+    try {
+      const res = await shiftScheduleApi.getTemplate(payload);
+
+      // Data berhasil didapat, untuk sekarang kita console.log dulu
+      // Proses generate Excel-nya akan kita bahas di tahap selanjutnya
+      console.log("Data Template Berhasil Diambil:", res);
+
+      return res;
+    } catch (error) {
+      console.error("Gagal mengambil data template:", error);
+      throw error;
+    } finally {
+      isLoadingDownloadTemplate.value = false;
+    }
+  }
+
   return {
     shiftSchedule,
     isLoading,
@@ -72,6 +94,11 @@ export const useShiftScheduleStore = defineStore("shift-schedule", () => {
     isLoadingDestroy,
     totalRecords,
     params,
+
+    isImportDialogOpen,
+    isLoadingDownloadTemplate,
+    downloadTemplate,
+
     fetchShiftSchedule,
     store,
     update,

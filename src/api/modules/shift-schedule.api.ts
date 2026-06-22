@@ -44,6 +44,26 @@ export interface ShiftScheduleMutationResponse {
   message: string;
 }
 
+export interface ShiftScheduleTemplateParams {
+  period_date: string;
+  branch_id?: number | null;
+}
+
+export interface ShiftScheduleTemplateResponse {
+  start_date: string;
+  end_date: string;
+  dates: {
+    date: string;
+    holiday: string | null;
+  }[];
+  users: {
+    employee_id: string;
+    name: string;
+    position: string;
+    branch: string;
+  }[];
+}
+
 export const shiftScheduleApi = {
   getDatatables(
     params: ShiftScheduleDatatablesParams,
@@ -68,5 +88,14 @@ export const shiftScheduleApi = {
 
   destroy(id: number): Promise<ShiftScheduleMutationResponse> {
     return api.delete(`/hrd/shift-schedule/${id}`).then((res) => res.data);
+  },
+
+  getTemplate(
+    params: ShiftScheduleTemplateParams,
+  ): Promise<ShiftScheduleTemplateResponse> {
+    // Sesuaikan URL prefix-nya jika berbeda. Di sini saya asumsikan mengikuti pola sebelumnya
+    return api
+      .get("/hrd/shift-schedule/data-template", { params })
+      .then((res) => res.data);
   },
 };

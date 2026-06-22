@@ -195,7 +195,7 @@ const checkboxOptions = [
   { key: "type_present", label: "Hadir" },
   { key: "type_belum_hadir", label: "Belum Hadir" },
   { key: "type_late", label: "Terlambat" },
-  { key: "type_go_home_early", label: "Pulang Awal" },
+  { key: "type_go_home_early", label: "Pulang Cepat" },
   { key: "type_didnt_check_out", label: "Tidak Check Out" },
   { key: "type_negligent", label: "Alpa" },
   { key: "type_sick", label: "Sakit" },
