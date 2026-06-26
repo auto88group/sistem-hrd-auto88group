@@ -241,7 +241,7 @@
                 :error-messages="serverErrors.attachment"
               ></v-file-input>
               <div class="text-gray-400 text-xs">
-                Format: JPG, PNG. Maks. 2MB.
+                Format: JPG, PNG. Maks. 1MB.
               </div>
             </div>
           </v-col>

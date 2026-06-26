@@ -50,6 +50,7 @@ export interface ShiftScheduleTemplateParams {
 }
 
 export interface ShiftScheduleTemplateResponse {
+  branch: string;
   start_date: string;
   end_date: string;
   dates: {
@@ -58,10 +59,28 @@ export interface ShiftScheduleTemplateResponse {
   }[];
   users: {
     employee_id: string;
+    email: string;
     name: string;
     position: string;
     branch: string;
   }[];
+  shifts: {
+    code: string;
+    name: string;
+    time_in: string;
+    time_out: string;
+  }[];
+}
+
+export interface ShiftScheduleImportPayload {
+  file: File;
+  branch_id?: number | null;
+}
+
+export interface ShiftScheduleImportResponse {
+  success: boolean;
+  message: string;
+  total?: number;
 }
 
 export const shiftScheduleApi = {
@@ -96,6 +115,21 @@ export const shiftScheduleApi = {
     // Sesuaikan URL prefix-nya jika berbeda. Di sini saya asumsikan mengikuti pola sebelumnya
     return api
       .get("/hrd/shift-schedule/data-template", { params })
+      .then((res) => res.data);
+  },
+
+  importExcel(
+    payload: ShiftScheduleImportPayload,
+  ): Promise<ShiftScheduleImportResponse> {
+    const formData = new FormData();
+    formData.append("file", payload.file);
+    if (payload.branch_id) {
+      formData.append("branch_id", String(payload.branch_id));
+    }
+    return api
+      .post("/hrd/shift-schedule/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
       .then((res) => res.data);
   },
 };

@@ -341,7 +341,7 @@
               :error-messages="serverErrors.image"
             ></v-file-input>
             <div class="text-gray-400 text-xs">
-              Format: JPG, PNG. Maks. 2MB.
+              Format: JPG, PNG. Maks. 1MB.
             </div>
           </div>
         </v-card>
@@ -1269,7 +1269,7 @@ const rules = {
     if (!v) return true;
     const file = Array.isArray(v) ? v[0] : v;
     if (!file) return true;
-    return file.size <= 2 * 1024 * 1024 || "Ukuran file maksimal 2MB";
+    return file.size <= 2 * 1024 * 1024 || "Ukuran file maksimal 1MB";
   },
 };
 

@@ -117,6 +117,7 @@
           variant="flat"
           prepend-icon="mdi-upload"
           class="text-white"
+          :loading="shiftScheduleStore.isLoadingImport"
           @click="submitImport"
         >
           Import Excel
@@ -135,15 +136,9 @@ import { useBranchStore } from "@/stores/branch.store";
 import { useShiftScheduleStore } from "@/stores/shift-schedule.store";
 import DateRangePicker from "../DateRangePicker.vue";
 import ExcelJS from "exceljs";
+import { useAppStore } from "@/stores/app.ts";
 
-/* =========================
- * PROPS
- * ========================= */
-const props = defineProps<{
-  showError: (message: string) => void;
-  showSuccess: (message: string) => void;
-}>();
-
+const appStore = useAppStore();
 /* =========================
  * REFS & STORES
  * ========================= */
@@ -159,7 +154,7 @@ const shiftScheduleStore = useShiftScheduleStore();
 const defaultForm = () => ({
   period: [] as string[],
   branch_id: null as number | null,
-  file: null as File | null,
+  file: [] as File[], // ganti dari null ke []
 });
 
 const form = reactive(defaultForm());
@@ -199,9 +194,11 @@ const rules = {
   required: (v: any) =>
     (v !== null && v !== undefined && v !== "" && v.length !== 0) ||
     "Wajib diisi",
-  requiredFile: (v: any) =>
-    (v !== null && v !== undefined && v.length > 0) ||
-    "File excel wajib diupload",
+  requiredFile: (v: any) => {
+    if (!v) return "File excel wajib diupload";
+    const files = Array.isArray(v) ? v : [v];
+    return files.length > 0 || "File excel wajib diupload";
+  },
 };
 
 /* =========================
@@ -221,7 +218,7 @@ function formatDateID(dateString: string) {
 
 async function handleDownloadTemplate() {
   if (!form.period || form.period.length === 0) {
-    props.showError("Silakan pilih periode terlebih dahulu.");
+    showError("Silakan pilih periode terlebih dahulu.");
     return;
   }
 
@@ -243,14 +240,13 @@ async function handleDownloadTemplate() {
       views: [{ state: "frozen", xSplit: 3, ySplit: 6 }],
     });
 
-    // Hitung total kolom (5 kolom fix + jumlah hari)
-    const totalCols = 5 + res.dates.length;
+    // Hitung total kolom (6 kolom fix + jumlah hari)
+    const totalCols = 6 + res.dates.length;
 
     // --- ROW 1: JUDUL ---
     worksheet.mergeCells(1, 1, 1, totalCols);
     const titleCell = worksheet.getCell(1, 1);
-    titleCell.value =
-      "TEMPLATE IMPORT SHIFT - (DATA DARI KOLOM NAME - ALIAS DI TABEL BRANCH)";
+    titleCell.value = `TEMPLATE IMPORT SHIFT - ${res.branch}`;
     titleCell.font = { bold: true };
     // Tambahkan baris ini untuk rata tengah
     titleCell.alignment = { vertical: "middle", horizontal: "center" };
@@ -275,9 +271,10 @@ async function handleDownloadTemplate() {
     const staticHeaders = [
       { col: 1, text: "NO" },
       { col: 2, text: "ID KARYAWAN" },
-      { col: 3, text: "NAMA KARYAWAN" },
-      { col: 4, text: "TEAM/DEPARTEMEN" },
-      { col: 5, text: "JABATAN" },
+      { col: 3, text: "EMAIL" }, // col 3
+      { col: 4, text: "NAMA KARYAWAN" }, // col 4
+      { col: 5, text: "TEAM/DEPARTEMEN" }, // col 5
+      { col: 6, text: "JABATAN" }, // col 6
     ];
 
     staticHeaders.forEach((h) => {
@@ -293,8 +290,8 @@ async function handleDownloadTemplate() {
     });
 
     // --- ROW 5: HEADER PERIODE (MERGE) ---
-    worksheet.mergeCells(5, 6, 5, totalCols);
-    const headPeriodCell = worksheet.getCell(5, 6);
+    worksheet.mergeCells(5, 7, 5, totalCols);
+    const headPeriodCell = worksheet.getCell(5, 7);
     headPeriodCell.value = "PERIODE";
     headPeriodCell.font = { bold: true };
     headPeriodCell.alignment = { vertical: "middle", horizontal: "center" };
@@ -302,7 +299,7 @@ async function handleDownloadTemplate() {
     // --- ROW 6: TANGGAL & HOLIDAY CHECK ---
     const holidayCols: number[] = []; // Array untuk mencatat index kolom mana saja yang libur
     res.dates.forEach((d: any, index: number) => {
-      const colNum = 6 + index;
+      const colNum = 7 + index;
       const cell = worksheet.getCell(6, colNum);
       const formattedDate = formatDateID(d.date);
 
@@ -327,14 +324,14 @@ async function handleDownloadTemplate() {
     res.users.forEach((user: any, index: number) => {
       worksheet.getCell(currentRow, 1).value = index + 1; // NO
 
-      // Force string untuk ID KARYAWAN agar tidak memicu format eksponensial di Excel
       const idKaryawanCell = worksheet.getCell(currentRow, 2);
-      idKaryawanCell.value = String(user.employee_id);
+      idKaryawanCell.value = user.employee_id ? String(user.employee_id) : "";
       idKaryawanCell.numFmt = "@";
 
-      worksheet.getCell(currentRow, 3).value = user.name;
-      worksheet.getCell(currentRow, 4).value = user.branch;
-      worksheet.getCell(currentRow, 5).value = user.position;
+      worksheet.getCell(currentRow, 3).value = user.email; // EMAIL
+      worksheet.getCell(currentRow, 4).value = user.name; // NAMA
+      worksheet.getCell(currentRow, 5).value = user.branch; // DEPARTEMEN
+      worksheet.getCell(currentRow, 6).value = user.position; // JABATAN
 
       currentRow++;
     });
@@ -356,12 +353,40 @@ async function handleDownloadTemplate() {
     // --- OPSIONAL: ATUR LEBAR KOLOM AGAR RAPI ---
     worksheet.getColumn(1).width = 5; // NO
     worksheet.getColumn(2).width = 20; // ID KARYAWAN
-    worksheet.getColumn(3).width = 30; // NAMA
-    worksheet.getColumn(4).width = 35; // DEPARTEMEN
-    worksheet.getColumn(5).width = 20; // JABATAN
-    for (let c = 6; c <= totalCols; c++) {
-      worksheet.getColumn(c).width = 15; // Lebar standar untuk kolom tanggal
+    worksheet.getColumn(3).width = 30; // EMAIL
+    worksheet.getColumn(4).width = 30; // NAMA
+    worksheet.getColumn(5).width = 35; // DEPARTEMEN
+    worksheet.getColumn(6).width = 20; // JABATAN
+    for (let c = 7; c <= totalCols; c++) {
+      worksheet.getColumn(c).width = 15;
     }
+
+    // --- WORKSHEET 2: DATA SHIFT ---
+    const worksheetShift = workbook.addWorksheet("Data Shift");
+
+    // Header
+    const shiftHeaders = ["CODE", "NAME", "JAM MASUK", "JAM KELUAR"];
+    shiftHeaders.forEach((text, index) => {
+      const cell = worksheetShift.getCell(1, index + 1);
+      cell.value = text;
+      cell.font = { bold: true };
+      cell.alignment = { vertical: "middle", horizontal: "center" };
+    });
+
+    // Data shifts
+    res.shifts.forEach((shift: any, index: number) => {
+      const row = index + 2;
+      worksheetShift.getCell(row, 1).value = shift.code;
+      worksheetShift.getCell(row, 2).value = shift.name;
+      worksheetShift.getCell(row, 3).value = shift.time_in;
+      worksheetShift.getCell(row, 4).value = shift.time_out;
+    });
+
+    // Lebar kolom
+    worksheetShift.getColumn(1).width = 15; // CODE
+    worksheetShift.getColumn(2).width = 30; // NAME
+    worksheetShift.getColumn(3).width = 15; // TIME IN
+    worksheetShift.getColumn(4).width = 15; // TIME OUT
 
     // 4. Generate file dalam bentuk Buffer -> Blob
     const buffer = await workbook.xlsx.writeBuffer();
@@ -382,26 +407,53 @@ async function handleDownloadTemplate() {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
 
-    props.showSuccess("Template berhasil diunduh.");
+    showSuccess("Template berhasil diunduh.");
   } catch (err: any) {
-    props.showError(err?.message ?? "Gagal mengunduh template.");
+    showError(err?.message ?? "Gagal mengunduh template.");
   } finally {
     shiftScheduleStore.isLoadingDownloadTemplate = false;
   }
 }
 
+function showError(message: string) {
+  appStore.errorMessage = message;
+  appStore.showErrorSnackbar = true;
+}
+
+function showSuccess(message: string) {
+  appStore.successMessage = message;
+  appStore.showSuccessSnackbar = true;
+}
 async function submitImport() {
   const { valid } = await formRef.value.validate();
   if (!valid) return;
 
-  // Sesuai instruksi: Jangan diproses dulu, console.log saja
-  console.log("Data siap di-import:", {
-    period: form.period,
-    branch_id: form.branch_id,
-    file: form.file,
-  });
-}
+  try {
+    const file = Array.isArray(form.file) ? form.file[0] : form.file;
+    if (!file) {
+      showError("File excel wajib diupload.");
+      return;
+    }
 
+    const res = await shiftScheduleStore.importExcel({
+      file: file,
+      branch_id: form.branch_id,
+    });
+
+    if (res.success) {
+      showSuccess(res.message ?? "Import berhasil.");
+      closeDialog();
+      shiftScheduleStore.fetchShiftSchedule(); // refresh tabel
+    } else {
+      showError(res.message ?? "Import gagal.");
+    }
+  } catch (err: any) {
+    // Tampilkan pesan error dari backend (termasuk daftar baris yang error)
+    const message =
+      err?.response?.data?.message ?? err?.message ?? "Gagal import data.";
+    showError(message);
+  }
+}
 /* =========================
  * LIFECYCLE
  * ========================= */

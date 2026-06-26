@@ -1,5 +1,6 @@
 import {
   shiftScheduleApi,
+  type ShiftScheduleImportPayload,
   type ShiftSchedule,
   type ShiftScheduleDatatablesParams,
   type ShiftScheduleStorePayload,
@@ -15,6 +16,7 @@ export const useShiftScheduleStore = defineStore("shift-schedule", () => {
   const isLoadingCreate = ref(false);
   const isLoadingUpdate = ref(false);
   const isLoadingDestroy = ref(false);
+  const isLoadingImport = ref(false);
   const totalRecords = ref(0);
 
   const isImportDialogOpen = ref(false);
@@ -85,6 +87,14 @@ export const useShiftScheduleStore = defineStore("shift-schedule", () => {
       isLoadingDownloadTemplate.value = false;
     }
   }
+  async function importExcel(payload: ShiftScheduleImportPayload) {
+    isLoadingImport.value = true;
+    try {
+      return await shiftScheduleApi.importExcel(payload);
+    } finally {
+      isLoadingImport.value = false;
+    }
+  }
 
   return {
     shiftSchedule,
@@ -97,6 +107,8 @@ export const useShiftScheduleStore = defineStore("shift-schedule", () => {
 
     isImportDialogOpen,
     isLoadingDownloadTemplate,
+    isLoadingImport,
+    importExcel,
     downloadTemplate,
 
     fetchShiftSchedule,
