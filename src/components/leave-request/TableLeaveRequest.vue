@@ -74,9 +74,7 @@
         </span>
       </template>
 
-      <!-- PRIMARY -->
       <template #[`item.status`]="{ item }">
-        <!-- PENDING -->
         <div v-if="item.status == 'pending'">
           <div v-if="item.primary_approver_id == authStore.id">
             <v-btn
@@ -113,7 +111,6 @@
           </v-chip>
         </div>
 
-        <!-- APPROVAL -->
         <div
           class="space-y-3 my-3 flex flex-col"
           v-else-if="item.status == 'approved'"
@@ -131,22 +128,8 @@
               </span>
             </div>
           </v-chip>
-          <v-btn
-            v-if="
-              item.primary_approver_id == authStore.id &&
-              !item.has_deduct_no_file
-            "
-            color="text-red-700"
-            elevation="0"
-            variant="tonal"
-            size="small"
-            @click="reject(item)"
-          >
-            Ubah Ke Reject
-          </v-btn>
         </div>
 
-        <!-- REJECT -->
         <div
           class="space-y-3 my-3 flex flex-col"
           v-else-if="item.status == 'rejected'"
@@ -164,27 +147,10 @@
               </span>
             </div>
           </v-chip>
-
-          <v-btn
-            v-if="
-              item.primary_approver_id == authStore.id &&
-              !item.has_deduct_no_file
-            "
-            elevation="0"
-            variant="tonal"
-            color="text-green-700"
-            size="small"
-            class="me-2"
-            @click="approve(item)"
-          >
-            Ubah Ke Approve
-          </v-btn>
         </div>
       </template>
 
-      <!-- SECONDARY -->
       <template #[`item.status_2`]="{ item }">
-        <!-- PENDING -->
         <div v-if="item.status_2 == 'pending'">
           <div v-if="item.secondary_approver_id == authStore.id">
             <v-btn
@@ -220,7 +186,6 @@
           </v-chip>
         </div>
 
-        <!-- APPROVED -->
         <div
           class="space-y-3 my-3 flex flex-col"
           v-else-if="item.status_2 == 'approved'"
@@ -236,23 +201,8 @@
               }}
             </span>
           </v-chip>
-
-          <v-btn
-            v-if="
-              item.secondary_approver_id == authStore.id &&
-              !item.has_deduct_no_file
-            "
-            color="text-red-700"
-            elevation="0"
-            variant="tonal"
-            size="small"
-            @click="reject(item, 'secondary')"
-          >
-            Ubah Ke Reject
-          </v-btn>
         </div>
 
-        <!-- REJECTED -->
         <div
           class="space-y-3 my-3 flex flex-col"
           v-else-if="item.status_2 == 'rejected'"
@@ -268,27 +218,10 @@
               }}
             </span>
           </v-chip>
-
-          <v-btn
-            v-if="
-              item.secondary_approver_id == authStore.id &&
-              !item.has_deduct_no_file
-            "
-            elevation="0"
-            variant="tonal"
-            color="text-green-700"
-            size="small"
-            class="me-2"
-            @click="approve(item, 'secondary')"
-          >
-            Ubah Ke Approve
-          </v-btn>
         </div>
       </template>
 
-      <!-- HRD -->
       <template #[`item.status_hrd`]="{ item }">
-        <!-- PENDING -->
         <div v-if="item.status_hrd == 'pending'">
           <div v-if="authStore.level == 'hrd'">
             <v-btn
@@ -317,7 +250,6 @@
           </v-chip>
         </div>
 
-        <!-- APPROVED -->
         <div
           class="space-y-3 my-3 flex flex-col"
           v-else-if="item.status_hrd == 'approved'"
@@ -333,20 +265,8 @@
               }}
             </span>
           </v-chip>
-
-          <v-btn
-            v-if="authStore.level == 'hrd' && !item.has_deduct_no_file"
-            color="text-red-700"
-            elevation="0"
-            variant="tonal"
-            size="small"
-            @click="reject(item, 'hrd')"
-          >
-            Ubah Ke Reject
-          </v-btn>
         </div>
 
-        <!-- REJECTED -->
         <div
           class="space-y-3 my-3 flex flex-col"
           v-else-if="item.status_hrd == 'rejected'"
@@ -362,23 +282,7 @@
               }}
             </span>
           </v-chip>
-
-          <v-btn
-            v-if="authStore.level == 'hrd' && !item.has_deduct_no_file"
-            elevation="0"
-            variant="tonal"
-            color="text-green-700"
-            size="small"
-            class="me-2"
-            @click="approve(item, 'hrd')"
-          >
-            Ubah Ke Approve
-          </v-btn>
         </div>
-      </template>
-
-      <template #[`item.created_at`]="{ item }">
-        {{ toFullDateWithDay(item.created_at) }}
       </template>
 
       <template #[`item.actions`]="{ item }">
@@ -426,7 +330,6 @@
             <v-icon>mdi-information-outline</v-icon>
           </v-btn>
 
-          <!-- BUTTON UPDATE DAN DELETE KHUSUS NON CUTI -->
           <v-btn
             v-if="
               item.deduct_leave != 1 &&
@@ -453,7 +356,6 @@
             class="!text-red-500 hover:!bg-red-50 transition-all duration-300"
           />
 
-          <!-- BUTTON UPDATE DAN DELETE KHUSUS CUTI -->
           <v-btn
             v-if="item.deduct_leave == 1 && !isFullyApproved(item)"
             icon="mdi-file-edit-outline"
@@ -537,6 +439,8 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
   leaveRequestStore.fetchLeaveRequest();
 }
 
+// Catatan: Fungsi approve dan reject di bawah ini tetap dipertahankan
+// karena masih digunakan saat status item dalam kondisi 'pending'.
 function approve(
   item: any,
   level: "primary" | "secondary" | "hrd" | null = "primary",
@@ -637,7 +541,6 @@ function handleEdit(item: any) {
   });
 
   leaveRequestStore.payloadCreateUpdate.attachment_preview = item.attachment;
-
   leaveRequestStore.createEditDialog = true;
 }
 
@@ -693,28 +596,23 @@ onMounted(async () => {
   leaveRequestStore.isLoadingSelectedByHighlight = false;
 
   if (userId || id) {
-    router.replace({ query: {} }); // 👈 hapus semua query params
+    router.replace({ query: {} });
     branchStore.fetchBranchData();
   }
 });
 </script>
+
 <style scoped>
-/* Gunakan deep selector agar tembus ke dalam komponen Vuetify */
 :deep(.v-data-table__thead) {
   background-color: #e3f2fd;
 }
-
-/* Penyesuaian untuk Dark Theme */
 :deep(.v-theme--dark thead.v-data-table__thead) {
-  background-color: #1a237e; /* Biru gelap yang lembut untuk mata */
+  background-color: #1a237e;
 }
-
 :deep(thead.v-data-table__thead th) {
   font-weight: bold !important;
-  /* Jika ingin warna teks biru tua di light mode */
   color: #1976d2 !important;
 }
-
 :deep(.v-theme--dark thead.v-data-table__thead th) {
   color: #bbdefb !important;
 }

@@ -18,11 +18,9 @@
         <th colspan="3" class="border-right text-center">Approval</th>
       </tr>
       <tr>
-        <!-- Jam Lembur sub-headers -->
         <th class="text-start">Mulai</th>
         <th class="text-start">Selesai</th>
         <th class="text-start border-right">Lama Lembur</th>
-        <!-- Approval sub-headers -->
         <th class="text-start">Approval 1</th>
         <th class="text-start">Approval 2</th>
         <th class="text-start border-right">Approval HRD</th>
@@ -72,9 +70,7 @@
       </span>
     </template>
 
-    <!-- PRIMARY -->
     <template #[`item.overtime_status`]="{ item }">
-      <!-- PENDING -->
       <div v-if="item.overtime_status == 'pending'">
         <div v-if="item.primary_approver_id == authStore.id">
           <v-btn
@@ -111,7 +107,6 @@
         </v-chip>
       </div>
 
-      <!-- APPROVAL -->
       <div
         class="space-y-3 my-3 flex flex-col"
         v-else-if="item.overtime_status == 'approved'"
@@ -147,20 +142,8 @@
             >
           </div>
         </v-tooltip>
-
-        <v-btn
-          v-if="item.primary_approver_id == authStore.id"
-          color="text-red-700"
-          elevation="0"
-          variant="tonal"
-          size="small"
-          @click="reject(item)"
-        >
-          Ubah Ke Reject
-        </v-btn>
       </div>
 
-      <!-- REJECT -->
       <div
         class="space-y-3 my-3 flex flex-col"
         v-else-if="item.overtime_status == 'rejected'"
@@ -196,24 +179,10 @@
             >
           </div>
         </v-tooltip>
-
-        <v-btn
-          v-if="item.primary_approver_id == authStore.id"
-          elevation="0"
-          variant="tonal"
-          color="text-green-700"
-          size="small"
-          class="me-2"
-          @click="approve(item)"
-        >
-          Ubah Ke Approve
-        </v-btn>
       </div>
     </template>
 
-    <!-- SECONDARY -->
     <template #[`item.overtime_status_2`]="{ item }">
-      <!-- PENDING -->
       <div v-if="item.overtime_status_2 == 'pending'">
         <div v-if="item.secondary_approver_id == authStore.id">
           <v-btn
@@ -249,7 +218,6 @@
         </v-chip>
       </div>
 
-      <!-- APPROVED -->
       <div
         class="space-y-3 my-3 flex flex-col"
         v-else-if="item.overtime_status_2 == 'approved'"
@@ -279,20 +247,8 @@
             >
           </div>
         </v-tooltip>
-
-        <v-btn
-          v-if="item.secondary_approver_id == authStore.id"
-          color="text-red-700"
-          elevation="0"
-          variant="tonal"
-          size="small"
-          @click="reject(item, 'secondary')"
-        >
-          Ubah Ke Reject
-        </v-btn>
       </div>
 
-      <!-- REJECTED -->
       <div
         class="space-y-3 my-3 flex flex-col"
         v-else-if="item.overtime_status_2 == 'rejected'"
@@ -322,24 +278,10 @@
             >
           </div>
         </v-tooltip>
-
-        <v-btn
-          v-if="item.secondary_approver_id == authStore.id"
-          elevation="0"
-          variant="tonal"
-          color="text-green-700"
-          size="small"
-          class="me-2"
-          @click="approve(item, 'secondary')"
-        >
-          Ubah Ke Approve
-        </v-btn>
       </div>
     </template>
 
-    <!-- HRD -->
     <template #[`item.overtime_status_hrd`]="{ item }">
-      <!-- PENDING -->
       <div v-if="item.overtime_status_hrd == 'pending'">
         <div v-if="authStore.level == 'hrd'">
           <v-btn
@@ -368,7 +310,6 @@
         </v-chip>
       </div>
 
-      <!-- APPROVED -->
       <div
         class="space-y-3 my-3 flex flex-col"
         v-else-if="item.overtime_status_hrd == 'approved'"
@@ -403,20 +344,8 @@
             >
           </div>
         </v-tooltip>
-
-        <v-btn
-          v-if="authStore.level == 'hrd'"
-          color="text-red-700"
-          elevation="0"
-          variant="tonal"
-          size="small"
-          @click="reject(item, 'hrd')"
-        >
-          Ubah Ke Reject
-        </v-btn>
       </div>
 
-      <!-- REJECTED -->
       <div
         class="space-y-3 my-3 flex flex-col"
         v-else-if="item.overtime_status_hrd == 'rejected'"
@@ -452,18 +381,6 @@
             >
           </div>
         </v-tooltip>
-
-        <v-btn
-          v-if="authStore.level == 'hrd'"
-          elevation="0"
-          variant="tonal"
-          color="text-green-700"
-          size="small"
-          class="me-2"
-          @click="approve(item, 'hrd')"
-        >
-          Ubah Ke Approve
-        </v-btn>
       </div>
     </template>
   </v-data-table-server>
@@ -509,15 +426,13 @@ function getDuration(workingHour: any, timeOut: any) {
   const endWork = workingHour.split(" - ")[1];
 
   const toSeconds = (time: string) => {
-    // Tambahkan default parameter = 0 untuk h, m, dan s
-    // sehingga jika formatnya "14:00", nilai s akan otomatis menjadi 0, bukan NaN
     const [h = 0, m = 0, s = 0] = time.split(":").map(Number);
     return h * 3600 + m * 60 + s;
   };
 
   const diff = toSeconds(timeOut) - toSeconds(endWork);
 
-  if (diff <= 0) return "-"; // belum overtime atau malah pulang cepat
+  if (diff <= 0) return "-";
 
   const h = Math.floor(diff / 3600);
   const m = Math.floor((diff % 3600) / 60);
@@ -547,30 +462,24 @@ function reject(
 
 function handleDetail(item: OvertimeRequest) {
   overtimeRequestStore.overtimeRequestSelected = item;
-
   console.log(overtimeRequestStore.overtimeRequestSelected);
   overtimeRequestStore.detailOvertimeDialog = true;
 }
 
 onMounted(() => overtimeRequestStore.fetchOvertimeRequest());
 </script>
+
 <style scoped>
-/* Gunakan deep selector agar tembus ke dalam komponen Vuetify */
 :deep(.v-data-table__thead) {
   background-color: #e3f2fd;
 }
-
-/* Penyesuaian untuk Dark Theme */
 :deep(.v-theme--dark thead.v-data-table__thead) {
-  background-color: #1a237e; /* Biru gelap yang lembut untuk mata */
+  background-color: #1a237e;
 }
-
 :deep(thead.v-data-table__thead th) {
   font-weight: bold !important;
-  /* Jika ingin warna teks biru tua di light mode */
   color: #1976d2 !important;
 }
-
 :deep(.v-theme--dark thead.v-data-table__thead th) {
   color: #bbdefb !important;
 }

@@ -83,6 +83,11 @@ export interface UserCreateUpdateParams {
   effective_start_date?: string; // format: dd-mm-yyyy
   effective_end_date?: string; // format: dd-mm-yyyy
   remaining_leave?: number;
+
+  // warning / peringatan
+  warning?: string | null;
+  warning_start_date?: string | null;
+  warning_end_date?: string | null;
 }
 export interface UserSelectedParams {
   id?: string;
@@ -255,6 +260,22 @@ export interface User {
   zip_code: string;
   deleted?: number | null;
   created_at: string;
+  warning?: string;
+  warning_start_date?: string;
+  warning_end_date?: string;
+}
+
+export interface UserWarningResetResponse {
+  success: boolean;
+  message: string;
+  data: {
+    total_reset: number;
+    reset_users: Array<{
+      id: number;
+      name: string;
+      employee_id: string;
+    }>;
+  };
 }
 
 export const userApi = {
@@ -341,5 +362,9 @@ export const userApi = {
 
   resetDeviceId(id: number): Promise<UserDefaultResponse> {
     return api.get(`/hrd/users/reset-device-id/${id}`).then((res) => res.data);
+  },
+
+  autoResetUserWarning(): Promise<UserWarningResetResponse> {
+    return api.get("/auto-reset-user-warning").then((res) => res.data);
   },
 };

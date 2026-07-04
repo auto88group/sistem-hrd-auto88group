@@ -33,6 +33,13 @@ export interface FilePersonnelCreateUpdateResponse {
   data: FilePersonnel;
 }
 
+// Tambahkan response untuk bulk create jika data berupa array
+export interface FilePersonnelBulkCreateResponse {
+  success: boolean;
+  message: string;
+  data: FilePersonnel[];
+}
+
 export interface FilePersonnelDestroyResponse {
   success: boolean;
   message: string;
@@ -58,6 +65,18 @@ export const filePersonnelApi = {
       .then((res) => res.data);
   },
 
+  // ─── ENDPOINT BARU: TAMBAH SEKALIGUS (BULK CREATE) ───
+  bulkCreateFilePersonnel(
+    params: FormData,
+  ): Promise<FilePersonnelBulkCreateResponse> {
+    return api
+      .post("/hrd/file-personnel/bulk", params, {
+        headers: { "Content-Type": "multipart/form-data" },
+        transformRequest: [(data) => data],
+      })
+      .then((res) => res.data);
+  },
+
   updateFilePersonnel(
     id: number,
     params: FormData,
@@ -72,5 +91,14 @@ export const filePersonnelApi = {
 
   destroyFilePersonnel(id: number): Promise<FilePersonnelDestroyResponse> {
     return api.delete(`/hrd/file-personnel/${id}`).then((res) => res.data);
+  },
+
+  // ─── ENDPOINT BARU: HAPUS SEKALIGUS (BULK DELETE) ───
+  bulkDestroyFilePersonnel(
+    ids: number[],
+  ): Promise<FilePersonnelDestroyResponse> {
+    return api
+      .post("/hrd/file-personnel/bulk-delete", { ids })
+      .then((res) => res.data);
   },
 };

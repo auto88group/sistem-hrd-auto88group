@@ -38,19 +38,15 @@ export const useFileCompletenessStore = defineStore("file-completeness", () => {
     updateError.value = null;
     try {
       const res = await fileCompletenessApi.updateFileCompleteness(id, params);
-      // update data di list jika ada
       const index = fileCompletenessSelected.value.findIndex(
         (u) => u.id === id,
       );
       if (index !== -1) {
-        // pertahankan category_name & is_mandatory dari data lama
-        // lalu timpa dengan data baru dari response
         fileCompletenessSelected.value[index] = {
           ...fileCompletenessSelected.value[index],
           ...res.data,
         };
       }
-
       return res;
     } catch (err: any) {
       updateError.value =
@@ -76,6 +72,25 @@ export const useFileCompletenessStore = defineStore("file-completeness", () => {
     }
   }
 
+  // ─── ACTION BARU: TAMBAH MULTI DATA SEKALIGUS ───
+  async function bulkCreateFileCompleteness(params: FormData) {
+    isLoadingCreate.value = true;
+    createError.value = null;
+    try {
+      const res = await fileCompletenessApi.bulkCreateFileCompleteness(params);
+      if (Array.isArray(res.data)) {
+        fileCompletenessSelected.value.push(...res.data);
+      }
+      return res;
+    } catch (err: any) {
+      createError.value =
+        err?.response?.data?.message ?? "Gagal menambah berkas sekaligus";
+      throw err;
+    } finally {
+      isLoadingCreate.value = false;
+    }
+  }
+
   async function destroyFileCompleteness(id: number) {
     isLoadingDestroy.value = true;
     deleteError.value = null;
@@ -88,6 +103,25 @@ export const useFileCompletenessStore = defineStore("file-completeness", () => {
     } catch (err: any) {
       deleteError.value =
         err?.response?.data?.message ?? "Gagal menghapus file";
+      throw err;
+    } finally {
+      isLoadingDestroy.value = false;
+    }
+  }
+
+  // ─── ACTION BARU: HAPUS MULTI DATA SEKALIGUS ───
+  async function bulkDestroyFileCompleteness(ids: number[]) {
+    isLoadingDestroy.value = true;
+    deleteError.value = null;
+    try {
+      const res = await fileCompletenessApi.bulkDestroyFileCompleteness(ids);
+      fileCompletenessSelected.value = fileCompletenessSelected.value.filter(
+        (f) => !ids.includes(f.id),
+      );
+      return res;
+    } catch (err: any) {
+      deleteError.value =
+        err?.response?.data?.message ?? "Gagal menghapus berkas massal";
       throw err;
     } finally {
       isLoadingDestroy.value = false;
@@ -107,6 +141,8 @@ export const useFileCompletenessStore = defineStore("file-completeness", () => {
     fetchFileCompletenessSelected,
     updateFileCompleteness,
     createFileCompleteness,
+    bulkCreateFileCompleteness,
     destroyFileCompleteness,
+    bulkDestroyFileCompleteness,
   };
 });

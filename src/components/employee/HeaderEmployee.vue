@@ -21,6 +21,7 @@
         class="bg-amber-300 dark:bg-amber-500 text-sm"
         >Export Data Karyawan</v-btn
       >
+
       <v-snackbar
         v-model="showErrorSnackbar"
         color="bg-red-500"
@@ -41,6 +42,7 @@
           ></v-btn>
         </template>
       </v-snackbar>
+
       <v-btn
         @click="isDialogImport = true"
         prepend-icon="mdi-file-import"
@@ -55,6 +57,16 @@
         class="bg-sky-500 dark:bg-sky-500 text-sm text-white"
         >Tambah Data</v-btn
       >
+
+      <v-btn
+        prepend-icon="mdi-reload"
+        variant="flat"
+        class="bg-red-500 dark:bg-red-500 text-sm text-white"
+        :loading="userStore.isLoadingWarningReset"
+        @click="handleResetWarning"
+      >
+        Reset Info Peringatan
+      </v-btn>
     </div>
     <div v-if="isVisible('back')">
       <v-btn
@@ -71,12 +83,18 @@
 <script setup lang="ts">
 import { useImportUserStore } from "@/stores/import-user.store";
 import { useUserStore } from "@/stores/user.store";
+import { useConfirmDialog } from "@/composables/useConfirmDialog"; // Import Composable Dialog Konfirmasi
 import { storeToRefs } from "pinia";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { useAppStore } from "@/stores/app";
+
 const router = useRouter();
 const userStore = useUserStore();
+const appStore = useAppStore(); // Inisialisasi AppStore
 const importUserStore = useImportUserStore();
+const { ask } = useConfirmDialog(); // Deklarasi fungsi ask dari dialog konfirmasi
+
 const { isDialogImport, isExporting, errorMessage } =
   storeToRefs(importUserStore);
 
@@ -84,13 +102,16 @@ const items = [
   { title: "Master", disabled: false, href: "/master" },
   { title: "Karyawan", disabled: true, href: "/master/karyawan" },
 ];
+
 const props = defineProps({
   hideFields: {
     type: Array,
-    default: () => [], // Defaultnya tidak ada yang disembunyikan
+    default: () => [],
   },
 });
+
 const isVisible = (fieldName: string) => !props.hideFields.includes(fieldName);
+
 const handleBack = () => {
   userStore.usersSelected = null;
   router.push("/master/employee");
@@ -99,10 +120,43 @@ const handleBack = () => {
 const handleExport = async () => {
   await importUserStore.exportData();
 };
+
+// Fungsi Handler untuk Reset Warning dengan Konfirmasi & Snackbar
+const handleResetWarning = async () => {
+  // 1. Tampilkan dialog konfirmasi kustom Anda
+  const confirmed = await ask({
+    title: "Konfirmasi Reset Peringatan",
+    message:
+      "Apakah Anda yakin ingin mereset data peringatan karyawan? </br>Semua data status peringatan yang <b>sudah melewati tanggal selesai (kedaluwarsa)</b> akan dikosongkan secara massal.",
+    confirmText: "Ya, Reset",
+    cancelText: "Batal",
+    color: "red-darken-1", // Menyesuaikan preferensi warna merah
+  });
+
+  // Jika user menekan tombol Batal, hentikan eksekusi
+  if (!confirmed) return;
+
+  try {
+    // 2. Jalankan proses reset API ke Laravel via Pinia Store
+    const res = await userStore.autoResetUserWarning();
+
+    if (res.success) {
+      // 3. Tampilkan pesan sukses di v-snackbar global milik appStore
+      appStore.successMessage = `${res.message} (Total: ${res.data.total_reset} karyawan berhasil di-reset).`;
+      appStore.showSuccessSnackbar = true;
+
+      // 4. Refresh datatable list karyawan agar perubahan langsung terlihat di layar
+      userStore.fetchUsers();
+    }
+  } catch (err: any) {
+    // Jika gagal, tampilkan pesan error store ke snackbar lokal/error di header
+    errorMessage.value =
+      userStore.resetWarningError || "Gagal memproses reset peringatan user.";
+  }
+};
+
 const showErrorSnackbar = computed({
-  // Snackbar muncul jika errorMessage tidak kosong/null
   get: () => !!errorMessage.value,
-  // Jika snackbar tertutup (karena timeout atau klik X), reset state errorMessage
   set: (val) => {
     if (!val) {
       errorMessage.value = null;

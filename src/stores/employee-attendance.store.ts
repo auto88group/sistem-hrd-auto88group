@@ -22,6 +22,7 @@ export const useEmployeeAttendanceRequestStore = defineStore(
     const employeeAttendanceRecap = ref<EmployeeAttendanceRecapItem[]>([]);
     const employeeAttendanceDetail = ref<EmployeeAttendanceDetail>();
     const isLoading = ref(false);
+    const isLoadingExport = ref(false);
     const isLoadingEdit = ref(false);
     const isLoadingDetail = ref(false);
     const isLoadingDestroy = ref(false);
@@ -238,6 +239,38 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       }
     }
 
+    async function exportToExcel() {
+      isLoadingExport.value = true;
+      try {
+        const blob = await employeeAttendanceRequestApi.export({
+          period: params.period,
+          branch_id: params.branch_id,
+        });
+
+        // Membuat link download temporary di browser
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement("a");
+        link.href = url;
+
+        // Penamaan file dinamis di sisi client
+        link.setAttribute(
+          "download",
+          `Laporan_Absensi_${new Date().toISOString().split("T")[0]}.xlsx`,
+        );
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup element link setelah download terpicu
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Gagal mengunduh file laporan excel:", error);
+        throw error;
+      } finally {
+        isLoadingExport.value = false;
+      }
+    }
+
     return {
       employeeAttendance,
       employeeAttendanceRecap,
@@ -258,6 +291,8 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       serverErrors,
       recapDates,
       isLoadingApproval,
+      isLoadingExport,
+      exportToExcel,
       approvalDiffLoc,
       destroyAttendance,
       modifyAttendance,

@@ -2,7 +2,6 @@
   <div class="space-y-10">
     <confirm-dialog />
 
-    <!-- ───── Snackbar Error ───── -->
     <v-snackbar
       v-model="showErrorSnackbar"
       color="bg-red-500"
@@ -24,7 +23,27 @@
       </template>
     </v-snackbar>
 
-    <!-- ───── Snackbar Success ───── -->
+    <v-snackbar
+      v-model="appStore.showSuccessSnackbar"
+      color="bg-green-500"
+      elevation="24"
+      location="top"
+      timeout="4000"
+      rounded="lg"
+    >
+      <div class="d-flex align-center">
+        <v-icon icon="mdi-check-circle" class="me-3"></v-icon>
+        <span class="font-weight-medium">{{ appStore.successMessage }}</span>
+      </div>
+      <template v-slot:actions>
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="appStore.showSuccessSnackbar = false"
+        ></v-btn>
+      </template>
+    </v-snackbar>
+
     <v-snackbar
       v-model="showSuccessSnackbar"
       color="bg-green-500"
@@ -45,6 +64,7 @@
         ></v-btn>
       </template>
     </v-snackbar>
+
     <filter-users :hide-fields="['pendidikan', 'status']" @filter="onFilter" />
 
     <v-data-table-server
@@ -59,6 +79,7 @@
       <template #[`item.no`]="{ index }">
         {{ (store.params.start ?? 0) + index + 1 }}
       </template>
+
       <template #[`item.foto`]="{ item }">
         <v-avatar size="40">
           <v-img
@@ -67,7 +88,6 @@
             alt="Avatar"
             @click="openImage(item)"
           >
-            >
             <template #placeholder>
               <v-icon>mdi-account-circle</v-icon>
             </template>
@@ -115,14 +135,12 @@
         </div>
       </template>
 
-      <!-- POSITION -->
       <template #[`item.position`]="{ item }">
         <div class="d-flex flex-column">
           <span class="font-weight-bold">{{ item.position ?? "-" }}</span>
         </div>
       </template>
 
-      <!-- STATUS -->
       <template #[`item.status`]="{ item }">
         <v-chip
           size="small"
@@ -148,8 +166,40 @@
         </span>
         <span v-else class="text-gray-400 text-sm">-</span>
       </template>
+      <!-- 1. KOLOM PERINGATAN (CHIP) -->
+      <template #[`item.warning`]="{ item }">
+        <v-chip
+          v-if="item.warning"
+          size="small"
+          :color="
+            isWarningActive(item.warning_start_date, item.warning_end_date)
+              ? 'bg-red-500'
+              : 'bg-gray-500'
+          "
+          variant="flat"
+          class="font-bold"
+        >
+          {{ item.warning }}
+        </v-chip>
+        <span v-else class="text-gray-400 text-sm">-</span>
+      </template>
 
-      <!-- PROSPECT -->
+      <!-- 2. KOLOM TANGGAL MULAI PERINGATAN -->
+      <template #[`item.warning_start_date`]="{ item }">
+        <span v-if="item.warning_start_date" class="text-sm font-medium">
+          {{ toFullDate(item.warning_start_date) }}
+        </span>
+        <span v-else class="text-gray-400 text-sm">-</span>
+      </template>
+
+      <!-- 3. KOLOM TANGGAL SELESAI PERINGATAN -->
+      <template #[`item.warning_end_date`]="{ item }">
+        <span v-if="item.warning_end_date" class="text-sm font-medium">
+          {{ toFullDate(item.warning_end_date) }}
+        </span>
+        <span v-else class="text-gray-400 text-sm">-</span>
+      </template>
+
       <template #[`item.prospect`]="{ item }">
         <template v-if="item.level === 'admin_telemarketing'">
           <v-btn
@@ -173,7 +223,6 @@
           </v-btn>
         </template>
 
-        <!-- level lain: tidak tampilkan apapun -->
         <template v-else>
           <span></span>
         </template>
@@ -216,7 +265,6 @@
         prepend-icon="mdi-alert-circle-outline"
         title="Konfirmasi Hapus Karyawan"
       >
-        <!-- Bungkus konten dengan v-form -->
         <v-form ref="formDelete" @submit.prevent="deleteUser">
           <div class="p-[16px] space-y-5">
             <v-select
@@ -238,7 +286,6 @@
                   : ''
               "
             ></v-select>
-
             <app-date-picker
               v-if="userDestoryParams.is_resign === 1"
               v-model="userDestoryParams.resign_date"
@@ -247,10 +294,8 @@
               density="compact"
               :rules="[rules.required]"
               clearable
-            >
-            </app-date-picker>
+            ></app-date-picker>
           </div>
-
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
@@ -259,8 +304,6 @@
               variant="plain"
               @click="isDialogDeleteOpen = false"
             ></v-btn>
-
-            <!-- Button type diset ke 'submit' -->
             <v-btn
               type="submit"
               color="bg-indigo-200 dark:bg-indigo-800 text-indigo-500 dark:text-indigo-200 font-bold"
@@ -281,9 +324,7 @@
       >
         <v-card-text>
           Apakah Anda yakin ingin mengubah prospek
-          <strong>{{ targetProspect?.name || "item ini" }}</strong>
-          menjadi
-
+          <strong>{{ targetProspect?.name || "item ini" }}</strong> menjadi
           <template v-if="targetProspect?.level === 'telemarketing'">
             <v-chip
               size="x-small"
@@ -300,7 +341,6 @@
               }}
             </v-chip>
           </template>
-
           <template v-else-if="targetProspect?.level === 'admin_telemarketing'">
             <v-chip
               size="x-small"
@@ -309,12 +349,9 @@
               {{ targetProspect?.disabled === 0 ? "Nonaktif" : "Aktif" }}
             </v-chip>
           </template>
-
           ?
         </v-card-text>
-
         <v-divider></v-divider>
-
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
@@ -327,7 +364,6 @@
             color="bg-indigo-200 dark:bg-indigo-800 text-indigo-500 dark:text-indigo-200 font-bold"
             text="Ya, Ubah"
             variant="flat"
-            @loading="store.isLoadingProspect"
             @click="handleConfirmStatus"
           ></v-btn>
         </v-card-actions>
@@ -337,7 +373,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, ref } from "vue";
+import { onMounted, ref } from "vue";
 import FilterUsers from "./FilterUsers.vue";
 import { useUserStore } from "@/stores/user.store";
 import type { UserDatatablesParams } from "@/api/modules/user.api";
@@ -350,7 +386,9 @@ import { storeToRefs } from "pinia";
 import AppDatePicker from "../AppDatePicker.vue";
 import type { VForm } from "vuetify/components";
 import { useDateFormatter } from "@/composables/UseDateFormatter.ts";
+import { useAppStore } from "@/stores/app.ts";
 
+const appStore = useAppStore();
 const { toFullDate } = useDateFormatter();
 const apiUrl = import.meta.env.VITE_API_URL;
 const { formatName } = useFormatName();
@@ -367,7 +405,6 @@ const { statusLabel, statusColor } = useEmployeeStatus();
 const { ask } = useConfirmDialog();
 
 onMounted(() => {
-  // Tangkap parameter dari URL jika ada
   if (route.query.hrd_file_category_id) {
     store.params.hrd_file_category_id = Number(
       route.query.hrd_file_category_id,
@@ -376,9 +413,23 @@ onMounted(() => {
   if (route.query.file_status) {
     store.params.file_status = String(route.query.file_status);
   }
-
   store.fetchUsers();
 });
+
+function isWarningActive(startStr?: string, endStr?: string): boolean {
+  if (!startStr || !endStr) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const startDate = new Date(startStr);
+  startDate.setHours(0, 0, 0, 0);
+
+  const endDate = new Date(endStr);
+  endDate.setHours(0, 0, 0, 0);
+
+  return today >= startDate && today <= endDate;
+}
 
 function onTableOptionsChange(options: any) {
   store.params.length = options.itemsPerPage;
@@ -406,6 +457,7 @@ const snackbarMessage = ref("");
 const showSuccessSnackbar = ref(false);
 const successMessage = ref("");
 
+// Tambahkan kolom warning di sini, set sortable: true
 const headers = [
   { title: "No", key: "no", sortable: false, width: "60px" },
   { title: "Foto", key: "foto", sortable: false },
@@ -416,6 +468,12 @@ const headers = [
   { title: "Status", key: "status", sortable: true },
   { title: "Tanggal Masuk", key: "join_date", sortable: true },
   { title: "Tanggal Keluar", key: "effective_end_date", sortable: false },
+
+  // 3 Kolom Peringatan baru di sini
+  { title: "Peringatan", key: "warning", sortable: true },
+  { title: "Tgl Mulai Peringatan", key: "warning_start_date", sortable: true },
+  { title: "Tgl Selesai Peringatan", key: "warning_end_date", sortable: true },
+
   { title: "Prospek", key: "prospect", sortable: false, align: "center" },
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];
@@ -471,10 +529,7 @@ const openImage = (item: any) => {
 };
 
 function goToDetail(item: any) {
-  router.push({
-    name: "Master Detail Karyawan",
-    params: { id: item.id },
-  });
+  router.push({ name: "Master Detail Karyawan", params: { id: item.id } });
 }
 
 async function handleRestore(id: number) {
@@ -499,11 +554,13 @@ async function handleRestore(id: number) {
     resetUserDestoryParams();
   }
 }
+
 function handleDelete(id: number) {
   isDialogDeleteOpen.value = true;
   userDestoryParams.value.id = id.toString();
   userDestoryParams.value.action = "delete";
 }
+
 async function deleteUser() {
   const validation = await formDelete.value?.validate();
   try {
@@ -518,6 +575,7 @@ async function deleteUser() {
     showError(err?.message ?? "Gagal menghapus data karyawan.");
   }
 }
+
 function resetUserDestoryParams() {
   isDialogDeleteOpen.value = false;
   userDestoryParams.value.id = undefined;
@@ -533,7 +591,6 @@ const handleConfirmStatus = async () => {
       : targetProspect.value?.disabled;
 
   const id = targetProspect.value?.id;
-
   store.userProspectParams.action =
     currentDisabled === 0 ? "disable" : "enable";
 
@@ -552,23 +609,18 @@ const handleConfirmStatus = async () => {
   }
 };
 </script>
+
 <style scoped>
-/* Gunakan deep selector agar tembus ke dalam komponen Vuetify */
 :deep(.custom-header-table thead) {
-  background-color: #e3f2fd; /* Blue lighten-5 (sangat lembut) */
+  background-color: #e3f2fd;
 }
-
-/* Penyesuaian untuk Dark Theme */
 :deep(.v-theme--dark .custom-header-table thead) {
-  background-color: #1a237e; /* Biru gelap yang lembut untuk mata */
+  background-color: #1a237e;
 }
-
 :deep(.custom-header-table thead th) {
   font-weight: bold !important;
-  /* Jika ingin warna teks biru tua di light mode */
   color: #1976d2 !important;
 }
-
 :deep(.v-theme--dark .custom-header-table thead th) {
   color: #bbdefb !important;
 }

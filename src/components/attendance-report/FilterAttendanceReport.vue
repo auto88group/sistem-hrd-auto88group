@@ -105,6 +105,15 @@
         >
           Filter
         </v-btn>
+        <v-btn
+          color="success"
+          variant="flat"
+          prepend-icon="mdi-file-excel"
+          :loading="employeeAttendanceStore.isLoadingExport"
+          @click="handleExport"
+        >
+          Export Excel
+        </v-btn>
       </div>
     </div>
     <div
@@ -191,6 +200,16 @@ function onClickRadio(key: string) {
     onChangeType(null);
   }
 }
+
+async function handleExport() {
+  try {
+    await employeeAttendanceStore.exportToExcel();
+  } catch (err) {
+    // Jika Anda memiliki toast notification global (seperti appStore), bisa dipasang di sini
+    alert("Terjadi kesalahan saat mengekspor data absensi.");
+  }
+}
+
 const checkboxOptions = [
   { key: "type_present", label: "Hadir" },
   { key: "type_belum_hadir", label: "Belum Hadir" },

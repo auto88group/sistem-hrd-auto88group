@@ -48,6 +48,25 @@ export const useFilePersonnelStore = defineStore("file-personnel", () => {
     }
   }
 
+  // ─── ACTION BARU: TAMBAH MULTI DATA SEKALIGUS ───
+  async function bulkCreateFilePersonnel(params: FormData) {
+    isLoadingCreate.value = true;
+    createError.value = null;
+    try {
+      const res = await filePersonnelApi.bulkCreateFilePersonnel(params);
+      if (Array.isArray(res.data)) {
+        filePersonnelSelected.value.push(...res.data);
+      }
+      return res;
+    } catch (err: any) {
+      createError.value =
+        err?.response?.data?.message ?? "Gagal menambah massal file personnel";
+      throw err;
+    } finally {
+      isLoadingCreate.value = false;
+    }
+  }
+
   async function updateFilePersonnel(id: number, params: FormData) {
     isLoadingUpdate.value = true;
     updateError.value = null;
@@ -83,6 +102,25 @@ export const useFilePersonnelStore = defineStore("file-personnel", () => {
     }
   }
 
+  // ─── ACTION BARU: HAPUS MULTI DATA SEKALIGUS ───
+  async function bulkDestroyFilePersonnel(ids: number[]) {
+    isLoadingDestroy.value = true;
+    deleteError.value = null;
+    try {
+      const res = await filePersonnelApi.bulkDestroyFilePersonnel(ids);
+      filePersonnelSelected.value = filePersonnelSelected.value.filter(
+        (f) => !ids.includes(f.id),
+      );
+      return res;
+    } catch (err: any) {
+      deleteError.value =
+        err?.response?.data?.message ?? "Gagal menghapus massal data";
+      throw err;
+    } finally {
+      isLoadingDestroy.value = false;
+    }
+  }
+
   return {
     filePersonnelSelected,
     isLoadingSelected,
@@ -95,7 +133,9 @@ export const useFilePersonnelStore = defineStore("file-personnel", () => {
     deleteError,
     fetchFilePersonnelSelected,
     createFilePersonnel,
+    bulkCreateFilePersonnel,
     updateFilePersonnel,
     destroyFilePersonnel,
+    bulkDestroyFilePersonnel,
   };
 });

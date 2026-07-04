@@ -25,6 +25,13 @@ export interface FileCompletenessCreateUpdateResponse {
   data: FileCompleteness;
 }
 
+// ─── INTERFACE BARU UNTUK RESPONSE MULTI ADD ───
+export interface FileCompletenessBulkCreateResponse {
+  success: boolean;
+  message: string;
+  data: FileCompleteness[];
+}
+
 export interface FileCompletenessDestroyResponse {
   success: boolean;
   message: string;
@@ -48,6 +55,7 @@ export const fileCompletenessApi = {
       .get(`/hrd/file-completeness/${params.user_id}`)
       .then((res) => res.data);
   },
+
   updateFileCompleteness(
     id: number,
     params: FormData,
@@ -59,6 +67,7 @@ export const fileCompletenessApi = {
       })
       .then((res) => res.data);
   },
+
   createFileCompleteness(
     params: FormData,
   ): Promise<FileCompletenessCreateUpdateResponse> {
@@ -69,9 +78,31 @@ export const fileCompletenessApi = {
       })
       .then((res) => res.data);
   },
+
+  // ─── METHOD BARU: ADD SEKALIGUS (SINGLE REQUEST) ───
+  bulkCreateFileCompleteness(
+    params: FormData,
+  ): Promise<FileCompletenessBulkCreateResponse> {
+    return api
+      .post("/hrd/file-completeness/bulk", params, {
+        headers: { "Content-Type": "multipart/form-data" },
+        transformRequest: [(data) => data],
+      })
+      .then((res) => res.data);
+  },
+
   destroyFileCompleteness(
     id: number,
   ): Promise<FileCompletenessDestroyResponse> {
     return api.delete(`/hrd/file-completeness/${id}`).then((res) => res.data);
+  },
+
+  // ─── METHOD BARU: HAPUS SEKALIGUS (SINGLE REQUEST) ───
+  bulkDestroyFileCompleteness(
+    ids: number[],
+  ): Promise<FileCompletenessDestroyResponse> {
+    return api
+      .post("/hrd/file-completeness/bulk-delete", { ids })
+      .then((res) => res.data);
   },
 };

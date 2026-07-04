@@ -484,6 +484,7 @@ import { useWorkExperienceStore } from "@/stores/work-experience.store";
 
 import AppDatePicker from "../AppDatePicker.vue";
 import ConfirmDialog from "../ConfirmDialog.vue";
+import { useAppStore } from "@/stores/app.ts";
 
 // ─────────────────────────────────────────────
 // 2. COMPOSABLES & STORES
@@ -495,6 +496,8 @@ const { toFullDate } = useDateFormatter();
 const workExperienceStore = useWorkExperienceStore();
 const provinceStore = useProvinceStore();
 const regencyStore = useRegencyStore();
+
+const appStore = useAppStore();
 
 // ─────────────────────────────────────────────
 // 3. CONSTANTS & ENV

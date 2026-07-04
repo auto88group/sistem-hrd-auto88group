@@ -10,6 +10,7 @@ import {
   type UserCreateUpdateParams,
   type UserAccountAccessParams,
   type UserDestroyParams,
+  type UserWarningResetResponse, // Pastikan interface ini di-export di user.api.ts
 } from "@/api/modules/user.api";
 import { id } from "vuetify/locale";
 
@@ -27,11 +28,18 @@ export const useUserStore = defineStore("user", () => {
   const isLoadingUpdateAccountAccess = ref(false);
   const isLoadingFaceId = ref(false);
   const isLoadingDeviceId = ref(false);
+
+  // State Baru untuk Warning Reset
+  const isLoadingWarningReset = ref(false);
+
   const totalRecords = ref(0);
   const updateError = ref<string | null>(null);
   const createError = ref<string | null>(null);
   const deleteError = ref<string | null>(null);
   const accountAccessError = ref<string | null>(null);
+
+  // Error state Baru untuk Warning Reset
+  const resetWarningError = ref<string | null>(null);
 
   const params = reactive<UserDatatablesParams>({
     draw: 1,
@@ -53,7 +61,7 @@ export const useUserStore = defineStore("user", () => {
   const userDataParams = reactive<UserDataParams>({
     search: "",
     branch_id: undefined,
-    not_user_id: undefined, // tambahkan ini
+    not_user_id: undefined,
     is_less_than_one_year: undefined,
   });
   const userSelectedParams = reactive<UserSelectedParams>({
@@ -151,10 +159,8 @@ export const useUserStore = defineStore("user", () => {
     updateError.value = null;
     try {
       const res = await userApi.updateUser(id, params);
-      // update data di list jika ada
       const index = users.value.findIndex((u) => u.id === id);
       if (index !== -1) users.value[index] = res.data;
-      // update selected jika sedang dibuka
       if (usersSelected.value?.id === id) usersSelected.value = res.data;
       return res;
     } catch (err: any) {
@@ -258,6 +264,23 @@ export const useUserStore = defineStore("user", () => {
     }
   }
 
+  // ───── FUNCTION ACTION BARU: AUTO RESET WARNING ─────
+  async function autoResetUserWarning(): Promise<UserWarningResetResponse> {
+    isLoadingWarningReset.value = true;
+    resetWarningError.value = null;
+    try {
+      const res = await userApi.autoResetUserWarning();
+      return res;
+    } catch (err: any) {
+      resetWarningError.value =
+        err?.response?.data?.message ??
+        "Gagal memproses otomatis reset warning user";
+      throw err;
+    } finally {
+      isLoadingWarningReset.value = false;
+    }
+  }
+
   return {
     users,
     usersData,
@@ -272,6 +295,7 @@ export const useUserStore = defineStore("user", () => {
     isLoadingUpdateAccountAccess,
     isLoadingFaceId,
     isLoadingDeviceId,
+    isLoadingWarningReset, // Export state loading baru
     totalRecords,
     params,
     userDataParams,
@@ -282,6 +306,7 @@ export const useUserStore = defineStore("user", () => {
     createError,
     deleteError,
     accountAccessError,
+    resetWarningError, // Export state error baru
     fetchUsers,
     fetchUsersData,
     toggleShowDeleted,
@@ -294,5 +319,6 @@ export const useUserStore = defineStore("user", () => {
     updateUserProspect,
     fetchUsersDataWithParams,
     updateAccountAccess,
+    autoResetUserWarning, // Export fungsi baru
   };
 });

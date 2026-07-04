@@ -25,13 +25,13 @@
     </div>
 
     <div class="flex flex-col gap-5">
+      <!-- Data Diri (Tetap Sama) -->
       <v-card elevation="0">
         <v-card-title
           class="text-indigo-600 dark:text-indigo-400 font-bold px-0 text-base"
         >
           Data Diri
         </v-card-title>
-
         <v-divider class="mb-6"></v-divider>
         <v-row gap="15">
           <v-col cols="12" md="6">
@@ -54,7 +54,6 @@
               {{ userStore.usersSelected?.full_name ?? "-" }}
             </div>
           </v-col>
-
           <v-col cols="12" md="6">
             <div class="text-gray-500 text-sm dark:text-gray-300">
               Pendidikan Terakhir
@@ -80,7 +79,6 @@
               {{ userStore.usersSelected?.back_title ?? "-" }}
             </div>
           </v-col>
-
           <v-col cols="12" md="6">
             <div class="text-gray-500 text-sm dark:text-gray-300">Nomor HP</div>
             <div class="font-bold text-sm">
@@ -123,7 +121,6 @@
               {{ userStore.usersSelected?.blood_type?.name ?? "-" }}
             </div>
           </v-col>
-
           <v-col cols="12" md="6">
             <div class="text-gray-500 text-sm dark:text-gray-300">
               Tempat Lahir
@@ -189,12 +186,12 @@
         </v-row>
       </v-card>
 
+      <!-- Foto Profil & Alamat (Tetap Sama) -->
       <v-card elevation="0">
         <v-card-title
           class="text-indigo-600 dark:text-indigo-400 font-bold px-0 text-base"
+          >Foto Profil</v-card-title
         >
-          Foto Profil
-        </v-card-title>
         <v-divider class="mb-4"></v-divider>
         <div v-if="userStore.usersSelected?.image">
           <v-img
@@ -210,16 +207,14 @@
             class="rounded-lg bg-grey-lighten-2"
           ></v-img>
         </div>
-
         <div v-else class="font-bold text-sm">-</div>
       </v-card>
 
       <v-card elevation="0">
         <v-card-title
           class="text-indigo-600 dark:text-indigo-400 font-bold px-0 text-base"
+          >Data Alamat(Sesuai KTP)</v-card-title
         >
-          Data Alamat(Sesuai KTP)
-        </v-card-title>
         <v-divider class="mb-4"></v-divider>
         <div class="font-bold text-sm">
           {{ userStore.usersSelected?.address_id_card ?? "-" }}
@@ -229,71 +224,72 @@
       <v-card elevation="0">
         <v-card-title
           class="text-indigo-600 dark:text-indigo-400 font-bold px-0 text-base"
+          >Data Alamat(Domisili)</v-card-title
         >
-          Data Alamat(Domisili)
-        </v-card-title>
-
         <v-divider class="mb-6"></v-divider>
         <v-row gap="15">
-          <v-col cols="12" md="6">
-            <div class="text-gray-500 text-sm dark:text-gray-300">Provinsi</div>
+          <v-col cols="12" md="6"
+            ><div class="text-gray-500 text-sm dark:text-gray-300">
+              Provinsi
+            </div>
             <div class="font-bold text-sm">
               {{ userStore.usersSelected?.province?.name ?? "-" }}
-            </div>
-          </v-col>
-          <v-col cols="12" md="6">
-            <div class="text-gray-500 text-sm dark:text-gray-300">
+            </div></v-col
+          >
+          <v-col cols="12" md="6"
+            ><div class="text-gray-500 text-sm dark:text-gray-300">
               Kabupaten
             </div>
             <div class="font-bold text-sm">
               {{ userStore.usersSelected?.regency?.name ?? "-" }}
-            </div>
-          </v-col>
-
-          <v-col cols="12" md="6">
-            <div class="text-gray-500 text-sm dark:text-gray-300">
+            </div></v-col
+          >
+          <v-col cols="12" md="6"
+            ><div class="text-gray-500 text-sm dark:text-gray-300">
               Kecamatan
             </div>
             <div class="font-bold text-sm">
               {{ userStore.usersSelected?.disctrict?.name ?? "-" }}
-            </div>
-          </v-col>
-          <v-col cols="12" md="6">
-            <div class="text-gray-500 text-sm dark:text-gray-300">
+            </div></v-col
+          >
+          <v-col cols="12" md="6"
+            ><div class="text-gray-500 text-sm dark:text-gray-300">
               Kelurahan
             </div>
             <div class="font-bold text-sm">
               {{ userStore.usersSelected?.village?.name ?? "-" }}
-            </div>
-          </v-col>
-          <v-col cols="12" md="6">
-            <div class="text-gray-500 text-sm dark:text-gray-300">RT</div>
+            </div></v-col
+          >
+          <v-col cols="12" md="6"
+            ><div class="text-gray-500 text-sm dark:text-gray-300">RT</div>
             <div class="font-bold text-sm">
               {{ userStore.usersSelected?.neighborhood_unit ?? "-" }}
-            </div>
-          </v-col>
-
-          <v-col cols="12" md="6">
-            <div class="text-gray-500 text-sm dark:text-gray-300">RW</div>
+            </div></v-col
+          >
+          <v-col cols="12" md="6"
+            ><div class="text-gray-500 text-sm dark:text-gray-300">RW</div>
             <div class="font-bold text-sm">
               {{ userStore.usersSelected?.community_unit ?? "-" }}
-            </div>
-          </v-col>
-          <v-col cols="12" md="12">
-            <div class="text-gray-500 text-sm dark:text-gray-300">Alamat</div>
+            </div></v-col
+          >
+          <v-col cols="12" md="12"
+            ><div class="text-gray-500 text-sm dark:text-gray-300">Alamat</div>
             <div class="font-bold text-sm">
               {{ userStore.usersSelected?.current_address ?? "-" }}
+            </div></v-col
+          >
+          <v-col cols="12" md="12"
+            ><div class="text-gray-500 text-sm dark:text-gray-300">
+              Kode Pos
             </div>
-          </v-col>
-          <v-col cols="12" md="12">
-            <div class="text-gray-500 text-sm dark:text-gray-300">Kode Pos</div>
             <div class="font-bold text-sm">
               {{ userStore.usersSelected?.zip_code ?? "-" }}
-            </div>
-          </v-col>
+            </div></v-col
+          >
         </v-row>
       </v-card>
 
+      <!-- ───── DATA KEPEGAWAIAN ───── -->
       <v-card elevation="0">
         <v-card-title
           class="text-indigo-600 dark:text-indigo-400 font-bold px-0 text-base"
@@ -310,14 +306,13 @@
               {{ userStore.usersSelected?.employee_id ?? "-" }}
             </div>
           </v-col>
-          <!-- Jika salah satu atau keduanya ada -->
+
           <template
             v-if="
               userStore.usersSelected?.primary_approver ||
               userStore.usersSelected?.secondary_approver
             "
           >
-            <!-- Jika hanya atasan 1 saja (atasan 2 tidak ada) -->
             <template v-if="!userStore.usersSelected?.secondary_approver">
               <v-col cols="12" md="6">
                 <div class="text-gray-500 text-sm dark:text-gray-300">
@@ -328,8 +323,6 @@
                 </div>
               </v-col>
             </template>
-
-            <!-- Jika keduanya ada -->
             <template v-else>
               <v-col cols="12" md="6">
                 <div class="text-gray-500 text-sm dark:text-gray-300">
@@ -349,6 +342,7 @@
               </v-col>
             </template>
           </template>
+
           <v-col
             cols="12"
             md="6"
@@ -422,7 +416,6 @@
             </div>
           </v-col>
 
-          <!-- Status 1: Kontrak → Tanggal Mulai + Tanggal Selesai -->
           <template v-if="userStore.usersSelected?.status_id === 1">
             <v-col cols="12" md="6">
               <div class="text-gray-500 text-sm dark:text-gray-300">
@@ -449,7 +442,6 @@
             </v-col>
           </template>
 
-          <!-- Status 1: Kontrak → Tanggal Mulai + Tanggal Selesai -->
           <template v-if="userStore.usersSelected?.status_id === 6">
             <v-col cols="12" md="6">
               <div class="text-gray-500 text-sm dark:text-gray-300">
@@ -476,7 +468,6 @@
             </v-col>
           </template>
 
-          <!-- Status 2: Tetap → Tanggal Ditetapkan -->
           <template v-else-if="userStore.usersSelected?.status_id === 2">
             <v-col cols="12" md="6">
               <div class="text-gray-500 text-sm dark:text-gray-300">
@@ -492,7 +483,6 @@
             </v-col>
           </template>
 
-          <!-- Status 3 atau 4: Resign / Dikeluarkan → Tanggal Keluar -->
           <template
             v-else-if="[3, 4].includes(userStore.usersSelected?.status_id ?? 0)"
           >
@@ -509,7 +499,6 @@
             </v-col>
           </template>
 
-          <!-- Status 5: Pensiun → Tanggal Pensiun -->
           <template v-else-if="(userStore.usersSelected?.status_id ?? 0) === 5">
             <v-col cols="12" md="6">
               <div class="text-gray-500 text-sm dark:text-gray-300">
@@ -533,14 +522,68 @@
             </div>
           </v-col>
         </v-row>
+
+        <!-- ───── TAMBAHAN INFORMASI PERINGATAN ───── -->
+        <v-row
+          class="mt-4 pt-4 border-t border-dashed border-gray-200 dark:border-gray-700"
+        >
+          <v-col cols="12" md="4">
+            <div class="text-gray-500 text-sm dark:text-gray-300">
+              Status Peringatan
+            </div>
+            <div class="mt-1">
+              <v-chip
+                v-if="userStore.usersSelected?.warning"
+                size="small"
+                :color="
+                  isWarningActive(
+                    userStore.usersSelected?.warning_start_date,
+                    userStore.usersSelected?.warning_end_date,
+                  )
+                    ? 'bg-red-500'
+                    : 'bg-gray-500'
+                "
+                variant="flat"
+                class="font-bold text-white"
+              >
+                {{ userStore.usersSelected.warning }}
+              </v-chip>
+              <div v-else class="font-bold text-sm text-gray-400">-</div>
+            </div>
+          </v-col>
+
+          <v-col cols="12" md="4">
+            <div class="text-gray-500 text-sm dark:text-gray-300">
+              Tgl Mulai Peringatan
+            </div>
+            <div class="font-bold text-sm">
+              {{
+                toDayMonthYear(userStore.usersSelected?.warning_start_date) ??
+                "-"
+              }}
+            </div>
+          </v-col>
+
+          <v-col cols="12" md="4">
+            <div class="text-gray-500 text-sm dark:text-gray-300">
+              Tgl Selesai Peringatan
+            </div>
+            <div class="font-bold text-sm">
+              {{
+                toDayMonthYear(userStore.usersSelected?.warning_end_date) ?? "-"
+              }}
+            </div>
+          </v-col>
+        </v-row>
       </v-card>
     </div>
   </v-card>
 </template>
+
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user.store";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useEmployeeStatus } from "@/composables/UseEmployeeStatus";
 
@@ -552,10 +595,27 @@ const employeeId = route.params.id;
 const apiUrl = import.meta.env.VITE_API_URL;
 
 defineEmits(["edit"]);
+
 onMounted(async () => {
   if (!userStore.usersSelected) {
     userStore.userSelectedParams.id = employeeId as string;
     await userStore.fetchUsersSelected();
   }
 });
+
+// Helper untuk mengecek keaktifan peringatan/SP berdasarkan rentang tanggal
+function isWarningActive(startStr?: string, endStr?: string): boolean {
+  if (!startStr || !endStr) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const startDate = new Date(startStr);
+  startDate.setHours(0, 0, 0, 0);
+
+  const endDate = new Date(endStr);
+  endDate.setHours(0, 0, 0, 0);
+
+  return today >= startDate && today <= endDate;
+}
 </script>

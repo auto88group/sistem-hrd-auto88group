@@ -307,4 +307,16 @@ export const employeeAttendanceRequestApi = {
       .post("/hrd/employee-attendance/delete-photo", payload)
       .then((res) => res.data);
   },
+
+  export(params: {
+    period?: string;
+    branch_id?: number | null;
+  }): Promise<Blob> {
+    return api
+      .get("/hrd/employee-attendance/export", {
+        params,
+        responseType: "blob",
+      })
+      .then((res) => res.data);
+  },
 };

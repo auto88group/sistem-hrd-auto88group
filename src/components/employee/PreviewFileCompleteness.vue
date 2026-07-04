@@ -9,8 +9,64 @@
   </div>
 
   <v-card v-else flat class="p-1 md:p-3 space-y-3">
-    <!-- ───── Toolbar ───── -->
-    <div class="flex justify-end w-full gap-2">
+    <div
+      v-if="isBulkMode"
+      class="flex items-center justify-between bg-indigo-50 dark:bg-indigo-950 p-3 rounded-xl border border-indigo-200 dark:border-indigo-800 transition-all duration-300"
+    >
+      <div
+        class="flex items-center gap-3 text-indigo-900 dark:text-indigo-200 font-semibold flex-wrap"
+      >
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          size="small"
+          @click="exitBulkMode"
+        />
+        <span>{{ selectedIds.length }} Item Terpilih</span>
+
+        <span class="text-gray-300 dark:text-gray-700">|</span>
+
+        <v-btn
+          variant="text"
+          color="indigo-darken-2"
+          density="comfortable"
+          size="small"
+          class="font-bold text-xs capitalize"
+          :prepend-icon="
+            isAllSelected
+              ? 'mdi-checkbox-multiple-marked'
+              : 'mdi-checkbox-multiple-blank-outline'
+          "
+          @click="toggleSelectAll"
+        >
+          {{ isAllSelected ? "Batal Pilih Semua" : "Pilih Semua" }}
+        </v-btn>
+      </div>
+
+      <div class="flex gap-2">
+        <v-btn
+          color="indigo"
+          variant="flat"
+          size="small"
+          prepend-icon="mdi-download"
+          @click="downloadSelected"
+        >
+          Download
+        </v-btn>
+        <v-btn
+          color="red"
+          variant="flat"
+          size="small"
+          prepend-icon="mdi-delete"
+          :loading="fileCompletenessStore.isLoadingDestroy"
+          @click="deleteSelected"
+        >
+          Hapus
+        </v-btn>
+      </div>
+    </div>
+
+    <div v-else class="flex justify-end w-full gap-2">
       <v-btn
         color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
         prepend-icon="mdi-tag-multiple"
@@ -35,7 +91,6 @@
 
     <confirm-dialog />
 
-    <!-- ───── Snackbar Error ───── -->
     <v-snackbar
       v-model="showErrorSnackbar"
       color="bg-red-500"
@@ -57,7 +112,6 @@
       </template>
     </v-snackbar>
 
-    <!-- ───── Snackbar Success ───── -->
     <v-snackbar
       v-model="showSuccessSnackbar"
       color="bg-green-500"
@@ -103,7 +157,7 @@
             color="red"
             size="small"
             variant="flat"
-            class="font-medium font-semibold"
+            class="font-semibold"
           >
             {{ cat.name }}
           </v-chip>
@@ -129,9 +183,9 @@
         v-if="missingOptionalCategories.length > 0"
         class="mb-4 px-2 flex flex-wrap items-center gap-2"
       >
-        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-          Dokumen opsional belum diunggah:
-        </span>
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400"
+          >Dokumen opsional belum diunggah:</span
+        >
         <v-chip
           v-for="cat in missingOptionalCategories"
           :key="cat.id"
@@ -144,7 +198,6 @@
       </div>
     </div>
 
-    <!-- ───── Empty State ───── -->
     <div
       v-if="fileCompletenessStore.fileCompletenessSelected.length === 0"
       class="flex flex-col items-center justify-center py-16 text-gray-400 border-2 border-dashed rounded-xl dark:border-gray-700"
@@ -160,7 +213,6 @@
       >
     </div>
 
-    <!-- ───── Grid File ───── -->
     <v-row v-else>
       <v-col
         v-for="item in fileCompletenessStore.fileCompletenessSelected"
@@ -168,10 +220,35 @@
         cols="12"
         sm="6"
         md="6"
-        lg="4"
+        lg="2"
       >
-        <v-card elevation="2" rounded="xl" class="overflow-hidden group">
-          <!-- ── Badge kategori di atas ── -->
+        <v-card
+          elevation="2"
+          rounded="xl"
+          class="overflow-hidden group relative select-none transition-all duration-200"
+          :class="{
+            'border-2 border-indigo-500 ring-4 ring-indigo-100 dark:ring-indigo-950':
+              selectedIds.includes(item.id),
+          }"
+          @mousedown="startPress(item)"
+          @touchstart="startPress(item)"
+          @mouseup="cancelPress()"
+          @touchend="cancelPress()"
+          @touchmove="cancelPress()"
+          @mouseleave="cancelPress()"
+          @click="handleCardClick(item)"
+        >
+          <div
+            v-if="isBulkMode"
+            class="absolute top-2 left-2 z-10 pointer-events-none"
+          >
+            <v-checkbox-btn
+              :model-value="selectedIds.includes(item.id)"
+              color="indigo"
+              density="compact"
+            />
+          </div>
+
           <div class="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
               <v-icon icon="mdi-tag" size="16" color="indigo" />
@@ -182,26 +259,15 @@
               </span>
             </div>
             <v-chip
-              v-if="item.is_mandatory"
+              :color="item.is_mandatory ? 'red' : 'grey'"
               size="small"
-              color="red"
               variant="tonal"
               class="font-semibold"
             >
-              Wajib
-            </v-chip>
-            <v-chip
-              v-else
-              size="small"
-              color="grey"
-              variant="tonal"
-              class="font-semibold"
-            >
-              Opsional
+              {{ item.is_mandatory ? "Wajib" : "Opsional" }}
             </v-chip>
           </div>
 
-          <!-- ── Thumbnail ── -->
           <div
             class="relative mx-4 mb-2 aspect-[4/3] overflow-hidden rounded-lg border bg-gray-50 dark:bg-gray-800"
           >
@@ -240,23 +306,30 @@
               <span class="text-sm mt-2 text-gray-400">Belum ada file</span>
             </div>
 
-            <!-- Overlay aksi -->
             <div
-              class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3"
+              v-if="!isBulkMode"
+              class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2"
             >
               <v-btn
                 icon="mdi-eye"
                 color="white"
                 variant="elevated"
                 size="small"
-                @click="viewFile(item.file)"
+                @click.stop="viewFile(item.file)"
+              />
+              <v-btn
+                icon="mdi-download"
+                color="indigo"
+                variant="elevated"
+                size="small"
+                @click.stop="downloadFileSingle(item)"
               />
               <v-btn
                 icon="mdi-pencil"
                 color="amber"
                 variant="elevated"
                 size="small"
-                @click="openEditDialog(item)"
+                @click.stop="openEditDialog(item)"
               />
               <v-btn
                 icon="mdi-delete"
@@ -264,12 +337,11 @@
                 variant="elevated"
                 size="small"
                 :loading="fileCompletenessStore.isLoadingDestroy"
-                @click="handleDelete(item.id)"
+                @click.stop="handleDelete(item.id)"
               />
             </div>
           </div>
 
-          <!-- ── Nama file ── -->
           <div class="px-4 pb-4">
             <p
               class="text-base font-bold text-gray-800 dark:text-gray-100 truncate"
@@ -282,8 +354,7 @@
     </v-row>
   </v-card>
 
-  <!-- ───── Dialog Tambah/Edit File ───── -->
-  <v-dialog v-model="dialog" max-width="700" scrollable>
+  <v-dialog v-model="dialog" max-width="750" scrollable>
     <v-card rounded="lg">
       <v-card-title class="flex items-center gap-2 px-6 pt-5 pb-3">
         <v-icon
@@ -306,74 +377,108 @@
 
       <v-card-text class="px-6 py-4">
         <v-form ref="formRef">
-          <div class="space-y-3 md:space-y-0 md:grid grid-cols-2 gap-4">
-            <!-- Kategori -->
-            <div class="md:col-span-2">
-              <v-select
-                v-model="form.hrd_file_category_id"
-                :items="fileCategoryStore.categories"
-                item-title="name"
-                item-value="id"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                :loading="fileCategoryStore.isLoadingFetch"
-                :rules="[rules.required]"
-                :error-messages="serverErrors.hrd_file_category_id"
-              >
-                <template v-slot:label>
-                  Kategori<span class="text-red-500">*</span>
-                </template>
-              </v-select>
-            </div>
+          <div class="space-y-4">
+            <v-select
+              v-model="form.hrd_file_category_id"
+              :items="fileCategoryStore.categories"
+              item-title="name"
+              item-value="id"
+              variant="outlined"
+              density="compact"
+              hide-details="auto"
+              :loading="fileCategoryStore.isLoadingFetch"
+              :rules="[rules.required]"
+              :error-messages="serverErrors.hrd_file_category_id"
+            >
+              <template v-slot:label>
+                Kategori<span class="text-red-500">*</span>
+              </template>
+            </v-select>
 
-            <!-- Nama -->
-            <div class="md:col-span-2">
-              <v-text-field
-                v-model="form.name"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                :rules="[rules.required]"
-                :error-messages="serverErrors.name"
-              >
-                <template v-slot:label>
-                  Nama<span class="text-red-500">*</span>
-                </template>
-              </v-text-field>
-            </div>
+            <v-file-input
+              v-model="uploadedFiles"
+              variant="outlined"
+              density="compact"
+              hide-details="auto"
+              accept=".pdf,.jpg,.jpeg,.png"
+              prepend-icon=""
+              prepend-inner-icon="mdi-paperclip"
+              :multiple="!isEditMode"
+              @update:model-value="handleFileChange"
+              :error-messages="serverErrors.file"
+            >
+              <template v-slot:label>
+                {{ isEditMode ? "Ganti Lampiran file" : "Input banyak file"
+                }}<span class="text-red-500">*</span>
+              </template>
+            </v-file-input>
 
-            <!-- File -->
-            <div class="flex flex-col gap-1 col-span-2">
-              <v-file-input
-                v-model="form.file"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                accept=".pdf,.jpg,.jpeg,.png"
-                prepend-icon=""
-                prepend-inner-icon="mdi-paperclip"
-                :error-messages="serverErrors.file"
-              >
-                <template v-slot:label
-                  >Lampiran<span class="text-red-500">*</span></template
-                >
-              </v-file-input>
-
+            <div
+              v-if="form.items.length > 0"
+              class="space-y-3 mt-4 max-h-[350px] overflow-y-auto p-1 border rounded-lg bg-gray-50 dark:bg-gray-900"
+            >
               <div
-                v-if="
-                  form.file_existing &&
-                  !getFileFromModel(form.file_existing as any)
-                "
-                class="flex items-center gap-2 text-xs text-gray-500 border rounded px-3 py-2 bg-gray-50 dark:bg-gray-800"
+                v-for="(subItem, idx) in form.items"
+                :key="idx"
+                class="p-3 border rounded-xl bg-white dark:bg-gray-800 flex flex-col sm:flex-row gap-4 items-start sm:items-center relative transition-shadow hover:shadow-sm"
               >
-                <v-icon size="x-small" color="red">mdi-file-pdf-box</v-icon>
-                <span class="truncate flex-1">{{ form.file_existing }}</span>
+                <div
+                  class="w-16 h-16 rounded-lg border overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0"
+                >
+                  <v-img
+                    v-if="subItem.previewUrl"
+                    :src="subItem.previewUrl"
+                    cover
+                    class="w-full h-full"
+                  />
+                  <v-icon v-else color="red-lighten-1" size="36"
+                    >mdi-file-pdf-box</v-icon
+                  >
+                </div>
+
+                <div class="flex-1 w-full">
+                  <v-text-field
+                    v-model="subItem.name"
+                    variant="outlined"
+                    density="compact"
+                    hide-details="auto"
+                    :rules="[rules.required]"
+                  >
+                    <template v-slot:label
+                      >Nama File<span class="text-red-500">*</span></template
+                    >
+                  </v-text-field>
+                  <span
+                    v-if="subItem.file"
+                    class="text-[10px] text-gray-400 block mt-1 truncate max-w-[300px]"
+                  >
+                    Ori: {{ subItem.file.name }} ({{
+                      (subItem.file.size / 1024).toFixed(1)
+                    }}
+                    KB)
+                  </span>
+                  <span
+                    v-else-if="subItem.file_existing"
+                    class="text-[10px] text-gray-400 block mt-1 truncate max-w-[300px]"
+                  >
+                    Eksis: {{ subItem.file_existing }}
+                  </span>
+                </div>
+
                 <v-btn
+                  v-if="!isEditMode"
+                  icon="mdi-delete-outline"
+                  variant="text"
+                  color="red"
+                  size="small"
+                  @click="removeFormItem(idx)"
+                />
+                <v-btn
+                  v-else-if="subItem.file_existing"
                   icon="mdi-close-circle"
                   variant="text"
-                  size="x-small"
                   color="red"
+                  size="small"
                   @click="removeFile"
                 />
               </div>
@@ -394,15 +499,19 @@
               ? fileCompletenessStore.isLoadingUpdate
               : fileCompletenessStore.isLoadingCreate
           "
+          :disabled="form.items.length === 0"
           @click="submitForm"
         >
-          {{ isEditMode ? "Simpan Perubahan" : "Tambah Data" }}
+          {{
+            isEditMode
+              ? "Simpan Perubahan"
+              : `Tambah (${form.items.length}) Data`
+          }}
         </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 
-  <!-- ───── Dialog Kelola Kategori ───── -->
   <v-dialog v-model="categoryDialog" max-width="600" scrollable>
     <v-card rounded="lg">
       <v-card-title
@@ -440,9 +549,9 @@
                   :rules="[rules.required]"
                   :error-messages="categoryServerErrors.name"
                 >
-                  <template v-slot:label>
-                    Nama Kategori<span class="text-red-500">*</span>
-                  </template>
+                  <template v-slot:label
+                    >Nama Kategori<span class="text-red-500">*</span></template
+                  >
                 </v-text-field>
 
                 <div
@@ -467,9 +576,8 @@
                       variant="outlined"
                       color="grey-darken-1"
                       @click="resetCategoryForm"
+                      >Batal</v-btn
                     >
-                      Batal
-                    </v-btn>
                     <v-btn
                       :prepend-icon="
                         isEditCategoryMode ? 'mdi-content-save' : 'mdi-plus'
@@ -496,9 +604,9 @@
           <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
             Daftar Kategori
           </h3>
-          <v-chip size="small" variant="tonal" color="indigo">
-            {{ fileCategoryStore.categories.length }} Kategori
-          </v-chip>
+          <v-chip size="small" variant="tonal" color="indigo"
+            >{{ fileCategoryStore.categories.length }} Kategori</v-chip
+          >
         </div>
 
         <div
@@ -604,6 +712,7 @@ import ConfirmDialog from "../ConfirmDialog.vue";
 import { useRoute } from "vue-router";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import type { FileCategory } from "@/api/modules/file-category.api.ts";
+import JSZip from "jszip";
 
 const { ask } = useConfirmDialog();
 const fileCompletenessStore = useFileCompletenessStore();
@@ -626,24 +735,158 @@ function showSuccess(message: string) {
   showSuccessSnackbar.value = true;
 }
 
-// ───── Dialog File ─────
+// ───── Logika Mode Pilih Banyak (Bulk Select) ─────
+const isBulkMode = ref(false);
+const selectedIds = ref<number[]>([]);
+let pressTimer: any = null;
+
+const isAllSelected = computed(() => {
+  const totalItems = fileCompletenessStore.fileCompletenessSelected.length;
+  return totalItems > 0 && selectedIds.value.length === totalItems;
+});
+
+function toggleSelectAll() {
+  if (isAllSelected.value) {
+    selectedIds.value = [];
+  } else {
+    selectedIds.value = fileCompletenessStore.fileCompletenessSelected.map(
+      (item) => item.id,
+    );
+  }
+}
+
+function startPress(item: any) {
+  pressTimer = setTimeout(() => {
+    if (!isBulkMode.value) {
+      isBulkMode.value = true;
+      toggleSelect(item.id);
+    }
+  }, 600);
+}
+
+function cancelPress() {
+  if (pressTimer) clearTimeout(pressTimer);
+}
+
+function handleCardClick(item: any) {
+  if (isBulkMode.value) {
+    toggleSelect(item.id);
+  }
+}
+
+function toggleSelect(id: number) {
+  const index = selectedIds.value.indexOf(id);
+  if (index > -1) {
+    selectedIds.value.splice(index, 1);
+    if (selectedIds.value.length === 0) exitBulkMode();
+  } else {
+    selectedIds.value.push(id);
+  }
+}
+
+function exitBulkMode() {
+  isBulkMode.value = false;
+  selectedIds.value = [];
+}
+
+async function downloadSelected() {
+  const itemsToDownload = fileCompletenessStore.fileCompletenessSelected.filter(
+    (i) => selectedIds.value.includes(i.id),
+  );
+  if (itemsToDownload.length === 0) return;
+
+  if (itemsToDownload.length === 1) {
+    const item = itemsToDownload[0];
+    if (item.file) downloadFileSingle(item);
+    exitBulkMode();
+    return;
+  }
+
+  showSuccess("Sedang mengumpulkan file dan membuat ZIP, mohon tunggu...");
+  const zip = new JSZip();
+
+  try {
+    for (const item of itemsToDownload) {
+      if (!item.file) continue;
+      const url = getStorageUrl(item.file);
+      if (!url) continue;
+
+      const response = await fetch(url);
+      if (!response.ok) continue;
+      const blob = await response.blob();
+
+      const ext = item.file.split(".").pop();
+      const fileNameWithExt = item.name.endsWith(`.${ext}`)
+        ? item.name
+        : `${item.name}.${ext}`;
+      zip.file(fileNameWithExt, blob);
+    }
+
+    const zipContent = await zip.generateAsync({ type: "blob" });
+    const zipUrl = URL.createObjectURL(zipContent);
+
+    const a = document.createElement("a");
+    a.href = zipUrl;
+    a.download = `Arsip_Kelengkapan_File_${Date.now()}.zip`;
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(zipUrl);
+
+    showSuccess("File ZIP berhasil diunduh.");
+    exitBulkMode();
+  } catch (err) {
+    showError("Terjadi kesalahan saat membuat file ZIP.");
+  }
+}
+
+async function deleteSelected() {
+  const confirmed = await ask({
+    title: "Hapus Banyak Data",
+    message: `${selectedIds.value.length} dokumen yang dipilih akan dihapus permanen. Lanjutkan?`,
+    confirmText: "Ya, Hapus Semua",
+    color: "red-darken-1",
+  });
+  if (!confirmed) return;
+
+  try {
+    // Memanggil action massal Pinia (Single Request ke Backend)
+    const result = await fileCompletenessStore.bulkDestroyFileCompleteness(
+      selectedIds.value,
+    );
+    showSuccess(
+      result.message || "Semua data terpilih berhasil dihapus sekaligus.",
+    );
+    exitBulkMode();
+  } catch (err: any) {
+    showError(err?.message ?? "Terjadi kesalahan saat menghapus data massal.");
+  }
+}
+
+// ───── Dialog File & Form Berbasis Array ─────
 const dialog = ref(false);
 const isEditMode = ref(false);
 const formRef = ref();
+const uploadedFiles = ref<File[]>([]);
 
-const defaultForm = () => ({
+interface FormItem {
+  file: File | null;
+  name: string;
+  file_existing: string | null;
+  previewUrl: string | null;
+  isImage: boolean;
+}
+
+const form = reactive({
   id: null as number | null,
   user_id: null as number | null,
   hrd_file_category_id: null as number | null,
-  name: "",
-  file: [] as File[],
-  file_existing: null as any,
+  items: [] as FormItem[],
   remove_file: false,
 });
 
-const form = reactive(defaultForm());
 const serverErrors = reactive<Record<string, string>>({});
-
 const rules = { required: (v: any) => !!v || "Field ini wajib diisi" };
 
 // ───── LOGIKA STATUS KELENGKAPAN KATEGORI ─────
@@ -671,36 +914,100 @@ const completedCategories = computed(() => {
   );
 });
 
-function buildFormData(): FormData {
-  const fd = new FormData();
-  fd.append("user_id", String(form.user_id));
-  fd.append("hrd_file_category_id", String(form.hrd_file_category_id));
-  fd.append("name", form.name);
-  const file = Array.isArray(form.file) ? form.file[0] : form.file;
-  if (file instanceof File) fd.append("file", file);
-  if (form.file_existing !== null)
-    fd.append("file_preview", form.file_existing);
-  if (form.remove_file) fd.append("remove_file", "1");
-  return fd;
+function handleFileChange(files: File | File[] | null) {
+  if (!files) return;
+  const fileList = Array.isArray(files) ? files : [files];
+
+  if (isEditMode.value) {
+    const file = fileList[0];
+    if (file) {
+      const isImg = isImageFile(file);
+      form.items[0] = {
+        file,
+        name: form.items[0]?.name || file.name.replace(/\.[^/.]+$/, ""),
+        file_existing: null,
+        previewUrl: isImg ? URL.createObjectURL(file) : null,
+        isImage: isImg,
+      };
+    }
+  } else {
+    fileList.forEach((file) => {
+      const isImg = isImageFile(file);
+      form.items.push({
+        file,
+        name: file.name.replace(/\.[^/.]+$/, ""),
+        file_existing: null,
+        previewUrl: isImg ? URL.createObjectURL(file) : null,
+        isImage: isImg,
+      });
+    });
+  }
+  uploadedFiles.value = [];
+}
+
+function removeFormItem(index: number) {
+  const item = form.items[index];
+  if (item.previewUrl && item.file) URL.revokeObjectURL(item.previewUrl);
+  form.items.splice(index, 1);
+}
+
+function removeFile() {
+  if (form.items[0]) form.items[0].file_existing = null;
+  form.remove_file = true;
 }
 
 async function submitForm() {
   const { valid } = await formRef.value.validate();
-  if (!valid) return;
+  if (!valid || form.items.length === 0) return;
   Object.keys(serverErrors).forEach((k) => delete serverErrors[k]);
 
   try {
-    const result = isEditMode.value
-      ? await fileCompletenessStore.updateFileCompleteness(
-          Number(form.id),
-          buildFormData(),
-        )
-      : await fileCompletenessStore.createFileCompleteness(buildFormData());
+    if (isEditMode.value) {
+      const subItem = form.items[0];
+      let fileToSend: File | null = subItem.file;
+      if (fileToSend && subItem.isImage) {
+        fileToSend = await compressImage(fileToSend, 1000, 0.5);
+      }
 
-    result.success
-      ? showSuccess(result.message)
-      : showError(result.message ?? "Terjadi kesalahan");
+      const fd = new FormData();
+      fd.append("user_id", String(form.user_id));
+      fd.append("hrd_file_category_id", String(form.hrd_file_category_id));
+      fd.append("name", subItem.name);
+      if (fileToSend) fd.append("file", fileToSend);
+      if (subItem.file_existing)
+        fd.append("file_preview", subItem.file_existing);
+      if (form.remove_file) fd.append("remove_file", "1");
+
+      const result = await fileCompletenessStore.updateFileCompleteness(
+        Number(form.id),
+        fd,
+      );
+      if (result.success) showSuccess(result.message);
+    } else {
+      // ─── PENGIRIMAN DATA MASSAL SEKALIGUS (SINGLE REQUEST) ───
+      const fd = new FormData();
+      fd.append("user_id", String(form.user_id));
+      fd.append("hrd_file_category_id", String(form.hrd_file_category_id));
+
+      for (const subItem of form.items) {
+        let fileToSend: File | null = subItem.file;
+        if (fileToSend && subItem.isImage) {
+          fileToSend = await compressImage(fileToSend, 1000, 0.5);
+        }
+
+        if (fileToSend) fd.append("files[]", fileToSend);
+        fd.append("names[]", subItem.name);
+      }
+
+      const result = await fileCompletenessStore.bulkCreateFileCompleteness(fd);
+      if (result.success)
+        showSuccess(
+          result.message ||
+            "Semua berkas kelengkapan berhasil ditambahkan sekaligus.",
+        );
+    }
     closeDialog();
+    await fileCompletenessStore.fetchFileCompletenessSelected();
   } catch (err: any) {
     handleServerErrors(err);
   }
@@ -724,11 +1031,6 @@ function getFileFromModel(model: File | File[] | null): File | null {
   return file instanceof File ? file : null;
 }
 
-function removeFile() {
-  form.file_existing = null;
-  form.remove_file = true;
-}
-
 function getStorageUrl(
   filename: string | File | null | undefined,
 ): string | null {
@@ -742,30 +1044,83 @@ function isImageFile(filename: string | File): boolean {
   return /\.(jpg|jpeg|png|webp|gif)$/i.test(name);
 }
 
-function openAddDialog(userId: any) {
+function openAddDialog(currentUserId: any) {
   isEditMode.value = false;
-  Object.assign(form, defaultForm());
-  form.user_id = userId;
+  form.id = null;
+  form.user_id = currentUserId;
+  form.hrd_file_category_id = null;
+  form.items = [];
+  form.remove_file = false;
   dialog.value = true;
 }
 
 function openEditDialog(item: any) {
   isEditMode.value = true;
-  Object.assign(form, {
-    id: item.id,
-    user_id: item.user_id,
-    hrd_file_category_id: item.hrd_file_category_id,
-    name: item.name,
-    file: [],
-    file_existing: item.file ?? null,
-  });
+  form.id = item.id;
+  form.user_id = item.user_id;
+  form.hrd_file_category_id = item.hrd_file_category_id;
+  form.remove_file = false;
+
+  form.items = [
+    {
+      file: null,
+      name: item.name,
+      file_existing: item.file ?? null,
+      previewUrl:
+        item.file && isImageFile(item.file) ? getStorageUrl(item.file) : null,
+      isImage: item.file ? isImageFile(item.file) : false,
+    },
+  ];
   dialog.value = true;
 }
 
 function closeDialog() {
   dialog.value = false;
+  form.items.forEach((item) => {
+    if (item.previewUrl && item.file) URL.revokeObjectURL(item.previewUrl);
+  });
   formRef.value?.reset();
   Object.keys(serverErrors).forEach((k) => delete serverErrors[k]);
+}
+
+function downloadFileSingle(item: any) {
+  if (item.file) {
+    const ext = item.file.split(".").pop();
+    const fullName = item.name.endsWith(`.${ext}`)
+      ? item.name
+      : `${item.name}.${ext}`;
+    downloadUrl(item.file, fullName);
+  }
+}
+
+async function downloadUrl(filename: string, nameToSave: string) {
+  const url = getStorageUrl(filename);
+  if (!url) return;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Gagal mengunduh berkas");
+    const blob = await response.blob();
+    const localUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = localUrl;
+    a.download = nameToSave;
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(localUrl);
+  } catch (err) {
+    showError("Gagal mengunduh file secara langsung.");
+  }
+}
+
+function viewFile(file: string | File | null | undefined) {
+  const url = getStorageUrl(file);
+  url
+    ? window.open(url, "_blank")
+    : showError("File tidak ditemukan atau tidak valid.");
 }
 
 async function handleDelete(id: number) {
@@ -783,13 +1138,6 @@ async function handleDelete(id: number) {
       showError(err?.message ?? "Gagal menghapus data ini.");
     }
   }
-}
-
-function viewFile(file: string | File | null | undefined) {
-  const url = getStorageUrl(file);
-  url
-    ? window.open(url, "_blank")
-    : showError("File tidak ditemukan atau tidak valid.");
 }
 
 // ───── Dialog Kategori ─────
@@ -880,6 +1228,55 @@ async function handleDeleteCategory(id: number) {
   } catch (err: any) {
     showError(err?.message ?? "Gagal menghapus kategori.");
   }
+}
+
+// ───── Kompresi Gambar Canvas Client-Side ─────
+function compressImage(
+  file: File,
+  maxWidth = 1000,
+  quality = 0.5,
+): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Gagal memproses context canvas"));
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob)
+              return reject(new Error("Gagal melakukan kompresi gambar"));
+            let fileName = file.name;
+            if (!/\.(jpg|jpeg)$/i.test(fileName))
+              fileName = fileName.replace(/\.[^/.]+$/, "") + ".jpg";
+            resolve(
+              new File([blob], fileName, {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              }),
+            );
+          },
+          "image/jpeg",
+          quality,
+        );
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
 }
 
 onMounted(async () => {

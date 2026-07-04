@@ -39,7 +39,6 @@
 
     <v-form ref="formRef" validate-on="submit lazy">
       <div class="flex flex-col gap-5">
-        <!-- Data Diri -->
         <v-card elevation="0">
           <v-card-title
             class="text-indigo-600 dark:text-indigo-400 font-bold px-0 text-base"
@@ -70,9 +69,9 @@
                 :rules="[rules.required]"
                 :error-messages="serverErrors.name"
               >
-                <template v-slot:label>
-                  Nickname <span class="text-red-500">*</span>
-                </template>
+                <template v-slot:label
+                  >Nickname <span class="text-red-500">*</span></template
+                >
               </v-text-field>
             </v-col>
             <v-col cols="12" md="3">
@@ -85,12 +84,11 @@
                 :rules="[rules.required]"
                 :error-messages="serverErrors.full_name"
               >
-                <template v-slot:label>
-                  Nama Lengkap <span class="text-red-500">*</span>
-                </template>
+                <template v-slot:label
+                  >Nama Lengkap <span class="text-red-500">*</span></template
+                >
               </v-text-field>
             </v-col>
-
             <v-col cols="12" md="6">
               <v-autocomplete
                 v-model="form.hrd_master_education_id"
@@ -109,37 +107,34 @@
                 @update:search="onSearchEducation"
               ></v-autocomplete>
             </v-col>
-
             <v-col cols="12" md="6"></v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model="form.front_title"
                 label="Gelar Depan"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model="form.back_title"
                 label="Gelar Belakang"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model="form.phone_number"
                 label="Nomor HP"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
+              ></v-text-field
+            ></v-col>
             <v-col cols="12" md="6">
               <v-text-field
                 id="field-email"
@@ -150,12 +145,11 @@
                 :rules="[rules.required, rules.email]"
                 :error-messages="serverErrors.email"
               >
-                <template v-slot:label>
-                  Email <span class="text-red-500">*</span>
-                </template></v-text-field
-              >
+                <template v-slot:label
+                  >Email <span class="text-red-500">*</span></template
+                >
+              </v-text-field>
             </v-col>
-
             <v-col cols="12" md="6">
               <v-autocomplete
                 id="field-gender"
@@ -172,13 +166,13 @@
                 :rules="[rules.required]"
                 clearable
               >
-                <template v-slot:label>
-                  Jenis Kelamin <span class="text-red-500">*</span>
-                </template>
+                <template v-slot:label
+                  >Jenis Kelamin <span class="text-red-500">*</span></template
+                >
               </v-autocomplete>
             </v-col>
-            <v-col cols="12" md="6">
-              <v-autocomplete
+            <v-col cols="12" md="6"
+              ><v-autocomplete
                 v-model="form.hrd_master_marital_status_id"
                 label="Status Pernikahan"
                 :items="listMaritalStatus"
@@ -193,11 +187,10 @@
                 clearable
                 no-filter
                 @update:search="onSearchMaritalStatus"
-              ></v-autocomplete>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-autocomplete
+              ></v-autocomplete
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-autocomplete
                 v-model="form.hrd_master_blood_type_id"
                 label="Golongan Darah"
                 :items="listBloodType"
@@ -212,28 +205,26 @@
                 clearable
                 no-filter
                 @update:search="onSearchBloodType"
-              ></v-autocomplete>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
+              ></v-autocomplete
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model="form.birth_place"
                 label="Tempat Lahir"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <app-date-picker
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><app-date-picker
                 v-model="form.birth_date"
                 label="Tanggal Lahir"
                 variant="outlined"
                 density="compact"
-              />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-autocomplete
+            /></v-col>
+            <v-col cols="12" md="6"
+              ><v-autocomplete
                 v-model="form.hrd_master_religion_id"
                 label="Agama"
                 :items="listReligion"
@@ -248,30 +239,28 @@
                 clearable
                 no-filter
                 @update:search="onSearchReligion"
-              ></v-autocomplete>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
+              ></v-autocomplete
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model="form.bpjs_health_number"
                 label="Nomor BPJS Kesehatan"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model="form.bpjs_employment_number"
                 label="Nomor BPJS Ketenagakerjaan"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model.number="form.number_of_children"
                 label="Jumlah Anak"
                 variant="outlined"
@@ -279,37 +268,34 @@
                 type="number"
                 min="0"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model="form.emergency_phone_number"
                 label="Nomor HP Darurat"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model="form.emergency_contact_name"
                 label="Nama Kontak Darurat"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
+              ></v-text-field
+            ></v-col>
           </v-row>
         </v-card>
 
-        <!-- Foto Profil -->
         <v-card elevation="0">
           <v-card-title
             class="text-indigo-600 dark:text-indigo-400 font-bold px-0 text-base"
+            >Foto Profil</v-card-title
           >
-            Foto Profil
-          </v-card-title>
           <v-divider class="mb-4"></v-divider>
           <div class="flex flex-col gap-3">
             <div v-if="imagePreview || userStore.usersSelected?.image">
@@ -346,13 +332,11 @@
           </div>
         </v-card>
 
-        <!-- Alamat KTP -->
         <v-card elevation="0">
           <v-card-title
             class="text-indigo-600 dark:text-indigo-400 font-bold px-0 text-base"
+            >Data Alamat (Sesuai KTP)</v-card-title
           >
-            Data Alamat (Sesuai KTP)
-          </v-card-title>
           <v-divider class="mb-4"></v-divider>
           <v-textarea
             v-model="form.address_id_card"
@@ -365,17 +349,15 @@
           ></v-textarea>
         </v-card>
 
-        <!-- Alamat Domisili -->
         <v-card elevation="0">
           <v-card-title
             class="text-indigo-600 dark:text-indigo-400 font-bold px-0 text-base"
+            >Data Alamat (Domisili)</v-card-title
           >
-            Data Alamat (Domisili)
-          </v-card-title>
           <v-divider class="mb-6"></v-divider>
           <v-row gap="15">
-            <v-col cols="12" md="6">
-              <v-autocomplete
+            <v-col cols="12" md="6"
+              ><v-autocomplete
                 v-model="form.master_area_province_id"
                 label="Provinsi"
                 :items="listProvince"
@@ -391,10 +373,10 @@
                 no-filter
                 @update:search="onSearchProvince"
                 @update:model-value="onProvinceChange"
-              ></v-autocomplete>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-autocomplete
+              ></v-autocomplete
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-autocomplete
                 v-model="form.master_area_regency_id"
                 label="Kabupaten"
                 :items="listRegency"
@@ -411,11 +393,10 @@
                 @update:search="onSearchRegency"
                 @update:model-value="onRegencyChange"
                 :disabled="!form.master_area_province_id"
-              ></v-autocomplete>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-autocomplete
+              ></v-autocomplete
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-autocomplete
                 v-model="form.master_area_district_id"
                 label="Kecamatan"
                 :items="listDistrict"
@@ -432,10 +413,10 @@
                 @update:search="onSearchDistrict"
                 @update:model-value="onDistrictChange"
                 :disabled="!form.master_area_regency_id"
-              ></v-autocomplete>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-autocomplete
+              ></v-autocomplete
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-autocomplete
                 v-model="form.master_area_village_id"
                 label="Kelurahan/Desa"
                 :items="listVillage"
@@ -451,30 +432,28 @@
                 no-filter
                 @update:search="onSearchVillage"
                 :disabled="!form.master_area_district_id"
-              ></v-autocomplete>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
+              ></v-autocomplete
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model="form.neighborhood_unit"
                 label="RT"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model="form.community_unit"
                 label="RW"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="12">
-              <v-textarea
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="12"
+              ><v-textarea
                 v-model="form.current_address"
                 label="Alamat"
                 variant="outlined"
@@ -482,21 +461,20 @@
                 rows="3"
                 hide-details="auto"
                 auto-grow
-              ></v-textarea>
-            </v-col>
-            <v-col cols="12" md="12">
-              <v-text-field
+              ></v-textarea
+            ></v-col>
+            <v-col cols="12" md="12"
+              ><v-text-field
                 v-model="form.zip_code"
                 label="Kode Pos"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-              ></v-text-field>
-            </v-col>
+              ></v-text-field
+            ></v-col>
           </v-row>
         </v-card>
 
-        <!-- Data Kepegawaian -->
         <v-card elevation="0">
           <v-card-title
             class="text-indigo-600 dark:text-indigo-400 font-bold px-0 text-base"
@@ -536,16 +514,15 @@
                 :error-messages="serverErrors.primary_approver_id"
               >
                 <template v-slot:label> Atasan 1 </template>
-                <template v-slot:item="{ props, item }">
-                  <v-list-item
+                <template v-slot:item="{ props, item }"
+                  ><v-list-item
                     v-bind="props"
                     :title="formatName(item)"
                     :subtitle="item.email"
-                  />
-                </template>
-                <template v-slot:selection="{ item }">
-                  {{ formatName(item) }}
-                </template>
+                /></template>
+                <template v-slot:selection="{ item }">{{
+                  formatName(item)
+                }}</template>
               </v-autocomplete>
             </v-col>
             <v-col cols="12" md="6">
@@ -569,16 +546,15 @@
                 @click:clear="onClearSecondaryApprover"
                 :error-messages="serverErrors.secondary_approver_id"
               >
-                <template v-slot:item="{ props, item }">
-                  <v-list-item
+                <template v-slot:item="{ props, item }"
+                  ><v-list-item
                     v-bind="props"
                     :title="formatName(item)"
                     :subtitle="item.email"
-                  />
-                </template>
-                <template v-slot:selection="{ item }">
-                  {{ formatName(item) }}
-                </template>
+                /></template>
+                <template v-slot:selection="{ item }">{{
+                  formatName(item)
+                }}</template>
               </v-autocomplete>
             </v-col>
             <v-col cols="12" md="6" v-if="form.level === 'telemarketing'">
@@ -590,22 +566,20 @@
                 hide-details="auto"
                 :rules="[rules.required]"
               >
-                <template v-slot:label>
-                  Inisial <span class="text-red-500">*</span>
-                </template>
-                <template v-slot:append-inner>
-                  <v-tooltip text="Generate Inisial" location="top">
-                    <template v-slot:activator="{ props }">
-                      <v-btn
+                <template v-slot:label
+                  >Inisial <span class="text-red-500">*</span></template
+                >
+                <template v-slot:append-inner
+                  ><v-tooltip text="Generate Inisial" location="top"
+                    ><template v-slot:activator="{ props }"
+                      ><v-btn
                         v-bind="props"
                         variant="text"
                         icon="mdi-reload"
                         density="compact"
                         @click="generateInitial"
-                      ></v-btn>
-                    </template>
-                  </v-tooltip>
-                </template>
+                      ></v-btn></template></v-tooltip
+                ></template>
               </v-text-field>
             </v-col>
 
@@ -628,9 +602,9 @@
                 :rules="[rules.required]"
                 :error-messages="serverErrors.master_position_id"
               >
-                <template v-slot:label>
-                  Jabatan <span class="text-red-500">*</span>
-                </template>
+                <template v-slot:label
+                  >Jabatan <span class="text-red-500">*</span></template
+                >
               </v-autocomplete>
             </v-col>
 
@@ -651,13 +625,13 @@
                 hide-details="auto"
                 :rules="[rules.required]"
               >
-                <template v-slot:label>
-                  Urutan <span class="text-red-500">*</span>
-                </template>
-                <template v-slot:append-inner>
-                  <v-tooltip text="New Sequence" location="top">
-                    <template v-slot:activator="{ props }">
-                      <v-btn
+                <template v-slot:label
+                  >Urutan <span class="text-red-500">*</span></template
+                >
+                <template v-slot:append-inner
+                  ><v-tooltip text="New Sequence" location="top"
+                    ><template v-slot:activator="{ props }"
+                      ><v-btn
                         v-bind="props"
                         variant="text"
                         icon="mdi-reload"
@@ -667,10 +641,8 @@
                         :disabled="
                           salesOfficialStore.isLoadingLastSequenceSales
                         "
-                      ></v-btn>
-                    </template>
-                  </v-tooltip>
-                </template>
+                      ></v-btn></template></v-tooltip
+                ></template>
               </v-text-field>
             </v-col>
             <v-col cols="12" md="6">
@@ -693,17 +665,16 @@
                 :rules="[rules.required]"
                 :error-messages="serverErrors.branch_id"
               >
-                <template v-slot:label>
-                  Cabang <span class="text-red-500">*</span>
-                </template>
-                <template v-slot:item="{ props, item }">
-                  <v-list-item
+                <template v-slot:label
+                  >Cabang <span class="text-red-500">*</span></template
+                >
+                <template v-slot:item="{ props, item }"
+                  ><v-list-item
                     v-bind="props"
                     :title="item.alias"
                     :subtitle="item.title"
-                  >
-                  </v-list-item>
-                </template>
+                  ></v-list-item
+                ></template>
               </v-autocomplete>
             </v-col>
 
@@ -718,9 +689,9 @@
                 hide-details="auto"
                 :rules="[rules.required]"
               >
-                <template v-slot:label>
-                  Jatah Cuti <span class="text-red-500">*</span>
-                </template>
+                <template v-slot:label
+                  >Jatah Cuti <span class="text-red-500">*</span></template
+                >
               </v-text-field>
             </v-col>
             <v-col cols="12" md="6">
@@ -735,29 +706,28 @@
                 :rules="[rules.required]"
                 @update:model-value="onStatusChange"
               >
-                <template v-slot:label>
-                  Status <span class="text-red-500">*</span>
-                </template>
+                <template v-slot:label
+                  >Status <span class="text-red-500">*</span></template
+                >
               </v-select>
             </v-col>
 
-            <!-- Status 1: Kontrak -->
             <template v-if="form.status_id === 1">
-              <v-col cols="12" md="6">
-                <app-date-picker
+              <v-col cols="12" md="6"
+                ><app-date-picker
                   v-model="form.effective_start_date"
                   variant="outlined"
                   density="compact"
                   :rules="[rules.required]"
                   clearable
-                >
-                  <template v-slot:label>
-                    Tanggal Mulai Kontrak <span class="text-red-500">*</span>
-                  </template>
-                </app-date-picker>
-              </v-col>
-              <v-col cols="12" md="6">
-                <app-date-picker
+                  ><template v-slot:label
+                    >Tanggal Mulai Kontrak
+                    <span class="text-red-500">*</span></template
+                  ></app-date-picker
+                ></v-col
+              >
+              <v-col cols="12" md="6"
+                ><app-date-picker
                   v-model="form.effective_end_date"
                   variant="outlined"
                   density="compact"
@@ -765,31 +735,30 @@
                   :disabled="!form.effective_start_date"
                   :min="form.effective_start_date"
                   clearable
-                >
-                  <template v-slot:label>
-                    Tanggal Selesai Kontrak <span class="text-red-500">*</span>
-                  </template>
-                </app-date-picker>
-              </v-col>
+                  ><template v-slot:label
+                    >Tanggal Selesai Kontrak
+                    <span class="text-red-500">*</span></template
+                  ></app-date-picker
+                ></v-col
+              >
             </template>
 
-            <!-- Status 1: Kontrak -->
             <template v-if="form.status_id === 6">
-              <v-col cols="12" md="6">
-                <app-date-picker
+              <v-col cols="12" md="6"
+                ><app-date-picker
                   v-model="form.effective_start_date"
                   variant="outlined"
                   density="compact"
                   :rules="[rules.required]"
                   clearable
-                >
-                  <template v-slot:label>
-                    Tanggal Mulai Training <span class="text-red-500">*</span>
-                  </template>
-                </app-date-picker>
-              </v-col>
-              <v-col cols="12" md="6">
-                <app-date-picker
+                  ><template v-slot:label
+                    >Tanggal Mulai Training
+                    <span class="text-red-500">*</span></template
+                  ></app-date-picker
+                ></v-col
+              >
+              <v-col cols="12" md="6"
+                ><app-date-picker
                   v-model="form.effective_end_date"
                   variant="outlined"
                   density="compact"
@@ -797,34 +766,33 @@
                   :disabled="!form.effective_start_date"
                   :min="form.effective_start_date"
                   clearable
-                >
-                  <template v-slot:label>
-                    Tanggal Selesai Training <span class="text-red-500">*</span>
-                  </template>
-                </app-date-picker>
-              </v-col>
+                  ><template v-slot:label
+                    >Tanggal Selesai Training
+                    <span class="text-red-500">*</span></template
+                  ></app-date-picker
+                ></v-col
+              >
             </template>
 
-            <!-- Status 2: Tetap -->
             <template v-else-if="form.status_id === 2">
-              <v-col cols="12" md="6">
-                <app-date-picker
+              <v-col cols="12" md="6"
+                ><app-date-picker
                   v-model="form.effective_start_date"
                   variant="outlined"
                   density="compact"
                   :rules="[rules.required]"
-                >
-                  <template v-slot:label>
-                    Tanggal Ditetapkan<span class="text-red-500">*</span>
-                  </template>
-                </app-date-picker>
-              </v-col>
+                  ><template v-slot:label
+                    >Tanggal Ditetapkan<span class="text-red-500"
+                      >*</span
+                    ></template
+                  ></app-date-picker
+                ></v-col
+              >
             </template>
 
-            <!-- Status 3 atau 4: Resign / Dikeluarkan -->
             <template v-else-if="[3, 4].includes(form.status_id ?? 0)">
-              <v-col cols="12" md="6">
-                <app-date-picker
+              <v-col cols="12" md="6"
+                ><app-date-picker
                   v-model="form.effective_end_date"
                   variant="outlined"
                   density="compact"
@@ -832,18 +800,17 @@
                   :disabled="!form.effective_start_date"
                   :min="form.effective_start_date"
                   clearable
-                >
-                  <template v-slot:label>
-                    Tanggal Keluar <span class="text-red-500">*</span>
-                  </template>
-                </app-date-picker>
-              </v-col>
+                  ><template v-slot:label
+                    >Tanggal Keluar
+                    <span class="text-red-500">*</span></template
+                  ></app-date-picker
+                ></v-col
+              >
             </template>
 
-            <!-- Status 5: Pensiun -->
             <template v-else-if="form.status_id === 5">
-              <v-col cols="12" md="6">
-                <app-date-picker
+              <v-col cols="12" md="6"
+                ><app-date-picker
                   v-model="form.effective_end_date"
                   variant="outlined"
                   density="compact"
@@ -851,12 +818,12 @@
                   :disabled="!form.effective_start_date"
                   :min="form.effective_start_date"
                   clearable
-                >
-                  <template v-slot:label>
-                    Tanggal Pensiun <span class="text-red-500">*</span>
-                  </template>
-                </app-date-picker>
-              </v-col>
+                  ><template v-slot:label
+                    >Tanggal Pensiun
+                    <span class="text-red-500">*</span></template
+                  ></app-date-picker
+                ></v-col
+              >
             </template>
 
             <v-col cols="12" md="6">
@@ -866,35 +833,65 @@
                 density="compact"
                 :rules="[rules.required]"
               >
-                <template v-slot:label>
-                  Join Date<span class="text-red-500">*</span>
-                </template>
+                <template v-slot:label
+                  >Join Date<span class="text-red-500">*</span></template
+                >
               </app-date-picker>
+            </v-col>
+
+            <v-col cols="12" md="4">
+              <v-select
+                v-model="form.warning"
+                label="Peringatan"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                :items="['ST', 'SP-1', 'SP-2', 'SP-3']"
+                clearable
+                placeholder="Pilih tingkat peringatan"
+              ></v-select>
+            </v-col>
+            <v-col cols="12" md="4">
+              <app-date-picker
+                v-model="form.warning_start_date"
+                label="Tgl Mulai Peringatan"
+                variant="outlined"
+                density="compact"
+                clearable
+              ></app-date-picker>
+            </v-col>
+            <v-col cols="12" md="4">
+              <app-date-picker
+                v-model="form.warning_end_date"
+                label="Tgl Selesai Peringatan"
+                variant="outlined"
+                density="compact"
+                clearable
+                :min="form.warning_start_date"
+                :disabled="!form.warning_start_date"
+              ></app-date-picker>
             </v-col>
           </v-row>
         </v-card>
       </div>
     </v-form>
 
-    <!-- Bottom action bar -->
     <div class="flex justify-end w-full gap-2 mt-6">
       <v-btn
         color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
         prepend-icon="mdi-close"
         variant="flat"
         @click="emit('cancel')"
+        >Batal</v-btn
       >
-        Batal
-      </v-btn>
       <v-btn
         color="indigo"
         prepend-icon="mdi-content-save"
         variant="flat"
         :loading="isSaving"
         @click="handleSubmit"
+        >Simpan</v-btn
       >
-        Simpan
-      </v-btn>
     </div>
   </v-card>
 </template>
@@ -958,6 +955,7 @@ const searchRegency = ref("");
 const searchDistrict = ref("");
 const searchVillage = ref("");
 
+// ── Computed Lists ───────────────────────────────────────────────────────────
 const listPrimaryApprover = computed(() => {
   const users = primaryApproverResults.value.map((u) => ({
     value: u.id,
@@ -965,7 +963,6 @@ const listPrimaryApprover = computed(() => {
     full_name: u.full_name,
     email: u.email,
   }));
-
   if (
     form.primary_approver_id &&
     userStore.usersSelected?.primary_approver?.name
@@ -983,7 +980,6 @@ const listPrimaryApprover = computed(() => {
   return users;
 });
 
-// Update listSecondaryApprover computed
 const listSecondaryApprover = computed(() => {
   const users = secondaryApproverResults.value.map((u) => ({
     value: u.id,
@@ -991,7 +987,6 @@ const listSecondaryApprover = computed(() => {
     full_name: u.full_name,
     email: u.email,
   }));
-
   if (
     form.secondary_approver_id &&
     userStore.usersSelected?.secondary_approver?.name
@@ -1012,7 +1007,6 @@ const listSecondaryApprover = computed(() => {
 const onClearPrimaryApprover = async () => {
   selectedPrimaryApproverText.value = "";
   isSelectingPrimaryApprover.value = false;
-  // Reset list ke data awal
   userStore.usersData = await userStore.fetchUsersDataWithParams({
     search: "",
   });
@@ -1021,7 +1015,6 @@ const onClearPrimaryApprover = async () => {
 const onClearSecondaryApprover = async () => {
   selectedSecondaryApproverText.value = "";
   isSelectingSecondaryApprover.value = false;
-  // Reset list ke data awal
   userStore.usersData = await userStore.fetchUsersDataWithParams({
     search: "",
   });
@@ -1029,135 +1022,83 @@ const onClearSecondaryApprover = async () => {
 
 const listEducation = computed(() => {
   const keyword = searchEducation.value.toLowerCase();
-
   return educationStore.educationData
-    .filter((education) =>
-      keyword ? education.name.toLowerCase().includes(keyword) : true,
+    .filter((edu) =>
+      keyword ? edu.name.toLowerCase().includes(keyword) : true,
     )
-    .map((education) => ({
-      title: education.name,
-      value: education.id,
-    }));
+    .map((edu) => ({ title: edu.name, value: edu.id }));
 });
 const listMaritalStatus = computed(() => {
   const keyword = searchMaritalStatus.value.toLowerCase();
-
   return maritalStatusStore.maritalStatusData
-    .filter((maritalStatus) =>
-      keyword ? maritalStatus.name.toLowerCase().includes(keyword) : true,
-    )
-    .map((maritalStatus) => ({
-      title: maritalStatus.name,
-      value: maritalStatus.id,
-    }));
+    .filter((ms) => (keyword ? ms.name.toLowerCase().includes(keyword) : true))
+    .map((ms) => ({ title: ms.name, value: ms.id }));
 });
 const listPosition = computed(() => {
   const keyword = searchPosition.value.toLowerCase();
-
   return positionStore.positionData
-    .filter((position) =>
-      keyword ? position.name.toLowerCase().includes(keyword) : true,
+    .filter((pos) =>
+      keyword ? pos.name.toLowerCase().includes(keyword) : true,
     )
-    .map((position) => ({
-      title: position.name,
-      value: position.id,
-      level_name: position.level_name,
+    .map((pos) => ({
+      title: pos.name,
+      value: pos.id,
+      level_name: pos.level_name,
     }));
 });
 const listBranch = computed(() => {
   const keyword = searchBranch.value.toLowerCase();
   return branchStore.branchData
-    .filter((branch) => {
-      if (!keyword) return true;
-
-      return (
-        branch.name.toLowerCase().includes(keyword) ||
-        branch.alias.toLowerCase().includes(keyword)
-      );
-    })
-    .map((branch) => ({
-      title: branch.name,
-      alias: branch.alias,
-      value: branch.id,
-    }));
+    .filter(
+      (b) =>
+        !keyword ||
+        b.name.toLowerCase().includes(keyword) ||
+        b.alias.toLowerCase().includes(keyword),
+    )
+    .map((b) => ({ title: b.name, alias: b.alias, value: b.id }));
 });
 const listBloodType = computed(() => {
   const keyword = searchBloodType.value.toLowerCase();
   return bloodTypeStore.bloodTypeData
-    .filter((bloodType) => {
-      if (!keyword) return true;
-      return bloodType.name.toLowerCase().includes(keyword);
-    })
-    .map((bloodType) => ({
-      title: bloodType.name,
-      value: bloodType.id,
-    }));
+    .filter((bt) => !keyword || bt.name.toLowerCase().includes(keyword))
+    .map((bt) => ({ title: bt.name, value: bt.id }));
 });
 const listReligion = computed(() => {
   const keyword = searchReligion.value.toLowerCase();
   return religionStore.religionData
-    .filter((religion) => {
-      if (!keyword) return true;
-      return religion.name.toLowerCase().includes(keyword);
-    })
-    .map((religion) => ({
-      title: religion.name,
-      value: religion.id,
-    }));
+    .filter((r) => !keyword || r.name.toLowerCase().includes(keyword))
+    .map((r) => ({ title: r.name, value: r.id }));
 });
 const listProvince = computed(() => {
   const keyword = searchProvince.value.toLowerCase();
   return provinceStore.province
-    .filter((province) => {
-      if (!keyword) return true;
-      return province.name.toLowerCase().includes(keyword);
-    })
-    .map((province) => ({
-      title: province.name,
-      value: province.id,
-    }));
+    .filter((p) => !keyword || p.name.toLowerCase().includes(keyword))
+    .map((p) => ({ title: p.name, value: p.id }));
 });
 const listRegency = computed(() => {
   const keyword = searchRegency.value.toLowerCase();
   return regencyStore.regency
-    .filter((regency) => {
-      if (!keyword) return true;
-      return regency.name.toLowerCase().includes(keyword);
-    })
-    .map((regency) => ({
-      title: regency.name,
-      value: regency.id,
-    }));
+    .filter((r) => !keyword || r.name.toLowerCase().includes(keyword))
+    .map((r) => ({ title: r.name, value: r.id }));
 });
 const listDistrict = computed(() => {
   const keyword = searchDistrict.value.toLowerCase();
   return districtStore.district
-    .filter((district) => {
-      if (!keyword) return true;
-      return district.name.toLowerCase().includes(keyword);
-    })
-    .map((district) => ({
-      title: district.name,
-      value: district.id,
-    }));
+    .filter((d) => !keyword || d.name.toLowerCase().includes(keyword))
+    .map((d) => ({ title: d.name, value: d.id }));
 });
 const listVillage = computed(() => {
   const keyword = searchVillage.value.toLowerCase();
   return villageStore.village
-    .filter((village) => {
-      if (!keyword) return true;
-      return village.name.toLowerCase().includes(keyword);
-    })
-    .map((village) => ({
-      title: village.name,
-      value: village.id,
-    }));
+    .filter((v) => !keyword || v.name.toLowerCase().includes(keyword))
+    .map((v) => ({ title: v.name, value: v.id }));
 });
 const listGender = [
   { label: "Laki-Laki", value: "M" },
   { label: "Perempuan", value: "F" },
 ];
 
+// ── Search & Event Handlers ──────────────────────────────────────────────────
 const onSearchPrimaryApprover = useDebounceFn(async (val: string) => {
   if (isSelectingPrimaryApprover.value) return;
   if (val === selectedPrimaryApproverText.value) return;
@@ -1178,7 +1119,7 @@ const onSearchEducation = (val: any) => {
   searchEducation.value = val ?? "";
 };
 const onSearchMaritalStatus = (val: any) => {
-  searchEducation.value = val ?? "";
+  searchMaritalStatus.value = val ?? "";
 };
 const onSearchPosition = (val: any) => {
   searchPosition.value = val ?? "";
@@ -1204,6 +1145,7 @@ const onSearchDistrict = (val: any) => {
 const onSearchVillage = (val: any) => {
   searchVillage.value = val ?? "";
 };
+
 // ── Form state ──────────────────────────────────────────────────────────────
 const form = reactive({
   nik: "",
@@ -1249,6 +1191,11 @@ const form = reactive({
   effective_start_date: "",
   effective_end_date: "",
   join_date: "",
+
+  // State Baru Peringatan
+  warning: null as string | null,
+  warning_start_date: "",
+  warning_end_date: "",
 });
 
 // ── Validation rules ─────────────────────────────────────────────────────────
@@ -1257,7 +1204,6 @@ const rules = {
     if (!v) return true;
     const isNumeric = /^\d+$/.test(v);
     const is16Digits = v.length === 16;
-
     if (!isNumeric) return "NIK harus berupa angka";
     if (!is16Digits) return "NIK harus berjumlah 16 karakter";
     return true;
@@ -1282,7 +1228,6 @@ const employeeStatusOptions = [
   { label: "Pensiun", value: 5 },
 ];
 
-// ── Cascading address handlers ────────────────────────────────────────────────
 function onProvinceChange() {
   form.master_area_regency_id = null;
   form.master_area_district_id = null;
@@ -1293,47 +1238,31 @@ function onProvinceChange() {
   villageStore.village = [];
   regencyStore.fetchRegency();
 }
-
 function onRegencyChange() {
   form.master_area_district_id = null;
   form.master_area_village_id = null;
   districtStore.district = [];
   districtStore.districtParams.regency_id = form.master_area_regency_id ?? "";
-  districtStore.district = [];
   villageStore.village = [];
   districtStore.fetchDistrict();
 }
-
 function onDistrictChange() {
   form.master_area_village_id = null;
   villageStore.villageParams.district_id = form.master_area_district_id ?? "";
   villageStore.fetchVillage();
 }
-
 function onPositionChange(value: number | null) {
   const selectedItem = listPosition.value.find((item) => item.value === value);
-  const title = selectedItem?.title;
-  const oldValue = form.position;
-  form.position = title ?? oldValue;
+  form.position = selectedItem?.title ?? form.position;
   form.level = selectedItem?.level_name ?? "";
-  console.log(selectedItem?.level_name);
   form.sequence = null;
 }
-
 function onStatusChange(value: number | null) {
-  if (value == 2) {
-    form.effective_end_date = "";
-  }
+  if (value == 2) form.effective_end_date = "";
 }
-
-// ── Image preview ────────────────────────────────────────────────────────────
 function onImageChange(files: File | File[]) {
   const file = Array.isArray(files) ? files[0] : files;
-  if (file) {
-    imagePreview.value = URL.createObjectURL(file);
-  } else {
-    imagePreview.value = null;
-  }
+  imagePreview.value = file ? URL.createObjectURL(file) : null;
 }
 
 function loadFirstTimeMaserArea() {
@@ -1341,12 +1270,10 @@ function loadFirstTimeMaserArea() {
     regencyStore.regencyParams.province_id = form.master_area_province_id;
     regencyStore.fetchRegency();
   }
-
   if (form.master_area_regency_id) {
     districtStore.districtParams.regency_id = form.master_area_regency_id;
     districtStore.fetchDistrict();
   }
-
   if (form.master_area_district_id) {
     villageStore.villageParams.district_id = form.master_area_district_id;
     villageStore.fetchVillage();
@@ -1356,35 +1283,21 @@ function loadFirstTimeMaserArea() {
 function generateInitial() {
   const name = form.full_name || form.name || "";
   const words = name.trim().split(/\s+/).filter(Boolean);
-
-  let initial;
-
-  if (words.length === 1) {
-    // 1 kata → ambil 2 huruf pertama
-    initial = words[0].substring(0, 2).toUpperCase();
-  } else if (words.length >= 4) {
-    // 4 kata ke atas → ambil 3 (awal, tengah, akhir)
-    const taken = [
+  if (words.length === 1) form.initial = words[0].substring(0, 2).toUpperCase();
+  else if (words.length >= 4)
+    form.initial = [
       words[0],
       words[Math.floor(words.length / 2)],
       words[words.length - 1],
-    ];
-    initial = taken.map((w) => w[0].toUpperCase()).join("");
-  } else {
-    // 2-3 kata → ambil huruf pertama tiap kata
-    initial = words.map((w) => w[0].toUpperCase()).join("");
-  }
-
-  form.initial = initial;
+    ]
+      .map((w) => w[0].toUpperCase())
+      .join("");
+  else form.initial = words.map((w) => w[0].toUpperCase()).join("");
 }
 
 async function generateSequence() {
-  // Set level dari user yang sedang diedit
   salesOfficialStore.lastSequenceSalesParams.level = form.level ?? "";
-
   await salesOfficialStore.fetchLastSequence();
-
-  // Assign hasil ke form.sequence
   form.sequence = salesOfficialStore.lastSequenceSales;
 }
 
@@ -1417,7 +1330,7 @@ function populateForm() {
   form.address_id_card = u.address_id_card ? String(u.address_id_card) : "";
   form.master_area_province_id = u.province?.id.toString() ?? null;
   form.master_area_regency_id = u.regency?.id.toString() ?? null;
-  form.master_area_district_id = u.disctrict?.id.toString() ?? null; // note: typo in original "disctrict"
+  form.master_area_district_id = u.disctrict?.id.toString() ?? null;
   form.master_area_village_id = u.village?.id.toString() ?? null;
   form.level = u.level ?? null;
   form.initial = u.telemarketing?.inisial ?? null;
@@ -1438,37 +1351,31 @@ function populateForm() {
   form.effective_end_date = u.effective_end_date ?? "";
   form.join_date = u.join_date ?? "";
 
-  console.log(form.primary_approver_id);
+  // Populate data baru peringatan
+  form.warning = u.warning ?? null;
+  form.warning_start_date = u.warning_start_date ?? "";
+  form.warning_end_date = u.warning_end_date ?? "";
 }
-const emit = defineEmits<{
-  cancel: [];
-  saved: [];
-}>();
+
+const emit = defineEmits<{ cancel: []; saved: [] }>();
 
 function scrollToFirstError(serverErr?: Record<string, string>) {
-  const priorityFields = ["name", "full_name", "gender", "gender", "image"];
-
-  // Cek apakah ada server error di salah satu field prioritas
+  const priorityFields = ["name", "full_name", "gender", "image"];
   if (serverErr) {
     for (const field of priorityFields) {
       if (serverErr[field]) {
-        const el = document.getElementById(`field-${field}`);
-        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        document
+          .getElementById(`field-${field}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
     }
   }
-
-  // Cek apakah ada error validasi front-end di salah satu field prioritas
   for (const field of priorityFields) {
     const el = document.getElementById(`field-${field}`);
-    if (el) {
-      // Vuetify meletakkan class 'v-field--error' pada wrapper terdekat
-      const wrapper = el.closest(".v-input");
-      if (wrapper?.classList.contains("v-input--error")) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        return;
-      }
+    if (el?.closest(".v-input")?.classList.contains("v-input--error")) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
     }
   }
 }
@@ -1477,14 +1384,13 @@ function scrollToFirstError(serverErr?: Record<string, string>) {
 async function handleSubmit() {
   const { valid } = await formRef.value.validate();
   if (!valid) {
-    scrollToFirstError(); // ← frontend validation error
+    scrollToFirstError();
     return;
   }
 
-  // reset server errors sebelum submit
   Object.keys(serverErrors).forEach((key) => delete serverErrors[key]);
-
   isSaving.value = true;
+
   try {
     const userId = userStore.usersSelected!.id;
     const imageFile = Array.isArray(form.imageFile)
@@ -1492,7 +1398,6 @@ async function handleSubmit() {
       : form.imageFile;
 
     await userStore.updateUser(userId, {
-      // required
       employee_id: form.employee_id,
       full_name: form.full_name,
       name: form.name,
@@ -1501,8 +1406,6 @@ async function handleSubmit() {
       master_position_id: form.master_position_id!,
       position: form.position,
       level: form.level ?? "",
-
-      // personal
       nik: form.nik || undefined,
       phone_number: form.phone_number || undefined,
       gender: form.gender as "M" | "F",
@@ -1510,8 +1413,6 @@ async function handleSubmit() {
       back_title: form.back_title || undefined,
       birth_place: form.birth_place || undefined,
       birth_date: form.birth_date || undefined,
-
-      // HRD
       hrd_master_education_id: form.hrd_master_education_id ?? undefined,
       hrd_master_religion_id: form.hrd_master_religion_id ?? undefined,
       hrd_master_blood_type_id: form.hrd_master_blood_type_id ?? undefined,
@@ -1520,18 +1421,10 @@ async function handleSubmit() {
       bpjs_health_number: form.bpjs_health_number || undefined,
       bpjs_employment_number: form.bpjs_employment_number || undefined,
       number_of_children: form.number_of_children ?? undefined,
-
-      // emergency
       emergency_contact_name: form.emergency_contact_name || undefined,
       emergency_phone_number: form.emergency_phone_number || undefined,
-
-      // image
       image: imageFile ?? undefined,
-
-      // address KTP
       address_id_card: form.address_id_card || undefined,
-
-      // address domisili
       master_area_province_id: form.master_area_province_id
         ? Number(form.master_area_province_id)
         : undefined,
@@ -1548,8 +1441,6 @@ async function handleSubmit() {
       community_unit: form.community_unit || undefined,
       current_address: form.current_address || undefined,
       zip_code: form.zip_code || undefined,
-
-      // employment
       primary_approver_id: form.primary_approver_id
         ? Number(form.primary_approver_id)
         : undefined,
@@ -1563,6 +1454,11 @@ async function handleSubmit() {
       effective_start_date: form.effective_start_date || undefined,
       effective_end_date: form.effective_end_date || undefined,
       remaining_leave: form.remaining_leave ?? undefined,
+
+      // Mengirimkan payload baru ke API
+      warning: form.warning || null,
+      warning_start_date: form.warning_start_date || null,
+      warning_end_date: form.warning_end_date || null,
     });
 
     emit("saved");
@@ -1573,7 +1469,6 @@ async function handleSubmit() {
         Object.entries(errors).forEach(([field, messages]) => {
           serverErrors[field] = messages[0];
         });
-        // Tunggu DOM update dulu sebelum scroll
         await nextTick();
         scrollToFirstError(serverErrors);
       }
