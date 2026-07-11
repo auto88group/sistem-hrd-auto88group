@@ -185,4 +185,16 @@ export const leaveRequestApi = {
   destroyLeave(id: number | null): Promise<LeaveRequestApprovalResponse> {
     return api.delete(`/hrd/leave-request/${id}`).then((res) => res.data);
   },
+
+  export(params: {
+    period?: string;
+    branch_id?: number | null;
+  }): Promise<Blob> {
+    return api
+      .get("/hrd/leave-request/export", {
+        params,
+        responseType: "blob",
+      })
+      .then((res) => res.data);
+  },
 };

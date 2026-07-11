@@ -319,4 +319,16 @@ export const employeeAttendanceRequestApi = {
       })
       .then((res) => res.data);
   },
+
+  recapExport(params: {
+    period?: string;
+    branch_id?: number | null;
+  }): Promise<Blob> {
+    return api
+      .get("/hrd/employee-attendance/recap/export", {
+        params,
+        responseType: "blob",
+      })
+      .then((res) => res.data);
+  },
 };

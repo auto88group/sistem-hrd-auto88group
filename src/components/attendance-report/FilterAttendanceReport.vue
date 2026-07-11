@@ -95,7 +95,7 @@
           </v-autocomplete>
         </v-col>
       </v-row>
-      <div>
+      <div class="flex gap-2">
         <v-btn
           color="bg-blue-300 dark:bg-blue-500"
           variant="flat"
@@ -106,7 +106,7 @@
           Filter
         </v-btn>
         <v-btn
-          color="success"
+          color="bg-green-500"
           variant="flat"
           prepend-icon="mdi-file-excel"
           :loading="employeeAttendanceStore.isLoadingExport"

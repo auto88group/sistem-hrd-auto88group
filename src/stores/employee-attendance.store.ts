@@ -271,6 +271,38 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       }
     }
 
+    async function recapExportToExcel() {
+      isLoadingExport.value = true;
+      try {
+        const blob = await employeeAttendanceRequestApi.recapExport({
+          period: recapParams.period,
+          branch_id: recapParams.branch_id,
+        });
+
+        // Membuat link download temporary di browser
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement("a");
+        link.href = url;
+
+        // Penamaan file dinamis di sisi client
+        link.setAttribute(
+          "download",
+          `Rekap_Absensi_${new Date().toISOString().split("T")[0]}.xlsx`,
+        );
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup element link setelah download terpicu
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Gagal mengunduh file laporan excel:", error);
+        throw error;
+      } finally {
+        isLoadingExport.value = false;
+      }
+    }
+
     return {
       employeeAttendance,
       employeeAttendanceRecap,
@@ -293,6 +325,7 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       isLoadingApproval,
       isLoadingExport,
       exportToExcel,
+      recapExportToExcel,
       approvalDiffLoc,
       destroyAttendance,
       modifyAttendance,

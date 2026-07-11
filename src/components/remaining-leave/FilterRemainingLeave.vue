@@ -59,6 +59,26 @@
         </template>
       </v-autocomplete>
     </v-col>
+    <div class="flex gap-2">
+      <v-btn
+        color="bg-blue-300 dark:bg-blue-500"
+        variant="flat"
+        prepend-icon="mdi-filter-check"
+        :loading="remainingLeaveStore.isLoading"
+        @click="filter"
+      >
+        Filter
+      </v-btn>
+      <v-btn
+        color="bg-green-500"
+        variant="flat"
+        prepend-icon="mdi-file-excel"
+        :loading="remainingLeaveStore.isLoadingExport"
+        @click="handleExport"
+      >
+        Export Excel
+      </v-btn>
+    </div>
   </v-row>
 </template>
 
@@ -84,6 +104,15 @@ const form = reactive({
   branch_id: null,
   user_id: null,
 });
+
+async function handleExport() {
+  try {
+    await remainingLeaveStore.exportToExcel();
+  } catch (err) {
+    // Jika Anda memiliki toast notification global (seperti appStore), bisa dipasang di sini
+    alert("Terjadi kesalahan saat mengekspor data.");
+  }
+}
 
 const listUser = computed(() =>
   userStore.usersData.map((user) => ({
@@ -141,6 +170,9 @@ function onSelectUser(value: number | null) {
   setTimeout(() => {
     isSelecting.value = false;
   }, 500);
+}
+async function filter() {
+  remainingLeaveStore.fetchRemainingLeave?.();
 }
 
 watch(

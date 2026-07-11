@@ -16,6 +16,7 @@ export const useRemainingLeaveStore = defineStore("remaining-leave", () => {
   const historySelected = ref<History[]>([]);
   const isLoading = ref(false);
   const isLoadingDetail = ref(false);
+  const isLoadingExport = ref(false);
   const isLoadingAdjustmant = ref(false);
   const isLoadingSetting = ref(false);
   const totalRecords = ref(0);
@@ -86,6 +87,37 @@ export const useRemainingLeaveStore = defineStore("remaining-leave", () => {
     }
   }
 
+  async function exportToExcel() {
+    isLoadingExport.value = true;
+    try {
+      const blob = await remainingLeaveApi.export({
+        branch_id: params.branch_id,
+      });
+
+      // Membuat link download temporary di browser
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Penamaan file dinamis di sisi client
+      link.setAttribute(
+        "download",
+        `Laporan_Cuti_${new Date().toISOString().split("T")[0]}.xlsx`,
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup element link setelah download terpicu
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Gagal mengunduh file laporan excel:", error);
+      throw error;
+    } finally {
+      isLoadingExport.value = false;
+    }
+  }
+
   return {
     remainingLeave,
     historySelected,
@@ -98,6 +130,8 @@ export const useRemainingLeaveStore = defineStore("remaining-leave", () => {
     detailParams,
     isLoadingSetting,
     settingPartialErrors,
+    isLoadingExport,
+    exportToExcel,
     storeSetting,
     fetchRemainingLeave,
     fetchRemainingLeaveDetail,

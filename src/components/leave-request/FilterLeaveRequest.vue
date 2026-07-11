@@ -105,7 +105,7 @@
         </v-autocomplete>
       </v-col>
     </v-row>
-    <div>
+    <div class="flex gap-2">
       <v-btn
         color="bg-blue-300 dark:bg-blue-500"
         variant="flat"
@@ -114,6 +114,15 @@
         @click="filter"
       >
         Filter
+      </v-btn>
+      <v-btn
+        color="bg-green-500"
+        variant="flat"
+        prepend-icon="mdi-file-excel"
+        :loading="leaveRequestStore.isLoadingExport"
+        @click="handleExport"
+      >
+        Export Excel
       </v-btn>
     </div>
   </div>
@@ -145,6 +154,15 @@ const searchLeaveType = ref("");
 const isSelecting = ref(false);
 const selectedUserText = ref<string>("");
 const searchBranch = ref("");
+
+async function handleExport() {
+  try {
+    await leaveRequestStore.exportToExcel();
+  } catch (err) {
+    // Jika Anda memiliki toast notification global (seperti appStore), bisa dipasang di sini
+    alert("Terjadi kesalahan saat mengekspor data.");
+  }
+}
 
 const listUser = computed(() =>
   userStore.usersData.map((user) => ({

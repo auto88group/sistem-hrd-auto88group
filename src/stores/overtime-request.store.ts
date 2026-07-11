@@ -11,6 +11,7 @@ export const useOvertimeRequestStore = defineStore("overtime-request", () => {
   const overtimeRequest = ref<OvertimeRequest[]>([]);
   const overtimeRequestSelected = ref<OvertimeRequest | null>(null);
   const isLoading = ref(false);
+  const isLoadingExport = ref(false);
   const isLoadingApproval = ref(false);
   const totalRecords = ref(0);
 
@@ -64,6 +65,38 @@ export const useOvertimeRequestStore = defineStore("overtime-request", () => {
     payloadApproval.level = null;
   }
 
+  async function exportToExcel() {
+    isLoadingExport.value = true;
+    try {
+      const blob = await overtimeRequestApi.export({
+        year: params.period,
+        branch_id: params.branch_id,
+      });
+
+      // Membuat link download temporary di browser
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Penamaan file dinamis di sisi client
+      link.setAttribute(
+        "download",
+        `Pengajuan_Lembur_${new Date().toISOString().split("T")[0]}.xlsx`,
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup element link setelah download terpicu
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Gagal mengunduh file laporan excel:", error);
+      throw error;
+    } finally {
+      isLoadingExport.value = false;
+    }
+  }
+
   return {
     isLoading,
     isLoadingApproval,
@@ -75,6 +108,9 @@ export const useOvertimeRequestStore = defineStore("overtime-request", () => {
     detailOvertimeDialog,
     overtimeRequestSelected,
     serverErrors,
+    isLoadingExport,
+
+    exportToExcel,
     fetchOvertimeRequest,
     approvalOvertimeRequest,
     clearApprovalPayload,

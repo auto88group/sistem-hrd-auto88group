@@ -73,7 +73,7 @@
         </v-col>
 
         <v-col cols="12" md="2">
-          <div>
+          <div class="flex gap-2">
             <v-btn
               color="bg-blue-300 dark:bg-blue-500"
               variant="flat"
@@ -82,6 +82,15 @@
               @click="filter"
             >
               Filter
+            </v-btn>
+            <v-btn
+              color="bg-green-500"
+              variant="flat"
+              prepend-icon="mdi-file-excel"
+              :loading="employeeAttendanceStore.isLoadingExport"
+              @click="handleExport"
+            >
+              Export Excel
             </v-btn>
           </div>
         </v-col>
@@ -155,6 +164,15 @@ const listUser = computed(() =>
     value: user.id,
   })),
 );
+
+async function handleExport() {
+  try {
+    await employeeAttendanceStore.recapExportToExcel();
+  } catch (err) {
+    // Jika Anda memiliki toast notification global (seperti appStore), bisa dipasang di sini
+    alert("Terjadi kesalahan saat mengekspor data absensi.");
+  }
+}
 
 const onSearchUser = useDebounceFn((val: string) => {
   if (isSelecting.value) return;

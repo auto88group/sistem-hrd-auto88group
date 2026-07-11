@@ -126,4 +126,13 @@ export const overtimeRequestApi = {
       .post(`/hrd/overtime-request/approval/${payload.id}`, payload)
       .then((res) => res.data);
   },
+
+  export(params: { year?: string; branch_id?: number | null }): Promise<Blob> {
+    return api
+      .get("/hrd/overtime-request/export", {
+        params,
+        responseType: "blob",
+      })
+      .then((res) => res.data);
+  },
 };

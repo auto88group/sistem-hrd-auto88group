@@ -13,6 +13,7 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
   const leaveRequest = ref<LeaveRequest[]>([]);
   const leaveRequestSelected = ref<LeaveRequest | null>(null);
   const isLoading = ref(false);
+  const isLoadingExport = ref(false);
   const isLoadingSelected = ref(false);
   const isLoadingSelectedByHighlight = ref(false);
   const isLoadingDestroy = ref(false);
@@ -222,6 +223,38 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
     payloadCreateUpdate.total_days = diffDays + 1;
   }
 
+  async function exportToExcel() {
+    isLoadingExport.value = true;
+    try {
+      const blob = await leaveRequestApi.export({
+        period: params.period,
+        branch_id: params.branch_id,
+      });
+
+      // Membuat link download temporary di browser
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Penamaan file dinamis di sisi client
+      link.setAttribute(
+        "download",
+        `Pengajuan_Izin_${new Date().toISOString().split("T")[0]}.xlsx`,
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup element link setelah download terpicu
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Gagal mengunduh file laporan excel:", error);
+      throw error;
+    } finally {
+      isLoadingExport.value = false;
+    }
+  }
+
   return {
     leaveRequest,
     isLoadingSelectedByHighlight,
@@ -241,6 +274,8 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
     infoDialog,
     serverErrors,
     payloadCreateUpdate,
+    isLoadingExport,
+    exportToExcel,
     fetchLeaveRequest,
     approvalLeaveRequest,
     fetchLeaveRequestSelected,

@@ -132,4 +132,16 @@ export const remainingLeaveApi = {
       .post("/hrd/remaining-leave/setting", payload)
       .then((res) => res.data);
   },
+
+  export(params: {
+    period?: string;
+    branch_id?: number | null;
+  }): Promise<Blob> {
+    return api
+      .get("/hrd/remaining-leave/export", {
+        params,
+        responseType: "blob",
+      })
+      .then((res) => res.data);
+  },
 };
