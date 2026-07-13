@@ -83,6 +83,12 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
+          path: "/master/position",
+          name: "Jabatan",
+          component: () => import("@/pages/master/position/index.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
           path: "/master/remaining-leave",
           name: "Saldo Cuti",
           component: () => import("@/pages/master/remaining-leave/index.vue"),

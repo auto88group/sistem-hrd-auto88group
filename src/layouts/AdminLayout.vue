@@ -155,6 +155,15 @@
               >Shift</v-btn
             >
             <v-btn
+              to="/master/position"
+              :active="$route.path.startsWith('/master/position')"
+              variant="text"
+              size="small"
+              prepend-icon="mdi-form-textbox"
+              class="btn-nav-custom"
+              >Jabatan</v-btn
+            >
+            <v-btn
               to="/master/employee"
               :active="$route.path.startsWith('/master/employee')"
               variant="text"
@@ -382,6 +391,13 @@
               to="/master/shift"
               :active="$route.path.startsWith('/master/shift')"
               value="shift"
+              active-class="text-indigo-600 dark:text-indigo-200"
+            ></v-list-item>
+            <v-list-item
+              title="Jabatan"
+              to="/master/position"
+              :active="$route.path.startsWith('/master/position')"
+              value="position"
               active-class="text-indigo-600 dark:text-indigo-200"
             ></v-list-item>
             <v-list-item

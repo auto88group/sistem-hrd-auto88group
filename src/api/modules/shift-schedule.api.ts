@@ -132,4 +132,16 @@ export const shiftScheduleApi = {
       })
       .then((res) => res.data);
   },
+
+  export(params: {
+    period?: string;
+    branch_id?: number | null;
+  }): Promise<Blob> {
+    return api
+      .get("/hrd/shift-schedule/export", {
+        params,
+        responseType: "blob",
+      })
+      .then((res) => res.data);
+  },
 };

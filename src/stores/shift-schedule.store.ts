@@ -14,6 +14,7 @@ export const useShiftScheduleStore = defineStore("shift-schedule", () => {
   const shiftSchedule = ref<ShiftSchedule[]>([]);
   const isLoading = ref(false);
   const isLoadingCreate = ref(false);
+  const isLoadingExport = ref(false);
   const isLoadingUpdate = ref(false);
   const isLoadingDestroy = ref(false);
   const isLoadingImport = ref(false);
@@ -96,6 +97,38 @@ export const useShiftScheduleStore = defineStore("shift-schedule", () => {
     }
   }
 
+  async function exportToExcel() {
+    isLoadingExport.value = true;
+    try {
+      const blob = await shiftScheduleApi.export({
+        period: params.period,
+        branch_id: params.branch_id,
+      });
+
+      // Membuat link download temporary di browser
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Penamaan file dinamis di sisi client
+      link.setAttribute(
+        "download",
+        `Jadwal_Shift_${new Date().toISOString().split("T")[0]}.xlsx`,
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup element link setelah download terpicu
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Gagal mengunduh file laporan excel:", error);
+      throw error;
+    } finally {
+      isLoadingExport.value = false;
+    }
+  }
+
   return {
     shiftSchedule,
     isLoading,
@@ -108,6 +141,8 @@ export const useShiftScheduleStore = defineStore("shift-schedule", () => {
     isImportDialogOpen,
     isLoadingDownloadTemplate,
     isLoadingImport,
+    isLoadingExport,
+    exportToExcel,
     importExcel,
     downloadTemplate,
 
