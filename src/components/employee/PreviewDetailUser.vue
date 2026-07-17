@@ -159,6 +159,30 @@
               {{ userStore.usersSelected?.bpjs_employment_number ?? "-" }}
             </div>
           </v-col>
+          <v-col cols="6" md="3">
+            <div class="text-gray-500 text-sm dark:text-gray-300">
+              Nomor Rekening
+            </div>
+            <div class="font-bold text-sm">
+              {{ userStore.usersSelected?.rekening_no ?? "-" }}
+            </div>
+          </v-col>
+          <v-col cols="6" md="3">
+            <div class="text-gray-500 text-sm dark:text-gray-300">
+              Rekening Bank
+            </div>
+            <div class="font-bold text-sm">
+              {{ userStore.usersSelected?.rekening_bank ?? "-" }}
+            </div>
+          </v-col>
+          <v-col cols="12" md="6">
+            <div class="text-gray-500 text-sm dark:text-gray-300">
+              Nama Rekening
+            </div>
+            <div class="font-bold text-sm">
+              {{ userStore.usersSelected?.rekening_name ?? "-" }}
+            </div>
+          </v-col>
           <v-col cols="12" md="6">
             <div class="text-gray-500 text-sm dark:text-gray-300">
               Jumlah Anak

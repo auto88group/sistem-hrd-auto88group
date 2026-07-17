@@ -261,6 +261,33 @@
             ></v-col>
             <v-col cols="12" md="6"
               ><v-text-field
+                v-model="form.rekening_no"
+                label="Nomor Rekening"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
+                v-model="form.rekening_bank"
+                label="Rekening Bank"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
+                v-model="form.rekening_name"
+                label="Nama Rekening"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+              ></v-text-field
+            ></v-col>
+            <v-col cols="12" md="6"
+              ><v-text-field
                 v-model.number="form.number_of_children"
                 label="Jumlah Anak"
                 variant="outlined"
@@ -1167,6 +1194,9 @@ const form = reactive({
   hrd_master_religion_id: null as number | null,
   bpjs_health_number: "",
   bpjs_employment_number: "",
+  rekening_no: "",
+  rekening_name: "",
+  rekening_bank: "",
   number_of_children: null as number | null,
   emergency_phone_number: "",
   emergency_contact_name: "",
@@ -1324,6 +1354,9 @@ function populateForm() {
   form.hrd_master_religion_id = u.religion?.id ?? null;
   form.bpjs_health_number = u.bpjs_health_number ?? "";
   form.bpjs_employment_number = u.bpjs_employment_number ?? "";
+  form.rekening_no = u.rekening_no ?? "";
+  form.rekening_bank = u.rekening_bank ?? "";
+  form.rekening_name = u.rekening_name ?? "";
   form.number_of_children = u.number_of_children ?? null;
   form.emergency_phone_number = u.emergency_phone_number ?? "";
   form.emergency_contact_name = u.emergency_contact_name ?? "";
@@ -1420,6 +1453,9 @@ async function handleSubmit() {
         form.hrd_master_marital_status_id ?? undefined,
       bpjs_health_number: form.bpjs_health_number || undefined,
       bpjs_employment_number: form.bpjs_employment_number || undefined,
+      rekening_no: form.rekening_no || undefined,
+      rekening_name: form.rekening_name || undefined,
+      rekening_bank: form.rekening_bank || undefined,
       number_of_children: form.number_of_children ?? undefined,
       emergency_contact_name: form.emergency_contact_name || undefined,
       emergency_phone_number: form.emergency_phone_number || undefined,

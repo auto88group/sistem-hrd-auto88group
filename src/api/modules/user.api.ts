@@ -68,6 +68,9 @@ export interface UserCreateUpdateParams {
   hrd_master_marital_status_id?: number;
   bpjs_health_number?: string;
   bpjs_employment_number?: string;
+  rekening_no?: string;
+  rekening_name?: string;
+  rekening_bank?: string;
   number_of_children?: number;
 
   // emergency
@@ -151,6 +154,9 @@ export interface User {
   };
   bpjs_employment_number: string;
   bpjs_health_number: string;
+  rekening_no?: string;
+  rekening_name?: string;
+  rekening_bank?: string;
   branch: {
     alias: string;
     code: string;

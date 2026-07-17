@@ -316,6 +316,33 @@
                 hide-details="auto"
               ></v-text-field>
             </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="form.rekening_no"
+                label="Nomor Rekening"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="form.rekening_bank"
+                label="Bank Rekening"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="form.rekening_name"
+                label="Nama Rekening"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+              ></v-text-field>
+            </v-col>
 
             <v-col cols="12" md="6">
               <v-text-field
@@ -1224,6 +1251,9 @@ const form = reactive({
   hrd_master_religion_id: null as number | null,
   bpjs_health_number: "",
   bpjs_employment_number: "",
+  rekening_no: "",
+  rekening_name: "",
+  rekening_bank: "",
   number_of_children: null as number | null,
   emergency_phone_number: "",
   emergency_contact_name: "",
@@ -1437,6 +1467,9 @@ async function handleSubmit() {
         form.hrd_master_marital_status_id ?? undefined,
       bpjs_health_number: form.bpjs_health_number || undefined,
       bpjs_employment_number: form.bpjs_employment_number || undefined,
+      rekening_no: form.rekening_no || undefined,
+      rekening_name: form.rekening_name || undefined,
+      rekening_bank: form.rekening_bank || undefined,
       number_of_children: form.number_of_children ?? undefined,
 
       // emergency

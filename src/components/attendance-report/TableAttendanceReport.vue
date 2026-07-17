@@ -4,6 +4,7 @@
     :items="employee"
     :items-length="employeeAttendanceStore.totalRecords"
     :items-per-page="employeeAttendanceStore.params.length"
+    :items-per-page-options="itemsPerPageOptions"
     :loading="employeeAttendanceStore.isLoading"
     class="elevation-1 custom-header-table"
     :row-props="getRowProps"
@@ -530,6 +531,14 @@ const { formatName } = useFormatName();
 const { ask } = useConfirmDialog();
 const appStore = useAppStore();
 const authStore = useAuthStore();
+
+const itemsPerPageOptions = [
+  { value: 10, title: "10" },
+  { value: 25, title: "25" },
+  { value: 50, title: "50" },
+  { value: 100, title: "100" },
+  { value: 200, title: "200" },
+];
 
 const headers = computed(() => {
   const items = [
