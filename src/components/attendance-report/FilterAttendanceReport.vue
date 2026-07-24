@@ -203,10 +203,10 @@ function onClickRadio(key: string) {
 
 async function handleExport() {
   // 🟢 Proteksi: Cek apakah cabang sudah dipilih
-  if (!form.value.branch_id) {
-    alert("Silakan pilih Cabang terlebih dahulu sebelum mengekspor data!");
-    // Jika Anda menggunakan Toast / Snackbar (misal dari Vuetify/AppStore), bisa gunakan itu di sini:
-    // appStore.showToast("Silakan pilih Cabang terlebih dahulu", "warning");
+  if (!form.value.branch_id && !form.value.user_id) {
+    alert(
+      "Silakan pilih Cabang atau Karyawan terlebih dahulu sebelum mengekspor data!",
+    );
     return;
   }
 
