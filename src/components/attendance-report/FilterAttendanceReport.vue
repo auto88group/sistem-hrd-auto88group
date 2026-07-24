@@ -202,10 +202,18 @@ function onClickRadio(key: string) {
 }
 
 async function handleExport() {
+  // 🟢 Proteksi: Cek apakah cabang sudah dipilih
+  if (!form.value.branch_id) {
+    alert("Silakan pilih Cabang terlebih dahulu sebelum mengekspor data!");
+    // Jika Anda menggunakan Toast / Snackbar (misal dari Vuetify/AppStore), bisa gunakan itu di sini:
+    // appStore.showToast("Silakan pilih Cabang terlebih dahulu", "warning");
+    return;
+  }
+
   try {
     await employeeAttendanceStore.exportToExcel();
   } catch (err) {
-    // Jika Anda memiliki toast notification global (seperti appStore), bisa dipasang di sini
+    console.log(err);
     alert("Terjadi kesalahan saat mengekspor data absensi.");
   }
 }
