@@ -229,6 +229,7 @@ export const useLeaveRequestStore = defineStore("leaveRequest", () => {
       const blob = await leaveRequestApi.export({
         period: params.period,
         branch_id: params.branch_id,
+        user_id: params.user_id,
       });
 
       // Membuat link download temporary di browser

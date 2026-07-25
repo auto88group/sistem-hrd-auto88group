@@ -59,33 +59,29 @@
     </template>
 
     <template #[`item.code`]="{ item }">
-      <!-- HADIR -->
+      <!-- 🟢 PERBAIKAN: BEDA LOKASI (PENDING APPROVAL) -->
       <div
         v-if="
-          item.request_diff_loc_in === 1 && item.confirm_diff_loc_in_id == null
+          (item.request_diff_loc_in === 1 &&
+            item.confirm_diff_loc_in_id == null) ||
+          (item.request_diff_loc_out === 1 &&
+            item.confirm_diff_loc_out_id == null)
         "
       >
         <v-tooltip location="top">
           <template v-slot:activator="{ props }">
-            <span v-bind="props" class="font-bold text-red-500 cursor-pointer"
-              >A</span
-            >
+            <span v-bind="props" class="font-bold text-cyan-500 cursor-pointer">
+              BL
+            </span>
           </template>
-          Alpa
+          Beda Lokasi (Menunggu Approval)
         </v-tooltip>
       </div>
 
-      <div v-if="item.time_in">
+      <!-- HADIR NORMAL DAN LAINNYA -->
+      <div v-else-if="item.time_in">
         <!-- H: Hadir -->
-        <span
-          v-if="
-            item.time_in &&
-            !(
-              item.request_diff_loc_in === 1 &&
-              item.confirm_diff_loc_in_id == null
-            )
-          "
-        >
+        <span>
           <v-tooltip location="top">
             <template v-slot:activator="{ props }">
               <span
@@ -99,15 +95,7 @@
         </span>
 
         <!-- Shift -->
-        <span
-          v-if="
-            item.shift_id &&
-            !(
-              item.request_diff_loc_in === 1 &&
-              item.confirm_diff_loc_in_id == null
-            )
-          "
-        >
+        <span v-if="item.shift_id">
           ,
           <v-tooltip location="top">
             <template v-slot:activator="{ props }">
@@ -122,19 +110,12 @@
           </v-tooltip>
         </span>
 
-        <!-- Leave setengah hari (bisa lebih dari satu) -->
+        <!-- Leave setengah hari -->
         <template
           v-for="leave in item.leaves.filter((l) => l.lr_is_full_day == 0)"
           :key="leave.lr_type_code"
         >
-          <span
-            v-if="
-              !(
-                item.request_diff_loc_in === 1 &&
-                item.confirm_diff_loc_in_id == null
-              )
-            "
-          >
+          <span>
             ,
             <v-tooltip location="top">
               <template v-slot:activator="{ props }">
@@ -155,11 +136,7 @@
           v-if="
             !hasLeaveCode(item, 'T') &&
             item.time_in &&
-            getLateDuration(item.time_in, item.working_hour) &&
-            !(
-              item.request_diff_loc_in === 1 &&
-              item.confirm_diff_loc_in_id == null
-            )
+            getLateDuration(item.time_in, item.working_hour)
           "
         >
           ,
@@ -180,11 +157,7 @@
           v-if="
             !hasLeaveCode(item, 'PC') &&
             item.time_out &&
-            getEarlyGoHomeDuration(item.time_out, item.working_hour) &&
-            !(
-              item.request_diff_loc_out === 1 &&
-              item.confirm_diff_loc_out_id == null
-            )
+            getEarlyGoHomeDuration(item.time_out, item.working_hour)
           "
         >
           ,
@@ -314,7 +287,7 @@
           T: {{ getLateDuration(item.time_in, item.working_hour) }}
         </span>
 
-        <!-- ✅ Telat approved (ada leave 'T') → dihitung dari default_working_hour -->
+        <!-- ✅ Telat approved (ada leave 'T') -->
         <span
           v-if="
             hasLeaveCode(item, 'T') &&
@@ -406,7 +379,7 @@
           PC: {{ getEarlyGoHomeDuration(item.time_out, item.working_hour) }}
         </span>
 
-        <!-- ✅ PC approved (ada leave 'PC') → dihitung dari default_working_hour -->
+        <!-- ✅ PC approved (ada leave 'PC') -->
         <span
           v-if="
             hasLeaveCode(item, 'PC') &&
@@ -597,7 +570,6 @@ function isToday(date: string): boolean {
   return date === new Date().toISOString().split("T")[0];
 }
 
-// Helper: cek apakah ada leave dengan type_code tertentu (untuk filter telat)
 function hasLeaveCode(item: EmployeeAttendance, code: string): boolean {
   return item.leaves?.some((l) => l.lr_type_code === code) ?? false;
 }
@@ -618,7 +590,6 @@ const formatTime = (workingHour: string, index: number) => {
 };
 
 async function handleDelete(id: number) {
-  console.log(id);
   const confirmed = await ask({
     title: "Hapus Data Absensi",
     message: "Data ini akan dihapus. Lanjutkan?",
@@ -654,11 +625,19 @@ function handleEdit(item: EmployeeAttendance) {
   employeeAttendanceStore.payloadEdit.time_out = item.time_out;
 }
 
+// 🟢 PERBAIKAN: HANYA FETCH SAAT PAGINATION BERUBAH DARI STATE, BUKAN SAAT AWAL RENDER
 function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
-  employeeAttendanceStore.params.length = options.itemsPerPage;
-  employeeAttendanceStore.params.start =
-    (options.page - 1) * options.itemsPerPage;
-  employeeAttendanceStore.fetchEmployeeAttendance();
+  const newStart = (options.page - 1) * options.itemsPerPage;
+  const newLength = options.itemsPerPage;
+
+  if (
+    employeeAttendanceStore.params.start !== newStart ||
+    employeeAttendanceStore.params.length !== newLength
+  ) {
+    employeeAttendanceStore.params.start = newStart;
+    employeeAttendanceStore.params.length = newLength;
+    employeeAttendanceStore.fetchEmployeeAttendance();
+  }
 }
 
 function getLateDuration(timeIn: string, workingHour: string): string {
@@ -725,10 +704,8 @@ function isDidntCheckOut(
   itemDate.setHours(0, 0, 0, 0);
   const isBeforeToday = itemDate < today;
 
-  // Kondisi 1: tidak ada time_out sama sekali
   if (isBeforeToday && !timeOut) return true;
 
-  // Kondisi 2: ada time_out tapi beda lokasi belum di-approve
   if (
     isBeforeToday &&
     timeOut &&
@@ -748,11 +725,8 @@ async function handleApprovalDiffLoc(attendanceId: number, type: "in" | "out") {
     });
 
     if (res.success) {
-      // refresh data tabel
       await employeeAttendanceStore.fetchEmployeeAttendance();
     }
-
-    // tampilkan notifikasi (sesuaikan dengan library notif yang kamu pakai)
     console.log(res.message);
   } catch (err: any) {
     console.error(err);
@@ -762,7 +736,7 @@ async function handleApprovalDiffLoc(attendanceId: number, type: "in" | "out") {
 
 <style scoped>
 :deep(.holiday-row td) {
-  background-color: #fee2e2 !important; /* soft red - Tailwind red-100 */
+  background-color: #fee2e2 !important;
   color: black !important;
 }
 
@@ -770,25 +744,21 @@ async function handleApprovalDiffLoc(attendanceId: number, type: "in" | "out") {
   color: black !important;
 }
 
-/* Opsional: hover state agar tetap terlihat */
 :deep(.holiday-row:hover td) {
-  background-color: #fecaca !important; /* Tailwind red-200 */
+  background-color: #fecaca !important;
   color: black !important;
 }
 
-/* Gunakan deep selector agar tembus ke dalam komponen Vuetify */
 :deep(.v-data-table__thead) {
   background-color: #e3f2fd;
 }
 
-/* Penyesuaian untuk Dark Theme */
 :deep(.v-theme--dark thead.v-data-table__thead) {
-  background-color: #1a237e; /* Biru gelap yang lembut untuk mata */
+  background-color: #1a237e;
 }
 
 :deep(thead.v-data-table__thead th) {
   font-weight: bold !important;
-  /* Jika ingin warna teks biru tua di light mode */
   color: #1976d2 !important;
 }
 

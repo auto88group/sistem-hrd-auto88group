@@ -71,6 +71,7 @@ export const useOvertimeRequestStore = defineStore("overtime-request", () => {
       const blob = await overtimeRequestApi.export({
         year: params.period,
         branch_id: params.branch_id,
+        user_id: params.user_id,
       });
 
       // Membuat link download temporary di browser

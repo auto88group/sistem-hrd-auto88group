@@ -50,6 +50,7 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       type_leave: 0,
       type_holiday: 0,
       type_belum_absen: 0,
+      type_pending_approval: 0, // ── Tambahan state default untuk persetujuan beda lokasi ──
     });
 
     const recapParams = reactive<EmployeeAttendanceRecapParams>({
@@ -245,6 +246,7 @@ export const useEmployeeAttendanceRequestStore = defineStore(
         const blob = await employeeAttendanceRequestApi.export({
           period: params.period,
           branch_id: params.branch_id,
+          user_id: params.user_id,
         });
 
         // Membuat link download temporary di browser
@@ -277,6 +279,7 @@ export const useEmployeeAttendanceRequestStore = defineStore(
         const blob = await employeeAttendanceRequestApi.recapExport({
           period: recapParams.period,
           branch_id: recapParams.branch_id,
+          user_id: recapParams.user_id,
         });
 
         // Membuat link download temporary di browser

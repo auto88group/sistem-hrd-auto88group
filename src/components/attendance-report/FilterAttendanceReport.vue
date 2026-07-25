@@ -120,6 +120,10 @@
       class="md:w-[50%] lg:w-[30%] flex flex-col justify-center p-3 bg-gray-100 dark:bg-gray-800 rounded-xl"
     >
       <v-row class="m-0">
+        <v-col cols="4"><span class="font-bold">BL</span></v-col>
+        <v-col cols="8">: Beda Lokasi</v-col>
+      </v-row>
+      <v-row class="m-0">
         <v-col cols="4"><span class="font-bold">BA</span></v-col>
         <v-col cols="8">: Belum Absen</v-col>
       </v-row>
@@ -154,6 +158,7 @@
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import { useDateFormatter } from "@/composables/UseDateFormatter";
 import { useDebounceFn } from "@/composables/UseDebounce";
@@ -184,16 +189,20 @@ const searchBranch = ref("");
 const today = new Date().toISOString().split("T")[0];
 const selectedType = ref<string | null>(null);
 
+// 🟢 JURUS ANTI DOUBLE FETCH: Semua trigger disatukan dan ditahan 100ms
+const doFetch = useDebounceFn(() => {
+  employeeAttendanceStore.fetchEmployeeAttendance();
+}, 100);
+
 function onChangeType(val: string | null) {
-  // Reset semua ke 0 dulu
   checkboxOptions.forEach((option) => {
     (form.value as any)[option.key] = 0;
   });
-  // Set yang dipilih ke 1
   if (val) {
     (form.value as any)[val] = 1;
   }
 }
+
 function onClickRadio(key: string) {
   if (selectedType.value === key) {
     selectedType.value = null;
@@ -202,14 +211,12 @@ function onClickRadio(key: string) {
 }
 
 async function handleExport() {
-  // 🟢 Proteksi: Cek apakah cabang sudah dipilih
   if (!form.value.branch_id && !form.value.user_id) {
     alert(
       "Silakan pilih Cabang atau Karyawan terlebih dahulu sebelum mengekspor data!",
     );
     return;
   }
-
   try {
     await employeeAttendanceStore.exportToExcel();
   } catch (err) {
@@ -219,6 +226,7 @@ async function handleExport() {
 }
 
 const checkboxOptions = [
+  { key: "type_pending_approval", label: "Beda Lokasi" },
   { key: "type_present", label: "Hadir" },
   { key: "type_belum_hadir", label: "Belum Hadir" },
   { key: "type_late", label: "Terlambat" },
@@ -245,7 +253,6 @@ const listBranch = computed(() => {
   return branchStore.branchData
     .filter((branch) => {
       if (!keyword) return true;
-
       return (
         branch.name.toLowerCase().includes(keyword) ||
         branch.alias.toLowerCase().includes(keyword)
@@ -264,27 +271,23 @@ const onSearchBranch = (val: any) => {
 
 const onSearchUser = useDebounceFn((val: string) => {
   if (isSelecting.value) return;
-
-  // ⛔ tambahan penting
   if (!val) return;
-
   if (val === selectedUserText.value) return;
 
   userStore.userDataParams.search = val ?? "";
   userStore.fetchUsersData();
 }, 400);
+
 function onSelectUser(value: number | null) {
   if (!value) {
     selectedUserText.value = "";
     isSelecting.value = false;
     return;
   }
-
-  isSelecting.value = true; // ← set flag sebelum Vuetify trigger search
+  isSelecting.value = true;
   const selected = listUser.value.find((u) => u.value === value);
   if (selected) selectedUserText.value = selected.name;
 
-  // Reset flag setelah debounce selesai (lebih dari 400ms)
   setTimeout(() => {
     isSelecting.value = false;
   }, 500);
@@ -292,7 +295,6 @@ function onSelectUser(value: number | null) {
 
 const onClearUser = async () => {
   selectedUserText.value = "";
-  // Reset list ke data awal
   userStore.usersData = await userStore.fetchUsersDataWithParams({
     search: "",
   });
@@ -307,10 +309,8 @@ watch(
   () => form.value.branch_id,
   (newBranchId) => {
     userStore.userDataParams.branch_id = newBranchId ?? undefined;
-
     form.value.user_id = null;
     selectedUserText.value = "";
-
     userStore.fetchUsersData();
   },
 );
@@ -321,45 +321,53 @@ async function filter() {
   checkboxOptions.forEach((option) => {
     const value = form.value[option.key as keyof typeof form.value];
     if (value === 1) {
-      currentQuery[option.key] = value.toString(); // Tambahkan ke URL jika dicentang
+      currentQuery[option.key] = value.toString();
     } else {
-      delete currentQuery[option.key]; // Hapus dari URL jika tidak dicentang biar rapi
+      delete currentQuery[option.key];
     }
   });
 
-  // Replace URL tanpa me-reload halaman
   router.replace({ query: currentQuery }).catch(() => {});
-
-  employeeAttendanceStore.fetchEmployeeAttendance();
+  employeeAttendanceStore.params.start = 0;
+  doFetch(); // Gunakan debounced fetch
 }
+
+function syncParamsFromUrl() {
+  checkboxOptions.forEach((option) => {
+    (form.value as any)[option.key] = 0;
+  });
+  selectedType.value = null;
+
+  if (route.path.includes("dashboard")) {
+    form.value.periodForm = [today, today];
+    form.value.period = `${today} - ${today}`;
+  }
+
+  checkboxOptions.forEach((option) => {
+    const queryValue = route.query[option.key];
+    if (queryValue !== undefined) {
+      (form.value as any)[option.key] = Number(queryValue);
+    }
+  });
+
+  const active = checkboxOptions.find((o) => route.query[o.key] === "1");
+  selectedType.value = active?.key ?? null;
+}
+
+watch(
+  () => route.query,
+  () => {
+    syncParamsFromUrl();
+    employeeAttendanceStore.params.start = 0;
+    doFetch(); // Gunakan debounced fetch
+  },
+  { deep: true },
+);
 
 onMounted(async () => {
   branchStore.fetchBranchData();
   userStore.fetchUsersData();
-
-  if (route.path.includes("dashboard")) {
-    form.value.periodForm = [today, today];
-  }
-
-  // 1. Cek apakah ada minimal SATU parameter type_... di URL
-  const hasTypeFilterInUrl = checkboxOptions.some(
-    (option) => route.query[option.key] !== undefined,
-  );
-
-  // 2. Jika ada parameter di URL, timpa semua nilai checkbox
-  if (hasTypeFilterInUrl) {
-    checkboxOptions.forEach((option) => {
-      const queryValue = route.query[option.key];
-      (form.value as any)[option.key] =
-        queryValue !== undefined ? Number(queryValue) : 0;
-    });
-
-    // Sync selectedType dari URL
-    const active = checkboxOptions.find((o) => route.query[o.key] === "1");
-    selectedType.value = active?.key ?? null;
-  }
-
-  // 🔥 TAMBAHAN UTAMA: Langsung panggil API absensi setelah form selesai di-update dari URL
-  employeeAttendanceStore.fetchEmployeeAttendance();
+  syncParamsFromUrl();
+  doFetch(); // Gunakan debounced fetch sebagai inisiasi awal
 });
 </script>

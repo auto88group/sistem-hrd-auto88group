@@ -127,7 +127,11 @@ export const overtimeRequestApi = {
       .then((res) => res.data);
   },
 
-  export(params: { year?: string; branch_id?: number | null }): Promise<Blob> {
+  export(params: {
+    year?: string;
+    branch_id?: number | null;
+    user_id?: number | null;
+  }): Promise<Blob> {
     return api
       .get("/hrd/overtime-request/export", {
         params,

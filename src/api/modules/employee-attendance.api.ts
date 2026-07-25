@@ -26,13 +26,16 @@ export interface EmployeeAttendanceParams {
   type_leave?: number | null;
   type_holiday?: number | null;
   type_belum_absen?: number | null;
+  type_pending_approval?: number | null; // ── Tambahan filter persetujuan beda lokasi ──
 }
+
 export interface EmployeeAttendanceResponse {
   draw: number;
   recordsTotal: number;
   recordsFiltered: number;
   data: EmployeeAttendance[];
 }
+
 export interface EmployeeAttendance {
   id: number;
   user_id: number;
@@ -104,6 +107,7 @@ export interface EmployeeAttendanceRecapParams {
   user_id?: number | null;
   branch_id?: number | null;
 }
+
 export interface EmployeeAttendanceRecapResponse {
   draw: number;
   recordsTotal: number;
@@ -152,7 +156,7 @@ export interface EmployeeAttendanceDailyStatus {
   is_sakit: number;
   is_cuti: number;
   is_alpha: number;
-  lr_types: EmployeeAttendanceLeave[];
+  lr_types: EmployeeAttendanceLeaveDetail[];
   shift_id: number | null;
   shift_name: string | null;
   shift_code: string | null;
@@ -163,7 +167,7 @@ export interface EmployeeAttendanceDailyStatus {
   pc_duration?: string;
 }
 
-export interface EmployeeAttendanceLeave {
+export interface EmployeeAttendanceLeaveDetail {
   lr_type_id: number;
   lr_type_code: string;
   lr_type: string;
@@ -205,11 +209,13 @@ export interface EmployeeAttendanceDetailParams {
   id: string | null;
   in_out: string | null;
 }
+
 export interface EmployeeAttendanceDetailResponse {
   success: boolean;
   message: string;
   data: EmployeeAttendanceDetail;
 }
+
 export interface EmployeeAttendanceDetail {
   id: number;
   user_id: number;
@@ -237,6 +243,7 @@ export interface ApprovalDiffLocParams {
   attendance_id: number;
   type: "in" | "out";
 }
+
 export interface DeletePhotoParams {
   user_id: number | null;
   start_date: string | null; // "YYYY-MM-DD"
@@ -245,12 +252,13 @@ export interface DeletePhotoParams {
 }
 
 export interface DeletePhotoData {
-  start_date: string; // ganti dari period
-  end_date: string; // tambah
+  start_date: string;
+  end_date: string;
   type: string;
   total_found: number;
   total_updated: number;
 }
+
 export interface DeletePhotoResponse {
   success: boolean;
   message: string;
@@ -311,6 +319,7 @@ export const employeeAttendanceRequestApi = {
   export(params: {
     period?: string;
     branch_id?: number | null;
+    user_id?: number | null;
   }): Promise<Blob> {
     return api
       .get("/hrd/employee-attendance/export", {
@@ -323,6 +332,7 @@ export const employeeAttendanceRequestApi = {
   recapExport(params: {
     period?: string;
     branch_id?: number | null;
+    user_id?: number | null;
   }): Promise<Blob> {
     return api
       .get("/hrd/employee-attendance/recap/export", {

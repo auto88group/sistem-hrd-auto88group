@@ -406,7 +406,7 @@ function onTableOptionsChange(options: { page: number; itemsPerPage: number }) {
   employeeAttendanceStore.params.length = options.itemsPerPage;
   employeeAttendanceStore.params.start =
     (options.page - 1) * options.itemsPerPage;
-  employeeAttendanceStore.fetchEmployeeAttendance();
+  // employeeAttendanceStore.fetchEmployeeAttendance();
 }
 
 function getLateDuration(timeIn: string, workingHour: string): string {

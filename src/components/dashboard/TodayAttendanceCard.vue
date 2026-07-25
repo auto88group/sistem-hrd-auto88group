@@ -66,22 +66,9 @@
             </v-list-item>
           </template>
         </v-autocomplete>
-
-        <!-- <v-select
-          v-model="selectedShift"
-          :items="shiftOptions"
-          label="Jam Kerja"
-          variant="outlined"
-          density="compact"
-          hide-details
-          rounded="xl"
-        >
-          <template v-slot:prepend-inner>
-            <v-icon size="small" class="mr-1">mdi-clock-outline</v-icon>
-          </template>
-        </v-select> -->
       </div>
     </v-expand-transition>
+
     <div class="space-y-3 w-full md:h-100 md:flex md:space-y-0 items-center">
       <div
         v-if="isLoading"
@@ -174,7 +161,6 @@ const {
 const { branchData, isLoadingData: isLoadingBranch } = storeToRefs(branchStore);
 
 const showFilter = ref(false);
-
 const searchBranch = ref("");
 
 const listBranch = computed(() => {
@@ -189,7 +175,6 @@ const listBranch = computed(() => {
     );
   });
 
-  // group by alias, gabungkan name
   const groupedByAlias = filtered.reduce((acc, branch) => {
     if (!acc.has(branch.alias)) {
       acc.set(branch.alias, { ...branch, names: [branch.name] });
@@ -205,21 +190,25 @@ const listBranch = computed(() => {
     value: branch.alias,
   }));
 });
+
 const onSearchBranch = (val: any) => {
   searchBranch.value = val ?? "";
 };
+
 const onChangeBranch = useDebounceFn((val: string) => {
   highlightStore.fetchAttendanceToday();
 }, 400);
 
-// Warna tetap sesuai urutan label dari backend
+// Warna disesuaikan dengan urutan response JSON dari backend:
+// [Hadir, Beda Lokasi, Terlambat, Belum Absen, Cuti, Izin, Sakit]
 const chartColors = [
-  "#10b981", // Hadir
-  "#f59e0b", // Terlambat
-  "#94a3b8", // Belum Absen
-  "#6366f1", // Cuti
-  "#8b5cf6", // Izin
-  "#f43f5e", // Sakit
+  "#10b981", // Hadir (Hijau)
+  "#06b6d4", // Beda Lokasi (Cyan)
+  "#f59e0b", // Terlambat (Kuning/Oranye)
+  "#94a3b8", // Belum Absen (Abu-abu)
+  "#6366f1", // Cuti (Indigo)
+  "#8b5cf6", // Izin (Ungu)
+  "#f43f5e", // Sakit (Merah)
 ];
 
 const series = computed(() => rawData.value.map((item) => item.total));
@@ -238,57 +227,53 @@ const onClickRow = (label: string) => {
   if (label === "Hadir") {
     router.push({
       path: "/dashboard/attendance-today-report",
-      query: {
-        type_present: 1,
-      },
+      query: { type_present: 1 },
+    });
+  }
+
+  if (label === "Beda Lokasi") {
+    router.push({
+      path: "/dashboard/attendance-today-report",
+      query: { type_pending_approval: 1 },
     });
   }
 
   if (label === "Terlambat") {
     router.push({
       path: "/dashboard/attendance-today-report",
-      query: {
-        type_late: 1,
-      },
+      query: { type_late: 1 },
     });
   }
 
   if (label === "Belum Absen") {
     router.push({
       path: "/dashboard/attendance-today-report",
-      query: {
-        type_belum_hadir: 1,
-      },
+      query: { type_belum_hadir: 1 },
     });
   }
 
   if (label === "Cuti") {
     router.push({
       path: "/dashboard/attendance-today-report",
-      query: {
-        type_leave: 1,
-      },
+      query: { type_leave: 1 },
     });
   }
 
   if (label === "Izin") {
     router.push({
       path: "/dashboard/attendance-today-report",
-      query: {
-        type_permit: 1,
-      },
+      query: { type_permit: 1 },
     });
   }
 
   if (label === "Sakit") {
     router.push({
       path: "/dashboard/attendance-today-report",
-      query: {
-        type_sick: 1,
-      },
+      query: { type_sick: 1 },
     });
   }
 };
+
 const chartOptions = computed(() => {
   const isDark = theme.global.name.value === "dark";
   return {
@@ -348,7 +333,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Transisi halus saat ganti theme */
 .v-card {
   transition:
     background-color 0.3s ease,

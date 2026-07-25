@@ -189,6 +189,7 @@ export const leaveRequestApi = {
   export(params: {
     period?: string;
     branch_id?: number | null;
+    user_id?: number | null;
   }): Promise<Blob> {
     return api
       .get("/hrd/leave-request/export", {
