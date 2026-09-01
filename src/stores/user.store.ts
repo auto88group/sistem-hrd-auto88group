@@ -41,11 +41,16 @@ export const useUserStore = defineStore("user", () => {
   // Error state Baru untuk Warning Reset
   const resetWarningError = ref<string | null>(null);
 
-  const params = reactive<UserDatatablesParams>({
+  const params = reactive<
+    UserDatatablesParams & {
+      user_option?: { value: number; name: string; email?: string };
+    }
+  >({
     draw: 1,
     start: 0,
     length: 10,
     user_id: undefined,
+    user_option: undefined, // <-- tambahan, simpan label nama yang dipilih
     master_position_id: undefined,
     branch_id: undefined,
     hrd_master_education_id: undefined,
@@ -306,7 +311,7 @@ export const useUserStore = defineStore("user", () => {
     createError,
     deleteError,
     accountAccessError,
-    resetWarningError, // Export state error baru
+    resetWarningError,
     fetchUsers,
     fetchUsersData,
     toggleShowDeleted,

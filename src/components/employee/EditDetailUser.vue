@@ -702,6 +702,9 @@
                     :subtitle="item.title"
                   ></v-list-item
                 ></template>
+                <template v-slot:selection="{ item }">
+                  {{ item.alias }} - {{ item.title }}
+                </template>
               </v-autocomplete>
             </v-col>
 
@@ -1075,7 +1078,7 @@ const listPosition = computed(() => {
 });
 const listBranch = computed(() => {
   const keyword = searchBranch.value.toLowerCase();
-  return branchStore.branchData
+  const filtered = branchStore.branchData
     .filter(
       (b) =>
         !keyword ||
@@ -1083,6 +1086,23 @@ const listBranch = computed(() => {
         b.alias.toLowerCase().includes(keyword),
     )
     .map((b) => ({ title: b.name, alias: b.alias, value: b.id }));
+
+  // Pastikan cabang yang sedang tersimpan di form selalu ada di list,
+  // termasuk saat branchStore.branchData belum selesai fetch
+  const currentBranch = userStore.usersSelected?.branch;
+  if (
+    form.branch_id &&
+    currentBranch &&
+    !filtered.some((b) => b.value === form.branch_id)
+  ) {
+    filtered.unshift({
+      title: currentBranch.name,
+      alias: currentBranch.alias,
+      value: currentBranch.id,
+    });
+  }
+
+  return filtered;
 });
 const listBloodType = computed(() => {
   const keyword = searchBloodType.value.toLowerCase();

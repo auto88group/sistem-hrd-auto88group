@@ -3,7 +3,7 @@
     <div v-if="isVisible('nama')">
       <label class="input-label">Nama Karyawan</label>
       <v-autocomplete
-        v-model="form.user_id"
+        v-model="selectedUserId"
         :items="listUser"
         :loading="userStore.isLoadingData"
         item-title="name"
@@ -18,7 +18,6 @@
         clearable
         no-filter
         @update:search="onSearchUser"
-        @update:model-value="onSelectUser"
       >
         <template v-slot:item="{ props, item }">
           <v-list-item
@@ -36,7 +35,7 @@
     <div v-if="isVisible('jabatan')">
       <label class="input-label">Jabatan</label>
       <v-autocomplete
-        v-model="form.master_position_id"
+        v-model="userStore.params.master_position_id"
         :items="listPosition"
         :loading="positionStore.isLoadingData"
         item-title="title"
@@ -57,7 +56,7 @@
     <div v-if="isVisible('cabang')">
       <label class="input-label">Cabang</label>
       <v-autocomplete
-        v-model="form.branch_id"
+        v-model="userStore.params.branch_id"
         :items="listBranch"
         :loading="branchStore.isLoadingData"
         prepend-inner-icon="mdi-map-marker-outline"
@@ -78,8 +77,11 @@
             v-bind="props"
             :title="item.alias"
             :subtitle="item.title"
-          >
-          </v-list-item>
+          />
+        </template>
+
+        <template v-slot:selection="{ item }">
+          {{ formatBranch(item) }}
         </template>
       </v-autocomplete>
     </div>
@@ -87,7 +89,7 @@
     <div v-if="isVisible('pendidikan')">
       <label class="input-label">Pendidikan</label>
       <v-autocomplete
-        v-model="form.hrd_master_education_id"
+        v-model="userStore.params.hrd_master_education_id"
         :items="listEducation"
         :loading="educationStore.isLoadingData"
         prepend-inner-icon="mdi-school-outline"
@@ -108,7 +110,7 @@
     <div v-if="isVisible('status')">
       <label class="input-label">Status</label>
       <v-autocomplete
-        v-model="form.status_id"
+        v-model="userStore.params.status_id"
         :items="listStatus"
         item-title="title"
         item-value="value"
@@ -120,14 +122,13 @@
         class="custom-input"
         hide-details="auto"
         clearable
-      >
-      </v-autocomplete>
+      ></v-autocomplete>
     </div>
 
     <div v-if="isVisible('jenis_kelamin')">
       <label class="input-label">Jenis Kelamin</label>
       <v-autocomplete
-        v-model="form.gender"
+        v-model="userStore.params.gender"
         :items="listGender"
         prepend-inner-icon="mdi-gender-male-female"
         placeholder="Pilih jenis kelamin"
@@ -142,22 +143,28 @@
 
     <div class="flex flex-col gap-1">
       <v-checkbox
-        v-model="form.only_active"
+        v-model="userStore.params.only_active"
         label="Hanya Aktif"
         color="text-green-500"
         hide-details
         density="compact"
         class="mt-0"
-        @update:model-value="if (form.only_active) form.only_deleted = false;"
+        @update:model-value="
+          if (userStore.params.only_active)
+            userStore.params.only_deleted = false;
+        "
       ></v-checkbox>
       <v-checkbox
-        v-model="form.only_deleted"
+        v-model="userStore.params.only_deleted"
         label="Hanya Dihapus"
         color="text-red-500"
         hide-details
         density="compact"
         class="mt-0"
-        @update:model-value="if (form.only_deleted) form.only_active = false;"
+        @update:model-value="
+          if (userStore.params.only_deleted)
+            userStore.params.only_active = false;
+        "
       ></v-checkbox>
     </div>
 
@@ -177,13 +184,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useDebounceFn } from "@/composables/UseDebounce";
 import { useUserStore } from "@/stores/user.store";
 import { usePositionStore } from "@/stores/position.store";
 import { useBranchStore } from "@/stores/branch.store";
 import { useEducationStore } from "@/stores/education.store";
-import type { UserDatatablesParams } from "@/api/modules/user.api";
 import { useFormatName } from "@/composables/useFormatName";
 
 const { formatName } = useFormatName();
@@ -193,62 +199,54 @@ const branchStore = useBranchStore();
 const educationStore = useEducationStore();
 
 const isSelecting = ref(false);
-const selectedUserText = ref<string>("");
+const selectedUserText = ref("");
 const searchPosition = ref("");
 const searchBranch = ref("");
 const searchEducation = ref("");
 
-const listUser = computed(() =>
-  userStore.usersData.map((user) => ({
+// listUser: hasil fetch + sisipkan user yang sedang terpilih (dari user_option)
+// supaya autocomplete tetap menampilkan nama walau tidak ada di hasil fetch terakhir
+const listUser = computed(() => {
+  const fetched = userStore.usersData.map((user) => ({
     name: user.name,
     full_name: user.full_name,
     email: user.email,
     value: user.id,
-  })),
-);
+  }));
+
+  const selected = userStore.params.user_option;
+  if (selected && !fetched.some((u) => u.value === selected.value)) {
+    fetched.unshift(selected as any);
+  }
+  return fetched;
+});
+
 const listPosition = computed(() => {
   const keyword = searchPosition.value.toLowerCase();
-
   return positionStore.positionData
-    .filter((position) =>
-      keyword ? position.name.toLowerCase().includes(keyword) : true,
-    )
-    .map((position) => ({
-      title: position.name,
-      value: position.id,
-      level_name: position.level_name,
-    }));
+    .filter((p) => (keyword ? p.name.toLowerCase().includes(keyword) : true))
+    .map((p) => ({ title: p.name, value: p.id, level_name: p.level_name }));
 });
+
 const listBranch = computed(() => {
   const keyword = searchBranch.value.toLowerCase();
-
   return (branchStore.branchData || [])
-    .filter((branch) => {
-      if (!keyword) return true;
-
-      return (
-        branch.name.toLowerCase().includes(keyword) ||
-        branch.alias.toLowerCase().includes(keyword)
-      );
-    })
-    .map((branch) => ({
-      title: branch.name,
-      alias: branch.alias,
-      value: branch.id,
-    }));
+    .filter((b) =>
+      keyword
+        ? b.name.toLowerCase().includes(keyword) ||
+          b.alias.toLowerCase().includes(keyword)
+        : true,
+    )
+    .map((b) => ({ title: b.name, alias: b.alias, value: b.id }));
 });
+
 const listEducation = computed(() => {
   const keyword = searchEducation.value.toLowerCase();
-
   return educationStore.educationData
-    .filter((education) =>
-      keyword ? education.name.toLowerCase().includes(keyword) : true,
-    )
-    .map((education) => ({
-      title: education.name,
-      value: education.id,
-    }));
+    .filter((e) => (keyword ? e.name.toLowerCase().includes(keyword) : true))
+    .map((e) => ({ title: e.name, value: e.id }));
 });
+
 const listStatus = [
   { value: 1, title: "Kontrak" },
   { value: 2, title: "Tetap" },
@@ -266,31 +264,43 @@ const onSearchUser = useDebounceFn((val: string) => {
   userStore.userDataParams.search = val ?? "";
   userStore.fetchUsersData();
 }, 400);
+
+const selectedUserId = computed<number | undefined>({
+  get: () => userStore.params.user_id,
+  set: (value) => {
+    onSelectUser(value ?? null);
+  },
+});
+
 function onSelectUser(value: number | null) {
+  const selected = value
+    ? listUser.value.find((u) => u.value === value)
+    : undefined;
+
+  // satu-satunya tempat yang boleh mengubah user_id & user_option
+  userStore.params.user_id = value ?? undefined;
+  userStore.params.user_option = selected as any;
+
   if (!value) {
     selectedUserText.value = "";
     isSelecting.value = false;
+    // reset juga search dropdown supaya listUser balik ke daftar penuh
+    userStore.userDataParams.search = "";
+    userStore.fetchUsersData();
     return;
   }
 
-  isSelecting.value = true; // ← set flag sebelum Vuetify trigger search
-  const selected = listUser.value.find((u) => u.value === value);
+  isSelecting.value = true;
   if (selected) selectedUserText.value = selected.name;
 
-  // Reset flag setelah debounce selesai (lebih dari 400ms)
   setTimeout(() => {
     isSelecting.value = false;
   }, 500);
 }
-const onSearchPosition = (val: any) => {
-  searchPosition.value = val ?? "";
-};
-const onSearchBranch = (val: any) => {
-  searchBranch.value = val ?? "";
-};
-const onSearchEducation = (val: any) => {
-  searchEducation.value = val ?? "";
-};
+
+const onSearchPosition = (val: any) => (searchPosition.value = val ?? "");
+const onSearchBranch = (val: any) => (searchBranch.value = val ?? "");
+const onSearchEducation = (val: any) => (searchEducation.value = val ?? "");
 
 onMounted(() => {
   userStore.fetchUsersData();
@@ -302,32 +312,22 @@ onMounted(() => {
 const props = defineProps({
   hideFields: {
     type: Array,
-    default: () => [], // Defaultnya tidak ada yang disembunyikan
+    default: () => [],
   },
 });
-
 const isVisible = (fieldName: string) => !props.hideFields.includes(fieldName);
 
-const emit = defineEmits<{
-  filter: [value: Partial<UserDatatablesParams>];
-}>();
-
+// Tidak perlu emit lagi — v-model sudah langsung ke userStore.params.
+// Tombol "Filter Data" cukup reset pagination lalu fetch ulang.
 function onFilter() {
-  emit("filter", { ...form });
+  userStore.params.start = 0;
+  userStore.fetchUsers();
 }
 
-const form = reactive<Partial<UserDatatablesParams>>({
-  user_id: undefined,
-  master_position_id: undefined,
-  branch_id: undefined,
-  hrd_master_education_id: undefined,
-  status_id: undefined,
-  gender: undefined,
-  only_active: true,
-  only_deleted: false,
-});
+function formatBranch(branch: { alias: string; title: string }) {
+  return `${branch.alias} - ${branch.title}`;
+}
 </script>
-
 <style scoped>
 .input-label {
   display: block;

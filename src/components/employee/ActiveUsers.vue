@@ -65,7 +65,7 @@
       </template>
     </v-snackbar>
 
-    <filter-users :hide-fields="['pendidikan', 'status']" @filter="onFilter" />
+    <filter-users :hide-fields="['pendidikan', 'status']" />
 
     <v-data-table-server
       :headers="headers as any"
@@ -486,12 +486,6 @@ function showError(message: string) {
 function showSuccess(message: string) {
   successMessage.value = message;
   showSuccessSnackbar.value = true;
-}
-
-function onFilter(filterValues: Partial<UserDatatablesParams>) {
-  store.params.start = 0;
-  Object.assign(store.params, filterValues);
-  store.fetchUsers();
 }
 
 const PROSPECT_MAP: Record<number, { label: string; container: string }> = {

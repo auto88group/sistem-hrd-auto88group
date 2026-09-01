@@ -165,23 +165,28 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("token");
   const isAuthenticated = !!token;
 
   if (to.path === "/") {
-    // Redirect dari root berdasarkan status login
     return isAuthenticated ? next("/dashboard/attendance") : next("/login");
   }
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    // Akses halaman protected tanpa token → ke login
     return next("/login");
   }
 
   if (to.path === "/login" && isAuthenticated) {
-    // Sudah login tapi mau ke login → redirect ke dashboard
     return next("/dashboard/attendance");
+  }
+
+  // Simpan query terakhir dari halaman list sebelum masuk ke detail
+  if (
+    from.name === "Laporan Absensi Hari Ini" &&
+    to.name === "Detail Laporan Absensi"
+  ) {
+    sessionStorage.setItem("attendance-today-report-return", from.fullPath);
   }
 
   next();

@@ -607,7 +607,7 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user.store";
 import { useDateFormatter } from "@/composables/UseDateFormatter";
-import { onMounted } from "vue";
+import { watch } from "vue";
 import { useRoute } from "vue-router";
 import { useEmployeeStatus } from "@/composables/UseEmployeeStatus";
 
@@ -620,13 +620,19 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 defineEmits(["edit"]);
 
-onMounted(async () => {
-  if (!userStore.usersSelected) {
-    userStore.userSelectedParams.id = employeeId as string;
-    await userStore.fetchUsersSelected();
-  }
-});
+async function loadUser(id: string) {
+  userStore.usersSelected = null;
+  userStore.userSelectedParams.id = id;
+  await userStore.fetchUsersSelected();
+}
 
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId) loadUser(newId as string);
+  },
+  { immediate: true },
+);
 // Helper untuk mengecek keaktifan peringatan/SP berdasarkan rentang tanggal
 function isWarningActive(startStr?: string, endStr?: string): boolean {
   if (!startStr || !endStr) return false;

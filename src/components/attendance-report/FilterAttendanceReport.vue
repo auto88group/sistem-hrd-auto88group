@@ -60,6 +60,10 @@
               >
               </v-list-item>
             </template>
+
+            <template v-slot:selection="{ item }">
+              {{ item.alias }} - {{ item.title }}
+            </template>
           </v-autocomplete>
         </v-col>
         <v-col cols="12" md="6">
@@ -365,9 +369,14 @@ watch(
 );
 
 onMounted(async () => {
-  branchStore.fetchBranchData();
-  userStore.fetchUsersData();
+  // tunggu branch & user data selesai dimuat DULU,
+  // baru jalankan sisanya yang bergantung pada data itu
+  await Promise.all([
+    branchStore.fetchBranchData(),
+    userStore.fetchUsersData(),
+  ]);
+
   syncParamsFromUrl();
-  doFetch(); // Gunakan debounced fetch sebagai inisiasi awal
+  doFetch();
 });
 </script>

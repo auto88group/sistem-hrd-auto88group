@@ -199,27 +199,26 @@
 
     <!-- Informasi Pulang -->
     <template #item.info_out="{ item }">
-      <div class="flex flex-col gap-1 py-1 text-sm">
-        <!-- Spacer tanggal agar sejajar dengan kolom masuk -->
+      <div v-if="item?.time_out" class="flex flex-col gap-1 py-1 text-sm">
+        <!-- Tanggal -->
         <div class="flex items-center gap-1 text-slate-500 text-xs">
           <v-icon size="14">mdi-calendar-outline</v-icon>
           {{ toFullDateWithDay(item.period_date) }}
         </div>
 
         <!-- Jam Pulang -->
-        <div v-if="item?.time_out" class="flex flex-col gap-0.5">
+        <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-1 font-bold">
             <v-icon size="14" color="blue">mdi-clock-out</v-icon>
             {{ item.time_out }} WIB
           </div>
 
           <!-- Lokasi -->
-          <a
+          <a>
             v-if="item?.latitude_out"
             :href="`https://www.google.com/maps/search/?api=1&query=${item?.latitude_out},${item?.longitude_out}`"
-            target="_blank"
-            class="text-green-600 font-bold hover:text-green-800 flex items-center gap-1 no-underline text-xs"
-          >
+            target="_blank" class="text-green-600 font-bold hover:text-green-800
+            flex items-center gap-1 no-underline text-xs" >
             <v-icon size="12" color="green">mdi-map-marker</v-icon>
             {{ item.out_coordinate_name }}
           </a>
@@ -257,25 +256,6 @@
             Approval Beda Lokasi
           </v-btn>
         </div>
-        <span v-else class="text-slate-400">
-          <!-- Tidak Absen Pulang -->
-          <span
-            v-if="
-              item.created_at &&
-              isDidntCheckOut(
-                item.created_at,
-                item.time_out,
-                item.request_diff_loc_out,
-                item.confirm_diff_loc_out_id,
-              )
-            "
-            class="text-amber-500 font-bold text-xs"
-          >
-            TAP - Tidak Absen Pulang
-          </span>
-
-          <span v-else>━</span>
-        </span>
 
         <!-- Catatan Pulang -->
         <div
