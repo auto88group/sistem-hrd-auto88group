@@ -3,6 +3,7 @@ export interface UserDatatablesParams {
   draw?: number;
   start?: number;
   length?: number;
+  employee_id?: string;
   user_id?: number;
   master_position_id?: number;
   branch_id?: number;
@@ -15,12 +16,15 @@ export interface UserDatatablesParams {
   only_deleted?: boolean;
   hrd_file_category_id?: number;
   file_status?: string;
+  resign_date_start?: string; // <-- tambahan: rentang tanggal keluar
+  resign_date_end?: string; // <-- tambahan
 }
 export interface UserDataParams {
   search?: string;
   branch_id?: number;
   not_user_id?: number | number[];
   is_less_than_one_year?: number;
+  deleted?: number;
 }
 
 export interface UserCreateUpdateParams {
@@ -30,6 +34,7 @@ export interface UserCreateUpdateParams {
   name: string;
   email: string;
   branch_id: number;
+  branch_alt_id?: number;
   master_position_id: number;
   position: string;
   level: string;
@@ -163,6 +168,13 @@ export interface User {
     id: number;
     name: string;
   };
+  branch_alt_id?: number | null;
+  branch_alt?: {
+    alias: string;
+    code: string;
+    id: number;
+    name: string;
+  } | null;
   community_unit: string;
   current_address: string;
   device_id: string;
@@ -290,6 +302,7 @@ export const userApi = {
   },
 
   getData(params: URLSearchParams | UserDataParams) {
+    console.log(params);
     return api.get("/hrd/users/data", { params }).then((res) => res.data);
   },
 
@@ -332,7 +345,7 @@ export const userApi = {
     });
 
     return api
-      .post(`/hrd/users/${id}?_method=POST`, formData, {
+      .post(`/hrd/users/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then((res) => res.data);
@@ -358,7 +371,7 @@ export const userApi = {
     params: UserAccountAccessParams,
   ): Promise<UserUpdateResponse> {
     return api
-      .post(`/hrd/users/account-access/${id}?_method=POST`, params)
+      .post(`/hrd/users/account-access/${id}`, params)
       .then((res) => res.data);
   },
 

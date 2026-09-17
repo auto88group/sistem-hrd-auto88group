@@ -76,18 +76,14 @@ export const leaveTypeApi = {
   createLeaveType(
     params: LeaveTypeParams,
   ): Promise<leaveTypeCreateUpdateResponse> {
-    return api
-      .post(`/hrd/leave-type/?_method=POST`, params)
-      .then((res) => res.data);
+    return api.post(`/hrd/leave-type`, params).then((res) => res.data);
   },
 
   updateLeaveType(
     id: number,
     params: LeaveTypeParams,
   ): Promise<leaveTypeCreateUpdateResponse> {
-    return api
-      .post(`/hrd/leave-type/${id}?_method=POST`, params)
-      .then((res) => res.data);
+    return api.post(`/hrd/leave-type/${id}`, params).then((res) => res.data);
   },
 
   destroyLeaveType(id: number): Promise<LeaveTypeDefaultResponse> {

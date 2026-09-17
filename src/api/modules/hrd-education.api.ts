@@ -58,7 +58,7 @@ export const hrdEducationApi = {
     params: FormData,
   ): Promise<HrdEducationCreateUpdateResponse> {
     return api
-      .post(`/hrd/education/${id}?_method=POST`, params, {
+      .post(`/hrd/education/${id}`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })
@@ -68,7 +68,7 @@ export const hrdEducationApi = {
     params: FormData,
   ): Promise<HrdEducationCreateUpdateResponse> {
     return api
-      .post(`/hrd/education?_method=POST`, params, {
+      .post(`/hrd/education`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })

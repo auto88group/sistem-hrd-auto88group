@@ -127,10 +127,10 @@
       <template #[`item.cabang`]="{ item }">
         <div class="flex flex-col whitespace-nowrap">
           <span class="font-bold">
-            {{ item.branch?.alias }} ({{ item.branch?.code }})
+            {{ getBranchData(item)?.alias }} ({{ getBranchData(item)?.code }})
           </span>
           <span class="text-sm text-gray-500 dark:text-gray-300">{{
-            item.branch?.name
+            getBranchData(item)?.name
           }}</span>
         </div>
       </template>
@@ -415,6 +415,13 @@ onMounted(() => {
   }
   store.fetchUsers();
 });
+
+function getBranchData(item: any) {
+  if (item.level !== "branch_manager" && item.branch_alt) {
+    return item.branch_alt;
+  }
+  return item.branch;
+}
 
 function isWarningActive(startStr?: string, endStr?: string): boolean {
   if (!startStr || !endStr) return false;

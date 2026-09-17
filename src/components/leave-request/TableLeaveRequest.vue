@@ -23,6 +23,7 @@
           <th rowspan="2">Jenis</th>
           <th rowspan="2">Tanggal Pengajuan</th>
           <th rowspan="2">Periode</th>
+          <th rowspan="2" class="text-center">Jumlah Hari</th>
           <th rowspan="2">Keterangan</th>
           <th colspan="3" class="text-center">APPROVAL</th>
           <th rowspan="2" class="text-end">Aksi</th>
@@ -71,6 +72,12 @@
         <span v-if="item.missing_attendance === 1">
           {{ item.reason }}
           <span class="text-red-500 font-bold"> (Absensi Tidak Ditemukan)</span>
+        </span>
+      </template>
+
+      <template #[`item.total_days`]="{ item }">
+        <span class="font-bold text-center d-block">
+          {{ item.total_days ?? "-" }}
         </span>
       </template>
 
@@ -421,6 +428,7 @@ const headers = [
   { title: "Jenis", key: "leave_type_name", sortable: false },
   { title: "Tanggal Pengajuan", key: "created_at", sortable: false },
   { title: "Periode", key: "start_date", sortable: false },
+  { title: "Jumlah Hari", key: "total_days", sortable: false, align: "center" },
   { title: "Keterangan", key: "reason", sortable: false },
   { title: "Approval 1", key: "status", sortable: false, align: "center" },
   { title: "Approval 2", key: "status_2", sortable: false, align: "center" },

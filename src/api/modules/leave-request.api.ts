@@ -149,7 +149,7 @@ export const leaveRequestApi = {
     params: FormData,
   ): Promise<LeaveRequestSelectedResponse> {
     return api
-      .post(`/hrd/leave-request/${id}?_method=POST`, params, {
+      .post(`/hrd/leave-request/${id}`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })

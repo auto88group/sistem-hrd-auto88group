@@ -13,6 +13,7 @@ export interface MasterPositionParams {
   name: string;
   master_level_id: number;
   level_name: string;
+  overtime: number;
 }
 
 export interface MasterPosition {
@@ -21,6 +22,7 @@ export interface MasterPosition {
   name: string;
   master_level_id: number;
   level_name: string;
+  overtime: number;
   display_name: string;
 }
 

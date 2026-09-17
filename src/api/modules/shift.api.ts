@@ -60,7 +60,7 @@ export const shiftApi = {
   },
 
   createShift(params: ShiftParams): Promise<leaveTypeCreateUpdateResponse> {
-    return api.post(`/hrd/shift/?_method=POST`, params).then((res) => res.data);
+    return api.post(`/hrd/shift`, params).then((res) => res.data);
   },
 
   getData(params: ShiftDataParams): Promise<ShiftDataResponse> {
@@ -71,9 +71,7 @@ export const shiftApi = {
     id: number,
     params: ShiftParams,
   ): Promise<leaveTypeCreateUpdateResponse> {
-    return api
-      .post(`/hrd/shift/${id}?_method=POST`, params)
-      .then((res) => res.data);
+    return api.post(`/hrd/shift/${id}`, params).then((res) => res.data);
   },
 
   destroyShift(id: number): Promise<ShiftDefaultResponse> {

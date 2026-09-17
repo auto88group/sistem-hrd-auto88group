@@ -65,6 +65,17 @@
                 </template>
               </v-autocomplete>
             </v-col>
+
+            <v-col cols="12">
+              <v-checkbox
+                id="overtime"
+                v-model="form.overtime"
+                label="Lembur"
+                density="compact"
+                hide-details
+                color="primary"
+              ></v-checkbox>
+            </v-col>
           </v-row>
         </v-form>
       </v-card-text>
@@ -101,6 +112,7 @@ const defaultForm = () => ({
   name: "",
   master_level_id: null as number | null,
   level_name: "",
+  overtime: false,
 });
 
 const masterPositionStore = useMasterPositionStore();
@@ -155,6 +167,7 @@ function openEditDialog(item: any) {
     name: item.name,
     master_level_id: item.master_level_id,
     level_name: item.level_name || "",
+    overtime: item.overtime === 1,
   });
   prepareDialog();
 }
@@ -170,11 +183,13 @@ async function submitForm() {
     name: form.name,
     master_level_id: form.master_level_id as number,
     level_name: form.level_name,
+    overtime: form.overtime ? 1 : 0,
   };
 
   if (isEditMode.value) {
     try {
       await masterPositionStore.updatePosition(Number(form.id), payload);
+      await masterPositionStore.fetchPositions(); // tambahkan ini
       showSuccess("Data berhasil diperbarui.");
       closeDialog();
     } catch (err: any) {

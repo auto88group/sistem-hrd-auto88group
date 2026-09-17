@@ -82,7 +82,7 @@ export const filePersonnelApi = {
     params: FormData,
   ): Promise<FilePersonnelCreateUpdateResponse> {
     return api
-      .post(`/hrd/file-personnel/${id}?_method=POST`, params, {
+      .post(`/hrd/file-personnel/${id}`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })

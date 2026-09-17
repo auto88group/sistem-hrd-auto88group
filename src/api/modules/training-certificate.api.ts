@@ -51,7 +51,7 @@ export const trainingCertificateApi = {
     params: FormData,
   ): Promise<TrainingCertificateCreateUpdateResponse> {
     return api
-      .post(`/hrd/training-certificate/${id}?_method=POST`, params, {
+      .post(`/hrd/training-certificate/${id}`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })
@@ -61,7 +61,7 @@ export const trainingCertificateApi = {
     params: FormData,
   ): Promise<TrainingCertificateCreateUpdateResponse> {
     return api
-      .post(`/hrd/training-certificate?_method=POST`, params, {
+      .post(`/hrd/training-certificate`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })

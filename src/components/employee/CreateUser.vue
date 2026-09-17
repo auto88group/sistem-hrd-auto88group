@@ -574,11 +574,13 @@
           <v-row gap="15">
             <v-col cols="12" md="6">
               <v-text-field
+                id="field-employee_id"
                 v-model="form.employee_id"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
                 :rules="[rules.required]"
+                :error-messages="serverErrors.employee_id"
               >
                 <template v-slot:label>
                   ID Karyawan <span class="text-red-500">*</span>
@@ -773,6 +775,47 @@
                     :subtitle="item.title"
                   >
                   </v-list-item>
+                </template>
+              </v-autocomplete>
+            </v-col>
+
+            <!-- TAMBAHAN: Bertempat di Cabang Lain, hanya untuk marketing & telemarketing -->
+            <v-col
+              cols="12"
+              md="6"
+              v-if="
+                form.level === 'marketing' || form.level === 'telemarketing'
+              "
+            >
+              <v-autocomplete
+                v-model="form.branch_alt_id"
+                :items="listBranchAlt"
+                :loading="branchStore.isLoadingData"
+                prepend-inner-icon="mdi-map-marker-outline"
+                item-title="alias"
+                item-value="value"
+                placeholder="Pilih cabang lain (opsional)"
+                variant="outlined"
+                density="compact"
+                color="primary"
+                class="custom-input"
+                hide-details="auto"
+                clearable
+                no-filter
+                @update:search="onSearchBranchAlt"
+                :error-messages="serverErrors.branch_alt_id"
+              >
+                <template v-slot:label>Bertempat di Cabang Lain</template>
+                <template v-slot:item="{ props, item }">
+                  <v-list-item
+                    v-bind="props"
+                    :title="item.alias"
+                    :subtitle="item.title"
+                  >
+                  </v-list-item>
+                </template>
+                <template v-slot:selection="{ item }">
+                  {{ item.alias }} - {{ item.title }}
                 </template>
               </v-autocomplete>
             </v-col>
@@ -1046,6 +1089,7 @@ const searchProvince = ref("");
 const searchRegency = ref("");
 const searchDistrict = ref("");
 const searchVillage = ref("");
+const searchBranchAlt = ref("");
 
 const showErrorSnackbar = ref(false);
 const snackbarMessage = ref("");
@@ -1103,6 +1147,21 @@ const listBranch = computed(() => {
     )
     .map((b) => ({ title: b.name, alias: b.alias, value: b.id }));
 });
+const listBranchAlt = computed(() => {
+  const keyword = searchBranchAlt.value.toLowerCase();
+  return branchStore.branchData
+    .filter((b) =>
+      keyword
+        ? b.name.toLowerCase().includes(keyword) ||
+          b.alias.toLowerCase().includes(keyword)
+        : true,
+    )
+    .map((b) => ({ title: b.name, alias: b.alias, value: b.id }));
+});
+
+const onSearchBranchAlt = (val: any) => {
+  searchBranchAlt.value = val ?? "";
+};
 
 const listAttendanceLocation = computed(() => {
   const keyword = searchAttendanceLocation.value.toLowerCase();
@@ -1273,6 +1332,7 @@ const form = reactive({
   master_position_id: null as number | null,
   position: "",
   branch_id: null as number | null,
+  branch_alt_id: null as number | null,
   location_presensi_id: null as number | null,
   remaining_leave: 0,
   status_id: null as number | null,
@@ -1337,6 +1397,11 @@ function onPositionChange(value: number | null) {
   form.position = selectedItem?.title ?? "";
   form.level = selectedItem?.level_name ?? "";
   form.sequence = null;
+
+  // TAMBAHAN: reset branch_alt_id kalau level baru bukan marketing/telemarketing
+  if (form.level !== "marketing" && form.level !== "telemarketing") {
+    form.branch_alt_id = null;
+  }
 }
 
 function onStatusChange(value: number | null) {
@@ -1445,6 +1510,7 @@ async function handleSubmit() {
       password: form.password,
       password_confirmation: form.password_confirmation,
       branch_id: form.branch_id!,
+      branch_alt_id: form.branch_alt_id ?? undefined,
       location_presensi_id: form.location_presensi_id!,
       master_position_id: form.master_position_id!,
       position: form.position,

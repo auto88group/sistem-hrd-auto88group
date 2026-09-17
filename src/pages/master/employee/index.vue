@@ -4,9 +4,7 @@
     <dialog-import-user />
     <v-sheet class="p-3 rounded-lg shadow-md">
       <v-tabs v-model="tab" color="primary" class="text-sm" show-arrows>
-        <v-tab prepend-icon="mdi-account-group" value="one"
-          >Pengguna Aktif</v-tab
-        >
+        <v-tab prepend-icon="mdi-account-group" value="one">Pengguna</v-tab>
 
         <!-- <v-tab prepend-icon="mdi-school" value="two">Pendidikan</v-tab>
 

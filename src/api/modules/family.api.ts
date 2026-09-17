@@ -71,14 +71,12 @@ export const familyApi = {
     id: number,
     params: FamilyCreateUpdateParams,
   ): Promise<FamilyCreateUpdateResponse> {
-    return api
-      .post(`/hrd/family/${id}?_method=POST`, params)
-      .then((res) => res.data);
+    return api.post(`/hrd/family/${id}`, params).then((res) => res.data);
   },
   createFamily(
     params: FamilyCreateUpdateParams,
   ): Promise<FamilyCreateUpdateResponse> {
-    return api.post(`/hrd/family?_method=POST`, params).then((res) => res.data);
+    return api.post(`/hrd/family`, params).then((res) => res.data);
   },
   destroyFamily(id: number): Promise<FamilyDestroyResponse> {
     return api.delete(`/hrd/family/${id}`).then((res) => res.data);

@@ -113,6 +113,19 @@
             </app-date-picker>
           </v-col>
 
+          <!-- Note otomatis kalau periode cuti melintasi tanggal libur -->
+          <v-col cols="12" v-if="holidayInfoText">
+            <v-alert
+              type="warning"
+              variant="tonal"
+              density="compact"
+              class="text-sm"
+              icon="mdi-information-outline"
+            >
+              {{ holidayInfoText }}
+            </v-alert>
+          </v-col>
+
           <v-col v-if="isShowStartTime" cols="12" md="6">
             <v-menu
               v-model="openStartTime"
@@ -266,9 +279,12 @@
 <script setup lang="ts">
 import { useDebounceFn } from "@/composables/UseDebounce";
 import { useFormatName } from "@/composables/useFormatName";
+import { useDateFormatter } from "@/composables/UseDateFormatter";
 import { useLeaveRequestStore } from "@/stores/leave-request.store";
 import { useLeaveTypeStore } from "@/stores/leave_type.store";
 import { useUserStore } from "@/stores/user.store";
+import { useHolidayStore } from "@/stores/holiday.store";
+import type { Holiday } from "@/api/modules/holiday.api";
 import { storeToRefs } from "pinia";
 import { nextTick, onMounted, watch } from "vue";
 import { computed, ref } from "vue";
@@ -276,10 +292,12 @@ import AppDatePicker from "../AppDatePicker.vue";
 import { useAppStore } from "@/stores/app";
 
 const { formatName } = useFormatName();
+const { toFullDate } = useDateFormatter();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const leaveRequestStore = useLeaveRequestStore();
 const leaveTypeStore = useLeaveTypeStore();
+const holidayStore = useHolidayStore();
 const imagePreview = ref<string | null>(null);
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -426,6 +444,126 @@ watch(
   },
 );
 
+// ─── HOLIDAY LOGIC ──────────────────────────────────────────────────────────
+
+/**
+ * fetchHolidayByMonth di holiday.store.ts meng-REPLACE holidayByMonth setiap
+ * dipanggil (bukan append). Karena kita butuh gabungan 7 bulan sekaligus dan
+ * tidak boleh mengubah store, gabungan hasilnya disimpan di state lokal
+ * komponen ini saja — bukan bergantung pada holidayStore.holidayByMonth.
+ */
+const allHolidays = ref<Holiday[]>([]);
+
+/**
+ * Cek apakah sebuah tanggal ('YYYY-MM-DD') termasuk hari libur.
+ * ⚠️ Pastikan format `dateStr` sama persis dengan format `tanggal` di data libur
+ * (default: 'YYYY-MM-DD'). Kalau AppDatePicker mengirim format lain, sesuaikan di sini.
+ */
+function isHoliday(dateStr: string | null | undefined): boolean {
+  if (!dateStr) return false;
+  return allHolidays.value.some((item) => item.tanggal === dateStr);
+}
+
+/**
+ * Ambil data libur untuk 1 bulan sebelum s/d 5 bulan setelah bulan berjalan.
+ * Total 7 bulan: -1, 0, +1, +2, +3, +4, +5.
+ *
+ * fetchHolidayByMonth() TIDAK diubah sama sekali — dipanggil sesuai signature
+ * aslinya (month, year) satu per satu, lalu hasilnya digabung manual ke
+ * `allHolidays` di sini supaya tidak saling menimpa.
+ */
+async function fetchHolidayRange() {
+  const now = new Date();
+  const merged: Holiday[] = [];
+  const seenDates = new Set<string>();
+
+  for (let offset = -1; offset <= 5; offset++) {
+    const target = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    await holidayStore.fetchHolidayByMonth(
+      target.getMonth() + 1,
+      target.getFullYear(),
+    );
+
+    // holidayStore.holidayByMonth sudah di-replace oleh store untuk bulan ini,
+    // jadi langsung disalin ke `merged` sebelum bulan berikutnya menimpanya lagi.
+    for (const item of holidayStore.holidayByMonth) {
+      if (!seenDates.has(item.tanggal)) {
+        seenDates.add(item.tanggal);
+        merged.push(item);
+      }
+    }
+  }
+
+  allHolidays.value = merged;
+}
+
+/** Tambah N hari ke string tanggal 'YYYY-MM-DD' tanpa masalah timezone. */
+function addDays(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const date = new Date(y, m - 1, d + days);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/**
+ * Kumpulan tanggal libur yang jatuh di antara start_date dan end_date (inclusive).
+ */
+const holidaysInSelectedRange = computed<string[]>(() => {
+  const start = form.value.start_date;
+  const end = form.value.end_date;
+  if (!start || !end || start > end) return [];
+
+  const holidays: string[] = [];
+  let cursor = start;
+  // guard sederhana biar tidak infinite loop kalau data tanggal aneh
+  let safety = 0;
+  while (cursor <= end && safety < 1000) {
+    if (isHoliday(cursor)) holidays.push(cursor);
+    cursor = addDays(cursor, 1);
+    safety++;
+  }
+  return holidays;
+});
+
+/** Teks note otomatis kalau periode cuti melintasi tanggal libur. */
+const holidayInfoText = computed<string>(() => {
+  const holidays = holidaysInSelectedRange.value;
+  if (!holidays.length) return "";
+
+  const formatted = holidays.map((h) => toFullDate(h)).join(", ");
+  return `Catatan: tanggal ${formatted} merupakan hari libur dan tidak dihitung sebagai hari cuti.`;
+});
+
+// Blokir kalau start_date yang dipilih adalah hari libur
+watch(
+  () => form.value.start_date,
+  (newVal, oldVal) => {
+    if (newVal && isHoliday(newVal)) {
+      appStore.showErrorSnackbar = true;
+      appStore.errorMessage =
+        "Tanggal tersebut adalah hari libur dan tidak bisa dipilih.";
+      form.value.start_date = oldVal ?? null;
+    }
+  },
+);
+
+// Blokir kalau end_date yang dipilih adalah hari libur
+watch(
+  () => form.value.end_date,
+  (newVal, oldVal) => {
+    if (newVal && isHoliday(newVal)) {
+      appStore.showErrorSnackbar = true;
+      appStore.errorMessage =
+        "Tanggal tersebut adalah hari libur dan tidak bisa dipilih.";
+      form.value.end_date = oldVal ?? null;
+    }
+  },
+);
+
+// ─── DIALOG & SUBMIT ────────────────────────────────────────────────────────
+
 function closeDialog() {
   imagePreview.value = null;
   leaveRequestStore.createEditDialog = false;
@@ -436,7 +574,16 @@ function closeDialog() {
 }
 
 async function submitForm() {
+  const originalReason = form.value.reason;
+
   try {
+    // Sisipkan note libur ke reason hanya saat submit,
+    // supaya textfield yang diketik user tidak ikut berubah/menumpuk.
+    if (holidayInfoText.value) {
+      form.value.reason =
+        `${originalReason?.trim() ?? ""}\n\n${holidayInfoText.value}`.trim();
+    }
+
     let res = null;
     if (form.value.id) {
       res = await leaveRequestStore.updateLeaveRequest();
@@ -445,7 +592,6 @@ async function submitForm() {
     }
 
     if (res?.success) {
-      // ✅ tambah optional chaining untuk keamanan
       appStore.showSuccessSnackbar = true;
       appStore.successMessage = res.message;
       leaveRequestStore.fetchLeaveRequest();
@@ -454,6 +600,9 @@ async function submitForm() {
     }
   } catch (error: any) {
     handleServerErrors(error);
+  } finally {
+    // Kembalikan reason asli di textfield (biar tidak menumpuk kalau submit gagal/di-retry)
+    form.value.reason = originalReason;
   }
 }
 
@@ -477,5 +626,6 @@ function handleServerErrors(err: any) {
 onMounted(async () => {
   userStore.fetchUsersData();
   leaveTypeStore.fetchLeaveTypeData();
+  fetchHolidayRange();
 });
 </script>

@@ -409,18 +409,65 @@
             </div>
           </v-col>
 
-          <v-col cols="12" md="6">
-            <div class="text-gray-500 text-sm dark:text-gray-300">Cabang</div>
-            <div class="font-bold text-sm">
-              {{
-                userStore.usersSelected?.branch?.alias
-                  ? userStore.usersSelected.branch.alias +
-                    " - " +
-                    userStore.usersSelected.branch.name
-                  : "-"
-              }}
-            </div>
-          </v-col>
+          <!-- Cabang: kondisional berdasarkan level -->
+          <template
+            v-if="
+              userStore.usersSelected?.level === 'marketing' ||
+              userStore.usersSelected?.level === 'telemarketing'
+            "
+          >
+            <v-col cols="12" md="6">
+              <div class="text-gray-500 text-sm dark:text-gray-300">
+                Cabang Penjualan
+              </div>
+              <div class="font-bold text-sm">
+                {{
+                  userStore.usersSelected?.branch?.alias
+                    ? userStore.usersSelected.branch.alias +
+                      " - " +
+                      userStore.usersSelected.branch.name
+                    : "-"
+                }}
+              </div>
+            </v-col>
+            <v-col cols="12" md="6">
+              <div class="text-gray-500 text-sm dark:text-gray-300">
+                Bertempat di Cabang Lain
+              </div>
+              <div class="font-bold text-sm">
+                {{
+                  userStore.usersSelected?.branch_alt?.alias
+                    ? userStore.usersSelected.branch_alt.alias +
+                      " - " +
+                      userStore.usersSelected.branch_alt.name
+                    : "-"
+                }}
+              </div>
+              <div
+                v-if="userStore.usersSelected?.branch_alt"
+                class="text-xs text-amber-600 dark:text-amber-500 mt-1 italic"
+              >
+                Karyawan ini secara fisik berada di cabang ini, namun
+                penjualannya dinaungi oleh
+                {{ userStore.usersSelected?.branch?.alias ?? "cabang lain" }}.
+              </div>
+            </v-col>
+          </template>
+
+          <template v-else>
+            <v-col cols="12" md="6">
+              <div class="text-gray-500 text-sm dark:text-gray-300">Cabang</div>
+              <div class="font-bold text-sm">
+                {{
+                  userStore.usersSelected?.branch?.alias
+                    ? userStore.usersSelected.branch.alias +
+                      " - " +
+                      userStore.usersSelected.branch.name
+                    : "-"
+                }}
+              </div>
+            </v-col>
+          </template>
 
           <v-col cols="12" md="6">
             <div class="text-gray-500 text-sm dark:text-gray-300">

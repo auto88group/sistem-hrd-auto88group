@@ -37,6 +37,15 @@
         </v-chip>
       </template>
 
+      <template #[`item.overtime`]="{ item }">
+        <v-chip
+          size="small"
+          :color="item.overtime === 1 ? 'bg-green-500' : 'bg-gray-600'"
+          variant="flat"
+        >
+          {{ item.overtime === 1 ? "Ya" : "Tidak" }}
+        </v-chip>
+      </template>
       <template #[`item.actions`]="{ item }">
         <div class="flex justify-end items-center gap-1">
           <v-btn
@@ -98,7 +107,8 @@ function onClear() {
 const headers = [
   { title: "No", key: "no", sortable: false, width: "60px" },
   { title: "Nama Jabatan", key: "name", sortable: true },
-  { title: "Level", key: "display_name", sortable: true }, // Ubah key jadi display_name
+  { title: "Level", key: "display_name", sortable: true },
+  { title: "Lembur", key: "overtime", sortable: true, align: "center" },
   { title: "Aksi", key: "actions", sortable: false, align: "end" },
 ];
 
@@ -158,7 +168,6 @@ function showSuccess(message: string) {
   appStore.successMessage = message;
   appStore.showSuccessSnackbar = true;
 }
-onMounted(() => masterPositionStore.fetchPositions());
 </script>
 
 <style scoped>

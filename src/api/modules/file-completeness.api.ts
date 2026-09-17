@@ -61,7 +61,7 @@ export const fileCompletenessApi = {
     params: FormData,
   ): Promise<FileCompletenessCreateUpdateResponse> {
     return api
-      .post(`/hrd/file-completeness/${id}?_method=POST`, params, {
+      .post(`/hrd/file-completeness/${id}`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })
@@ -72,7 +72,7 @@ export const fileCompletenessApi = {
     params: FormData,
   ): Promise<FileCompletenessCreateUpdateResponse> {
     return api
-      .post(`/hrd/file-completeness?_method=POST`, params, {
+      .post(`/hrd/file-completeness`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })

@@ -7,6 +7,8 @@
         readonly
         v-bind="menuProps"
         :rules="props.rules"
+        :label="label || undefined"
+        :placeholder="placeholder"
         variant="outlined"
         density="compact"
         hide-details="auto"
@@ -14,9 +16,6 @@
         clearable
         @click:clear="clearDate"
       >
-        <template #label>
-          <slot name="label">Rentang Tanggal</slot>
-        </template>
       </v-text-field>
     </template>
 
@@ -37,11 +36,15 @@ const props = withDefaults(
     modelValue?: string[];
     rules?: any[];
     maxDate?: string;
+    label?: string;
+    placeholder?: string;
   }>(),
   {
     modelValue: () => [],
     rules: () => [],
     maxDate: undefined,
+    label: "Rentang Tanggal",
+    placeholder: undefined,
   },
 );
 

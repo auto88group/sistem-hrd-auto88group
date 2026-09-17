@@ -52,7 +52,7 @@ export const workExperienceApi = {
     params: FormData,
   ): Promise<WorkExperienceCreateUpdateResponse> {
     return api
-      .post(`/hrd/work-experience/${id}?_method=POST`, params, {
+      .post(`/hrd/work-experience/${id}`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })
@@ -62,7 +62,7 @@ export const workExperienceApi = {
     params: FormData,
   ): Promise<WorkExperienceCreateUpdateResponse> {
     return api
-      .post(`/hrd/work-experience?_method=POST`, params, {
+      .post(`/hrd/work-experience`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })

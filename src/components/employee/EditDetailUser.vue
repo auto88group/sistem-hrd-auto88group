@@ -512,10 +512,12 @@
           <v-row gap="15">
             <v-col cols="12" md="6">
               <v-text-field
+                id="field-employee_id"
                 v-model="form.employee_id"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
+                :error-messages="serverErrors.employee_id"
               >
                 <template v-slot:label> ID Karyawan </template>
               </v-text-field>
@@ -695,6 +697,46 @@
                 <template v-slot:label
                   >Cabang <span class="text-red-500">*</span></template
                 >
+                <template v-slot:item="{ props, item }"
+                  ><v-list-item
+                    v-bind="props"
+                    :title="item.alias"
+                    :subtitle="item.title"
+                  ></v-list-item
+                ></template>
+                <template v-slot:selection="{ item }">
+                  {{ item.alias }} - {{ item.title }}
+                </template>
+              </v-autocomplete>
+            </v-col>
+
+            <!-- TAMBAHAN: Cabang Alt, hanya untuk marketing & telemarketing -->
+            <v-col
+              cols="12"
+              md="6"
+              v-if="
+                form.level === 'marketing' || form.level === 'telemarketing'
+              "
+            >
+              <v-autocomplete
+                v-model="form.branch_alt_id"
+                :items="listBranchAlt"
+                :loading="branchStore.isLoadingData"
+                prepend-inner-icon="mdi-map-marker-outline"
+                item-title="alias"
+                item-value="value"
+                placeholder="Pilih cabang lain (opsional)"
+                variant="outlined"
+                density="compact"
+                color="primary"
+                class="custom-input"
+                hide-details="auto"
+                clearable
+                no-filter
+                @update:search="onSearchBranchAlt"
+                :error-messages="serverErrors.branch_alt_id"
+              >
+                <template v-slot:label>Bertempat di Cabang Lain</template>
                 <template v-slot:item="{ props, item }"
                   ><v-list-item
                     v-bind="props"
@@ -943,6 +985,7 @@ import { usePositionStore } from "@/stores/position.store";
 import { useBranchStore } from "@/stores/branch.store";
 import { useSalesOfficialStore } from "@/stores/sales-official.store";
 import { useFormatName } from "@/composables/useFormatName";
+import { watch } from "vue";
 
 const { formatName } = useFormatName();
 const serverErrors = reactive<Record<string, string>>({});
@@ -984,6 +1027,7 @@ const searchProvince = ref("");
 const searchRegency = ref("");
 const searchDistrict = ref("");
 const searchVillage = ref("");
+const searchBranchAlt = ref("");
 
 // ── Computed Lists ───────────────────────────────────────────────────────────
 const listPrimaryApprover = computed(() => {
@@ -1033,6 +1077,37 @@ const listSecondaryApprover = computed(() => {
   }
   return users;
 });
+
+const listBranchAlt = computed(() => {
+  const keyword = searchBranchAlt.value.toLowerCase();
+  const filtered = branchStore.branchData
+    .filter(
+      (b) =>
+        !keyword ||
+        b.name.toLowerCase().includes(keyword) ||
+        b.alias.toLowerCase().includes(keyword),
+    )
+    .map((b) => ({ title: b.name, alias: b.alias, value: b.id }));
+
+  const currentBranchAlt = userStore.usersSelected?.branch_alt;
+  if (
+    form.branch_alt_id &&
+    currentBranchAlt &&
+    !filtered.some((b) => b.value === form.branch_alt_id)
+  ) {
+    filtered.unshift({
+      title: currentBranchAlt.name,
+      alias: currentBranchAlt.alias,
+      value: currentBranchAlt.id,
+    });
+  }
+
+  return filtered;
+});
+
+const onSearchBranchAlt = (val: any) => {
+  searchBranchAlt.value = val ?? "";
+};
 
 const onClearPrimaryApprover = async () => {
   selectedPrimaryApproverText.value = "";
@@ -1236,6 +1311,7 @@ const form = reactive({
   master_position_id: null as number | null,
   position: "",
   branch_id: null as number | null,
+  branch_alt_id: null as number | null,
   remaining_leave: null as number | null,
   status_id: null as number | null,
   effective_start_date: "",
@@ -1306,6 +1382,10 @@ function onPositionChange(value: number | null) {
   form.position = selectedItem?.title ?? form.position;
   form.level = selectedItem?.level_name ?? "";
   form.sequence = null;
+
+  if (form.level !== "marketing" && form.level !== "telemarketing") {
+    form.branch_alt_id = null;
+  }
 }
 function onStatusChange(value: number | null) {
   if (value == 2) form.effective_end_date = "";
@@ -1350,6 +1430,15 @@ async function generateSequence() {
   await salesOfficialStore.fetchLastSequence();
   form.sequence = salesOfficialStore.lastSequenceSales;
 }
+
+watch(
+  () => form.level,
+  (newLevel) => {
+    if (newLevel !== "marketing" && newLevel !== "telemarketing") {
+      form.branch_alt_id = null;
+    }
+  },
+);
 
 // ── Populate form from store ─────────────────────────────────────────────────
 function populateForm() {
@@ -1398,6 +1487,7 @@ function populateForm() {
   form.master_position_id = u.master_position_id ?? null;
   form.position = u.position ?? "";
   form.branch_id = u.branch?.id ?? null;
+  form.branch_alt_id = u.branch_alt?.id ?? null;
   form.remaining_leave = u.remaining_leave ?? 0;
   form.status_id = u.status_id ?? null;
   form.effective_start_date = u.effective_start_date ?? "";
@@ -1456,6 +1546,7 @@ async function handleSubmit() {
       name: form.name,
       email: form.email,
       branch_id: form.branch_id!,
+      branch_alt_id: form.branch_alt_id ?? undefined,
       master_position_id: form.master_position_id!,
       position: form.position,
       level: form.level ?? "",

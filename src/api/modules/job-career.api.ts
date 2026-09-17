@@ -73,7 +73,7 @@ export const jobCareerApi = {
     params: FormData,
   ): Promise<JobCareerCreateUpdateResponse> {
     return api
-      .post(`/hrd/career-job/${id}?_method=POST`, params, {
+      .post(`/hrd/career-job/${id}`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })
@@ -81,7 +81,7 @@ export const jobCareerApi = {
   },
   createJobCareer(params: FormData): Promise<JobCareerCreateUpdateResponse> {
     return api
-      .post(`/hrd/career-job?_method=POST`, params, {
+      .post(`/hrd/career-job`, params, {
         headers: { "Content-Type": "multipart/form-data" },
         transformRequest: [(data) => data],
       })

@@ -75,9 +75,7 @@ export const holidayApi = {
         note: item.note,
       })),
     };
-    return api
-      .post(`/hrd/holidays/?_method=POST`, payload)
-      .then((res) => res.data);
+    return api.post(`/hrd/holidays/`, payload).then((res) => res.data);
   },
 
   destroyHoliday(id: number): Promise<HolidayDefaultResponse> {

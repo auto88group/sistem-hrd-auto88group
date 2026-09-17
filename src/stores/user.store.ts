@@ -49,6 +49,7 @@ export const useUserStore = defineStore("user", () => {
     draw: 1,
     start: 0,
     length: 10,
+    employee_id: undefined,
     user_id: undefined,
     user_option: undefined, // <-- tambahan, simpan label nama yang dipilih
     master_position_id: undefined,
@@ -62,12 +63,15 @@ export const useUserStore = defineStore("user", () => {
     only_active: true,
     hrd_file_category_id: undefined,
     file_status: undefined,
+    resign_date_start: undefined, // <-- tambahan
+    resign_date_end: undefined,
   });
   const userDataParams = reactive<UserDataParams>({
     search: "",
     branch_id: undefined,
     not_user_id: undefined,
     is_less_than_one_year: undefined,
+    deleted: undefined,
   });
   const userSelectedParams = reactive<UserSelectedParams>({
     id: "",
@@ -103,6 +107,11 @@ export const useUserStore = defineStore("user", () => {
       } else {
         urlParams.append("not_user_id", params.not_user_id.toString());
       }
+    }
+
+    // --- TAMBAHKAN INI ---
+    if (params.deleted !== undefined) {
+      urlParams.append("deleted", params.deleted ? "1" : "0");
     }
 
     return urlParams;

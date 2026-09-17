@@ -120,7 +120,8 @@ function handleEdit(item: any) {
 async function handleDelete(id: number) {
   const confirmed = await props.ask({
     title: "Hapus Shift",
-    message: "Data ini akan dihapus. Lanjutkan?",
+    message:
+      "Data ini akan dihapus & data jadwal shift juga akan terhapus. Lanjutkan?",
     confirmText: "Ya, Hapus",
     color: "red-darken-1",
   });
