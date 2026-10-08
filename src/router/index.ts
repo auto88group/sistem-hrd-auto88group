@@ -35,6 +35,18 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
+          path: "/dashboard/personnel/user-data-approvals",
+          name: "Approval Data Karyawan",
+          component: () => import("@/pages/user-data-approval/index.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "/dashboard/personnel/user-data-approvals/detail",
+          name: "Detail Approval Data Karyawan",
+          component: () => import("@/pages/user-data-approval/detail.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
           path: "/dashboard/attendance-today-report",
           name: "Laporan Absensi Hari Ini",
           component: () =>

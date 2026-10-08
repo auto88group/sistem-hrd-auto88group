@@ -1,5 +1,6 @@
 <template>
   <div class="space-y-5">
+    <confirm-dialog />
     <header-attendance-report />
     <table-attendance-today-report />
   </div>
@@ -8,4 +9,5 @@
 <script setup lang="ts">
 import HeaderAttendanceReport from "@/components/attendance-report/HeaderAttendanceReport.vue";
 import TableAttendanceTodayReport from "@/components/attendance-report/TableAttendanceTodayReport.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 </script>

@@ -242,6 +242,7 @@ export interface EmployeeAttendanceDetail {
 export interface ApprovalDiffLocParams {
   attendance_id: number;
   type: "in" | "out";
+  action?: "delete";
 }
 
 export interface DeletePhotoParams {

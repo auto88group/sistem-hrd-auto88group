@@ -13,6 +13,14 @@
     <div class="flex justify-end w-full gap-2">
       <v-btn
         color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
+        prepend-icon="mdi-refresh"
+        variant="flat"
+        @click="reload"
+      >
+        Muat Data
+      </v-btn>
+      <v-btn
+        color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
         prepend-icon="mdi-pencil-box"
         variant="flat"
         @click="
@@ -653,6 +661,15 @@ async function deleteEducation(id: number) {
     showSuccess("Data berhasil dihapus.");
   } catch (err: any) {
     showError(err?.message ?? "Gagal menghapus data ini.");
+  }
+}
+async function reload() {
+  trainingCertificateStore.trainingCertificateSelectedParams.user_id =
+    userId as string;
+  try {
+    await trainingCertificateStore.fetchTrainingCertificateSelected();
+  } catch (err: any) {
+    showError(err?.message ?? "Gagal memuat data sertifikat/pelatihan.");
   }
 }
 

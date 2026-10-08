@@ -69,6 +69,14 @@
     <div v-else class="flex justify-end w-full gap-2">
       <v-btn
         color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
+        prepend-icon="mdi-refresh"
+        variant="flat"
+        @click="reload"
+      >
+        Muat Ulang
+      </v-btn>
+      <v-btn
+        color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
         prepend-icon="mdi-tag-multiple"
         variant="flat"
         @click="openCategoryDialog"
@@ -1277,6 +1285,18 @@ function compressImage(
     };
     reader.onerror = (err) => reject(err);
   });
+}
+async function reload() {
+  fileCompletenessStore.fileCompletenessSelectedParams.user_id =
+    userId as string;
+  try {
+    await Promise.all([
+      fileCategoryStore.fetchCategories(),
+      fileCompletenessStore.fetchFileCompletenessSelected(),
+    ]);
+  } catch (err: any) {
+    showError(err?.message ?? "Gagal memuat data kelengkapan file.");
+  }
 }
 
 onMounted(async () => {

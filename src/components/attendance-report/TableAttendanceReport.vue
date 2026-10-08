@@ -31,7 +31,7 @@
     </template>
 
     <template #[`item.branch_name`]="{ item }">
-      <div class="flex flex-col whitespace-nowrap">
+      <div class="flex col whitespace-nowrap">
         <span class="font-bold">
           {{ item.branch_alias }} ({{ item.branch_code }})
         </span>
@@ -42,7 +42,7 @@
     </template>
 
     <template #[`item.working_hour`]="{ item }">
-      <div v-if="item.working_hour" class="flex flex-col gap-2">
+      <div v-if="item.working_hour" class="flex col gap-2">
         <p class="m-0">
           Jam Masuk:
           <span class="font-bold"
@@ -260,10 +260,9 @@
     <template #[`item.time_in`]="{ item }">
       <div
         v-if="item.time_in"
-        class="flex flex-col justify-center items-start w-fit"
+        class="justify-center items-start w-fit space-y-2 my-2"
       >
         <span class="font-bold"> {{ item.time_in }} WIB </span>
-
         <a
           :href="`https://www.google.com/maps/search/?api=1&query=${item.latitude_in},${item.longitude_in}`"
           target="_blank"
@@ -302,26 +301,41 @@
           }}
         </span>
 
-        <v-btn
+        <!-- Approval Beda Lokasi Masuk & Hapus -->
+        <div
           v-if="
             item.request_diff_loc_in === 1 &&
             item.confirm_diff_loc_in_id == null
           "
-          class="mt-3 text-sm p-5"
-          color="bg-blue-500 text-white"
-          prepend-icon="mdi-check-decagram"
-          variant="flat"
-          :loading="employeeAttendanceStore.isLoadingApproval"
-          @click="handleApprovalDiffLoc(item.id, 'in')"
+          class="space-y-2 mt-3"
         >
-          Approval<br />Beda Lokasi
-        </v-btn>
+          <v-btn
+            class="text-sm p-5"
+            color="bg-blue-500 text-white text-left"
+            prepend-icon="mdi-check-decagram"
+            variant="flat"
+            :loading="employeeAttendanceStore.isLoadingApproval"
+            @click="handleApprovalDiffLoc(item.id, 'in')"
+          >
+            Approval<br />Beda Lokasi
+          </v-btn>
+          <v-btn
+            class="text-sm p-5"
+            color="bg-red-500 text-white text-left"
+            prepend-icon="mdi-trash-can-outline"
+            variant="flat"
+            :loading="employeeAttendanceStore.isLoadingDelete"
+            @click="handleDeleteAttendance(item.id, 'in')"
+          >
+            Hapus<br />Absensi Masuk
+          </v-btn>
+        </div>
       </div>
       <span v-else>━</span>
     </template>
 
     <template #[`item.image_in`]="{ item }">
-      <div v-if="item.image_in" class="p-3">
+      <div v-if="item.image_in && !isImageError(`in-${item.id}`)" class="p-3">
         <a
           :href="getImageUrl(item.user_id, item.image_in)"
           target="_blank"
@@ -334,6 +348,7 @@
             height="100"
             width="100"
             cover
+            @error="markImageError(`in-${item.id}`)"
           >
             <template v-slot:placeholder>
               <v-row class="fill-height ma-0" align="center" justify="center">
@@ -346,13 +361,21 @@
           </v-img>
         </a>
       </div>
+      <div
+        v-else-if="item.image_in && isImageError(`in-${item.id}`)"
+        class="flex col items-center justify-center gap-1"
+        style="height: 100px; width: 100px"
+      >
+        <v-icon size="36" color="grey-lighten-1">mdi-image-off-outline</v-icon>
+        <span class="text-xs text-grey">Foto tidak ditemukan</span>
+      </div>
       <span v-else>━</span>
     </template>
 
     <template #[`item.time_out`]="{ item }">
       <div
         v-if="item.time_out"
-        class="flex flex-col justify-center items-start w-fit"
+        class="justify-center items-start w-fit space-y-2 my-2"
       >
         <span class="font-bold"> {{ item.time_out }} WIB </span>
         <a
@@ -400,27 +423,42 @@
           }}
         </span>
 
-        <v-btn
+        <!-- Approval Beda Lokasi Pulang & Hapus -->
+        <div
           v-if="
             item.request_diff_loc_out === 1 &&
             item.confirm_diff_loc_out_id == null
           "
-          class="mt-3 text-sm p-5"
-          color="bg-blue-500 text-white"
-          prepend-icon="mdi-check-decagram"
-          variant="flat"
-          :loading="employeeAttendanceStore.isLoadingApproval"
-          @click="handleApprovalDiffLoc(item.id, 'out')"
+          class="space-y-2 mt-3"
         >
-          Approval<br />Beda Lokasi
-        </v-btn>
+          <v-btn
+            class="text-sm p-5"
+            color="bg-blue-500 text-white text-left"
+            prepend-icon="mdi-check-decagram"
+            variant="flat"
+            :loading="employeeAttendanceStore.isLoadingApproval"
+            @click="handleApprovalDiffLoc(item.id, 'out')"
+          >
+            Approval<br />Beda Lokasi
+          </v-btn>
+          <v-btn
+            class="text-sm p-5"
+            color="bg-red-500 text-white text-left"
+            prepend-icon="mdi-trash-can-outline"
+            variant="flat"
+            :loading="employeeAttendanceStore.isLoadingDelete"
+            @click="handleDeleteAttendance(item.id, 'out')"
+          >
+            Hapus<br />Absensi Pulang
+          </v-btn>
+        </div>
       </div>
 
       <span v-else>━</span>
     </template>
 
     <template #[`item.image_out`]="{ item }">
-      <div v-if="item.image_out" class="p-3">
+      <div v-if="item.image_out && !isImageError(`out-${item.id}`)" class="p-3">
         <a
           :href="getImageUrl(item.user_id, item.image_out)"
           target="_blank"
@@ -433,6 +471,7 @@
             height="100"
             width="100"
             cover
+            @error="markImageError(`out-${item.id}`)"
           >
             <template v-slot:placeholder>
               <v-row class="fill-height ma-0" align="center" justify="center">
@@ -444,6 +483,14 @@
             </template>
           </v-img>
         </a>
+      </div>
+      <div
+        v-else-if="item.image_out && isImageError(`out-${item.id}`)"
+        class="flex col items-center justify-center gap-1"
+        style="height: 100px; width: 100px"
+      >
+        <v-icon size="36" color="grey-lighten-1">mdi-image-off-outline</v-icon>
+        <span class="text-xs text-grey">Foto tidak ditemukan</span>
       </div>
       <span v-else>━</span>
     </template>
@@ -494,7 +541,7 @@ import { useFormatName } from "@/composables/useFormatName";
 import { useAppStore } from "@/stores/app";
 import { useAuthStore } from "@/stores/auth.store";
 import { useEmployeeAttendanceRequestStore } from "@/stores/employee-attendance.store";
-import { computed } from "vue";
+import { computed, reactive } from "vue";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 const employeeAttendanceStore = useEmployeeAttendanceRequestStore();
@@ -504,6 +551,7 @@ const { formatName } = useFormatName();
 const { ask } = useConfirmDialog();
 const appStore = useAppStore();
 const authStore = useAuthStore();
+const imageErrors = reactive<Record<string, boolean>>({});
 
 const itemsPerPageOptions = [
   { value: 10, title: "10" },
@@ -541,6 +589,45 @@ const headers = computed(() => {
 
   return items;
 });
+
+function markImageError(key: string) {
+  imageErrors[key] = true;
+}
+
+function isImageError(key: string): boolean {
+  return imageErrors[key] === true;
+}
+
+async function handleDeleteAttendance(
+  attendanceId: number,
+  type: "in" | "out",
+) {
+  const confirmed = await ask({
+    title: type === "in" ? "Hapus Absensi Masuk" : "Hapus Absensi Pulang",
+    message: `Apakah Anda yakin ingin menghapus absensi ${
+      type === "in" ? "masuk" : "pulang"
+    } ini? Tindakan ini tidak dapat dibatalkan.`,
+    confirmText: "Ya, Hapus",
+    bgColor: "#DC2626",
+    textColor: "#FFFFFF",
+  });
+  if (!confirmed) return;
+
+  try {
+    const res = await employeeAttendanceStore.deleteAttendance({
+      attendance_id: attendanceId,
+      type,
+    });
+    if (res.success) {
+      await employeeAttendanceStore.fetchEmployeeAttendance();
+    }
+    appStore.showSuccessSnackbar = true;
+    appStore.successMessage = res.message ?? "Absensi berhasil dihapus.";
+  } catch (err: any) {
+    appStore.showErrorSnackbar = true;
+    appStore.errorMessage = err?.message ?? "Terjadi kesalahan.";
+  }
+}
 
 function getImageUrl(userId: number, fileName: string): string {
   if (!fileName) return "";
@@ -718,6 +805,20 @@ function isDidntCheckOut(
 }
 
 async function handleApprovalDiffLoc(attendanceId: number, type: "in" | "out") {
+  const confirmed = await ask({
+    title:
+      type === "in"
+        ? "Approval Beda Lokasi Masuk"
+        : "Approval Beda Lokasi Pulang",
+    message: `Apakah Anda yakin ingin menyetujui absen beda lokasi ${
+      type === "in" ? "masuk" : "pulang"
+    } ini?`,
+    confirmText: "Ya, Setujui",
+    bgColor: "#3B82F6", // setara Tailwind blue-500
+    textColor: "#FFFFFF",
+  });
+  if (!confirmed) return;
+
   try {
     const res = await employeeAttendanceStore.approvalDiffLoc({
       attendance_id: attendanceId,

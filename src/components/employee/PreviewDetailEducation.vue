@@ -13,6 +13,15 @@
     <div class="flex justify-end w-full gap-2">
       <v-btn
         color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
+        prepend-icon="mdi-refresh"
+        variant="flat"
+        @click="reload"
+      >
+        Muat Data
+      </v-btn>
+
+      <v-btn
+        color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
         prepend-icon="mdi-pencil-box"
         variant="flat"
         @click="
@@ -884,11 +893,16 @@ async function deleteEducation(id: number) {
 // 12. LIFECYCLE
 // ─────────────────────────────────────────────────────────────
 onMounted(async () => {
-  if (hrdEducationStore.hrdEducationSelected.length === 0) {
-    hrdEducationStore.hrdEducationSelectedParams.user_id = userId as string;
-    await hrdEducationStore.fetchHrdEducationSelected();
-  }
-
+  await reload();
   educationStore.fetchEducationData();
 });
+
+async function reload() {
+  hrdEducationStore.hrdEducationSelectedParams.user_id = userId as string;
+  try {
+    await hrdEducationStore.fetchHrdEducationSelected();
+  } catch (err: any) {
+    showError(err?.message ?? "Gagal memuat data pendidikan.");
+  }
+}
 </script>

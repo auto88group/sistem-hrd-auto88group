@@ -3,10 +3,12 @@
     <v-card class="rounded-xl p-2">
       <div class="flex items-center">
         <v-avatar
-          :color="options.color"
-          variant="tonal"
+          :style="{
+            backgroundColor: options.bgColor,
+            color: options.textColor,
+          }"
           size="48"
-          class="me-4 text-amber-500"
+          class="me-4"
         >
           <v-icon size="28">mdi-alert-circle-outline</v-icon>
         </v-avatar>
@@ -31,10 +33,13 @@
         ></v-btn>
 
         <v-btn
-          :color="options.color"
           :text="options.confirmText"
           variant="flat"
-          class="bg-amber-400 px-6 transition-all hover:scale-105"
+          class="px-6 transition-all hover:scale-105"
+          :style="{
+            backgroundColor: options.bgColor,
+            color: options.textColor,
+          }"
           @click="confirm"
         ></v-btn>
       </v-card-actions>

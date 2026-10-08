@@ -9,7 +9,7 @@
           >Approval Data Karyawan</span
         >
         <v-chip class="ms-3 bg-blue-50 dark:bg-blue-900 font-bold">
-          {{ data.length }}
+          {{ total }}
         </v-chip>
       </h2>
       <button
@@ -31,12 +31,12 @@
     <v-expand-transition>
       <div v-if="showFilter" class="mb-4 px-1">
         <v-autocomplete
-          v-model="form.alias"
+          v-model="form.branch_id"
           :items="listBranch"
           :loading="isLoadingBranch"
           prepend-inner-icon="mdi-map-marker-outline"
-          item-title="alias"
-          item-value="value"
+          item-title="name"
+          item-value="id"
           placeholder="Lokasi cabang"
           variant="outlined"
           density="compact"
@@ -51,14 +51,15 @@
           <template v-slot:item="{ props, item }">
             <v-list-item
               v-bind="props"
-              :title="item.alias"
-              :subtitle="item.title"
+              :title="item.name"
+              :subtitle="item.alias"
             >
             </v-list-item>
           </template>
         </v-autocomplete>
       </div>
     </v-expand-transition>
+
     <div
       class="overflow-scroll h-[400px] md:h-[400px] custom-scrollbar space-y-3 pb-20"
     >
@@ -95,7 +96,29 @@
           </div>
         </div>
       </template>
+
+      <!-- Error -->
+      <v-alert
+        v-else-if="error"
+        type="error"
+        variant="tonal"
+        density="compact"
+        class="rounded-xl"
+      >
+        {{ error }}
+      </v-alert>
+
+      <!-- Kosong -->
       <div
+        v-else-if="data.length === 0"
+        class="flex flex-col items-center py-10 text-slate-400"
+      >
+        <v-icon size="48">mdi-check-circle-outline</v-icon>
+        <span class="text-sm mt-2">Tidak ada pengajuan yang menunggu</span>
+      </div>
+
+      <div
+        v-else
         v-for="item in data"
         :key="item.id"
         class="p-4 shadow-md rounded-[20px] border border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 transition-colors group"
@@ -119,11 +142,16 @@
                 }}
               </div>
               <div class="text-xs text-slate-500">
-                {{ item.user_employee_id ?? item.user_email }}
+                {{
+                  item.user_employee_id ??
+                  item.user_email ??
+                  item.branch_alias ??
+                  "-"
+                }}
               </div>
             </div>
           </div>
-          <v-btn
+          <!-- <v-btn
             variant="tonal"
             size="small"
             rounded="pill"
@@ -131,7 +159,7 @@
             color="indigo"
           >
             Detail
-          </v-btn>
+          </v-btn> -->
         </div>
 
         <div class="mb-3 flex flex-wrap gap-1.5">
@@ -154,11 +182,13 @@
         </div>
       </div>
     </div>
+
     <div
       class="border-t border-slate-100 dark:border-slate-800 backdrop-blur-md rounded-b-[24px]"
     >
       <v-btn
         block
+        to="/dashboard/personnel/user-data-approvals"
         color="#6962e9"
         variant="flat"
         rounded="xl"
@@ -177,63 +207,58 @@ import { useDateFormatter } from "@/composables/UseDateFormatter";
 import { useDebounceFn } from "@/composables/UseDebounce";
 import { useFormatName } from "@/composables/useFormatName";
 import { useBranchStore } from "@/stores/branch.store";
-import { useHighlightStore } from "@/stores/highlight.store";
+import { useUserDataApprovalStore } from "@/stores/user-data-approval.store";
 import { storeToRefs } from "pinia";
 import { computed, onMounted, ref } from "vue";
 
 const branchStore = useBranchStore();
-const highlightStore = useHighlightStore();
+const approvalStore = useUserDataApprovalStore();
 const { formatName } = useFormatName();
 const { toFullDateWithDay } = useDateFormatter();
 
 const { branchData, isLoadingData: isLoadingBranch } = storeToRefs(branchStore);
 const {
-  userDataApprovalParams: form,
-  userDataApproval: data,
-  isLoadingUserDataApproval: isLoading,
-} = storeToRefs(highlightStore);
+  params: form,
+  requests: data,
+  total,
+  error,
+  isLoading,
+} = storeToRefs(approvalStore);
 
 const showFilter = ref(false);
 
+// ── Filter cabang (tanpa pengelompokan, kirim branch_id) ────────────────
 const searchBranch = ref("");
 const listBranch = computed(() => {
   const keyword = searchBranch.value.toLowerCase();
 
-  const filtered = branchData.value.filter((branch) => {
-    if (!keyword) return true;
+  return branchData.value
+    .filter((branch) => {
+      if (!keyword) return true;
 
-    return (
-      branch.name.toLowerCase().includes(keyword) ||
-      branch.alias.toLowerCase().includes(keyword)
-    );
-  });
-
-  // group by alias, gabungkan name
-  const groupedByAlias = filtered.reduce((acc, branch) => {
-    if (!acc.has(branch.alias)) {
-      acc.set(branch.alias, { ...branch, names: [branch.name] });
-    } else {
-      acc.get(branch.alias).names.push(branch.name);
-    }
-    return acc;
-  }, new Map());
-
-  return Array.from(groupedByAlias.values()).map((branch) => ({
-    title: branch.names.join(", "),
-    alias: branch.alias,
-    value: branch.alias,
-  }));
+      return (
+        branch.name.toLowerCase().includes(keyword) ||
+        branch.alias.toLowerCase().includes(keyword)
+      );
+    })
+    .map((branch) => ({
+      id: branch.id,
+      name: branch.name,
+      alias: branch.alias,
+    }));
 });
+
 const onSearchBranch = (val: any) => {
   searchBranch.value = val ?? "";
 };
-const onChangeBranch = useDebounceFn((val: string) => {
-  highlightStore.fetchUserDataApproval();
+
+const onChangeBranch = useDebounceFn(() => {
+  approvalStore.fetchPending();
 }, 400);
 
 onMounted(async () => {
   branchStore.fetchBranchData();
-  highlightStore.fetchUserDataApproval();
+  approvalStore.fetchPending();
 });
 </script>
 

@@ -2,6 +2,15 @@
   <v-card flat class="p-1 md:p-3 space-y-3">
     <!-- ───── Toolbar ───── -->
     <div class="flex justify-end w-full gap-2">
+      <v-btn
+        color="bg-gray-300 dark:bg-gray-600 text-indigo-900 dark:text-indigo-100 text-sm"
+        prepend-icon="mdi-refresh"
+        variant="flat"
+        :loading="workExperienceStore.isLoading"
+        @click="reload"
+      >
+        Muat Data
+      </v-btn>
       <v-text-field
         v-model="searchQuery"
         placeholder="Cari perusahaan, jabatan..."
@@ -260,7 +269,7 @@
                   v-else
                   class="h-40 flex items-center justify-center border rounded bg-gray-100 dark:bg-gray-800 text-gray-400 text-xs italic"
                 >
-                  Tidak ada sertifikat
+                  Tidak ada lampiran
                 </div>
               </div>
             </div>
@@ -411,7 +420,7 @@
             <div class="flex flex-col gap-1 col-span-2">
               <v-file-input
                 v-model="form.attachment"
-                label="Sertifikat"
+                label="Lampiran (Cth. Rekomendasi dll..)"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
@@ -718,6 +727,9 @@ function onSearch(value: string | null) {
     workExperienceStore.params.start = 0;
     workExperienceStore.fetchWorkExperience();
   }, 400);
+}
+function reload() {
+  return workExperienceStore.fetchWorkExperience();
 }
 
 function onClear() {

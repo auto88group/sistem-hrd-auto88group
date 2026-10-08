@@ -59,7 +59,7 @@
 
     <!-- Foto Masuk -->
     <template #item.image_in="{ item }">
-      <div v-if="item.image_in" class="p-3">
+      <div v-if="item.image_in && !isImageError(`in-${item.id}`)" class="p-3">
         <a
           :href="`${baseUrl}/image/employee-attendance/${item.user_id}/${item.image_in}`"
           target="_blank"
@@ -72,6 +72,7 @@
             height="100"
             width="100"
             cover
+            @error="markImageError(`in-${item.id}`)"
           >
             <template v-slot:placeholder>
               <v-row class="fill-height ma-0" align="center" justify="center">
@@ -81,9 +82,15 @@
           </v-img>
         </a>
       </div>
-      <span v-else>━</span>
+      <div
+        v-else
+        class="flex flex-col items-center justify-center gap-1 p-3"
+        style="height: 100px; width: 100px"
+      >
+        <v-icon size="36" color="grey-lighten-1">mdi-image-off-outline</v-icon>
+        <span class="text-xs text-grey">Tidak ada foto</span>
+      </div>
     </template>
-
     <!-- Informasi Masuk -->
     <template #item.info_in="{ item }">
       <div class="flex flex-col gap-1 py-1 text-sm">
@@ -126,23 +133,39 @@
             T: {{ getLateDuration(item.time_in, item.working_hour) }}
           </span>
 
-          <!-- Approval Beda Lokasi Masuk -->
-          <v-btn
+          <!-- Approval Beda Lokasi Masuk & Hapus -->
+          <div
             v-if="
               item.request_diff_loc_in === 1 &&
               item.confirm_diff_loc_in_id == null
             "
-            size="small"
-            color="bg-blue-500 text-white"
-            variant="flat"
-            prepend-icon="mdi-check-decagram"
-            :loading="employeeAttendanceStore.isLoadingApproval"
-            class="text-none w-fit mt-1"
-            rounded="lg"
-            @click="handleApprovalDiffLoc(item.id, 'in')"
+            class="flex flex-col gap-1 mt-1"
           >
-            Approval Beda Lokasi
-          </v-btn>
+            <v-btn
+              size="small"
+              color="bg-blue-500 text-white"
+              variant="flat"
+              prepend-icon="mdi-check-decagram"
+              :loading="employeeAttendanceStore.isLoadingApproval"
+              class="text-none w-fit"
+              rounded="lg"
+              @click="handleApprovalDiffLoc(item.id, 'in')"
+            >
+              Approval Beda Lokasi
+            </v-btn>
+            <v-btn
+              size="small"
+              color="bg-red-500 text-white text-left"
+              variant="flat"
+              prepend-icon="mdi-trash-can-outline"
+              :loading="employeeAttendanceStore.isLoadingDelete"
+              class="text-none w-fit"
+              rounded="lg"
+              @click="handleDeleteAttendance(item.id, 'in')"
+            >
+              Hapus Absensi Masuk
+            </v-btn>
+          </div>
         </div>
         <span v-else class="text-slate-400">━</span>
 
@@ -172,7 +195,7 @@
 
     <!-- Foto Pulang -->
     <template #item.image_out="{ item }">
-      <div v-if="item.image_out" class="p-3">
+      <div v-if="item.image_out && !isImageError(`out-${item.id}`)" class="p-3">
         <a
           :href="`${baseUrl}/image/employee-attendance/${item.user_id}/${item.image_out}`"
           target="_blank"
@@ -185,6 +208,7 @@
             height="100"
             width="100"
             cover
+            @error="markImageError(`out-${item.id}`)"
           >
             <template v-slot:placeholder>
               <v-row class="fill-height ma-0" align="center" justify="center">
@@ -194,7 +218,14 @@
           </v-img>
         </a>
       </div>
-      <span v-else>━</span>
+      <div
+        v-else
+        class="flex flex-col items-center justify-center gap-1 p-3"
+        style="height: 100px; width: 100px"
+      >
+        <v-icon size="36" color="grey-lighten-1">mdi-image-off-outline</v-icon>
+        <span class="text-xs text-grey">Tidak ada foto</span>
+      </div>
     </template>
 
     <!-- Informasi Pulang -->
@@ -214,11 +245,12 @@
           </div>
 
           <!-- Lokasi -->
-          <a>
+          <a
             v-if="item?.latitude_out"
             :href="`https://www.google.com/maps/search/?api=1&query=${item?.latitude_out},${item?.longitude_out}`"
-            target="_blank" class="text-green-600 font-bold hover:text-green-800
-            flex items-center gap-1 no-underline text-xs" >
+            target="_blank"
+            class="text-green-600 font-bold hover:text-green-800 flex items-center gap-1 no-underline text-xs"
+          >
             <v-icon size="12" color="green">mdi-map-marker</v-icon>
             {{ item.out_coordinate_name }}
           </a>
@@ -238,23 +270,39 @@
             PC: {{ getEarlyGoHomeDuration(item.time_out, item.working_hour) }}
           </span>
 
-          <!-- Approval Beda Lokasi Pulang -->
-          <v-btn
+          <!-- Approval Beda Lokasi Pulang & Hapus -->
+          <div
             v-if="
               item.request_diff_loc_out === 1 &&
               item.confirm_diff_loc_out_id == null
             "
-            size="small"
-            color="bg-blue-500 text-white"
-            variant="flat"
-            prepend-icon="mdi-check-decagram"
-            :loading="employeeAttendanceStore.isLoadingApproval"
-            class="text-none w-fit mt-1"
-            rounded="lg"
-            @click="handleApprovalDiffLoc(item.id, 'out')"
+            class="flex flex-col gap-1 mt-1"
           >
-            Approval Beda Lokasi
-          </v-btn>
+            <v-btn
+              size="small"
+              color="bg-blue-500 text-white"
+              variant="flat"
+              prepend-icon="mdi-check-decagram"
+              :loading="employeeAttendanceStore.isLoadingApproval"
+              class="text-none w-fit"
+              rounded="lg"
+              @click="handleApprovalDiffLoc(item.id, 'out')"
+            >
+              Approval Beda Lokasi
+            </v-btn>
+            <v-btn
+              size="small"
+              color="error"
+              variant="flat"
+              prepend-icon="mdi-trash-can-outline"
+              :loading="employeeAttendanceStore.isLoadingDelete"
+              class="text-none w-fit"
+              rounded="lg"
+              @click="handleDeleteAttendance(item.id, 'out')"
+            >
+              Hapus Absensi Pulang
+            </v-btn>
+          </div>
         </div>
 
         <!-- Catatan Pulang -->
@@ -289,14 +337,17 @@ import { useDateFormatter } from "@/composables/UseDateFormatter";
 import { useFormatName } from "@/composables/useFormatName";
 import { useAppStore } from "@/stores/app";
 import { useEmployeeAttendanceRequestStore } from "@/stores/employee-attendance.store";
-import { computed } from "vue";
+import { computed, reactive } from "vue";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 const employeeAttendanceStore = useEmployeeAttendanceRequestStore();
 const employee = computed(() => employeeAttendanceStore.employeeAttendance);
 const { toFullDateWithDay } = useDateFormatter();
 const { formatName } = useFormatName();
+const { ask } = useConfirmDialog();
 const appStore = useAppStore();
+const imageErrors = reactive<Record<string, boolean>>({});
 
 const headers = [
   { title: "No", key: "no", sortable: false, align: "center", rowspan: 2 },
@@ -321,6 +372,44 @@ const headers = [
   },
 ];
 
+function markImageError(key: string) {
+  imageErrors[key] = true;
+}
+
+function isImageError(key: string): boolean {
+  return imageErrors[key] === true;
+}
+
+async function handleDeleteAttendance(
+  attendanceId: number,
+  type: "in" | "out",
+) {
+  const confirmed = await ask({
+    title: type === "in" ? "Hapus Absensi Masuk" : "Hapus Absensi Pulang",
+    message: `Apakah Anda yakin ingin menghapus absensi ${
+      type === "in" ? "masuk" : "pulang"
+    } ini? Tindakan ini tidak dapat dibatalkan.`,
+    confirmText: "Ya, Hapus",
+    bgColor: "#DC2626",
+    textColor: "#FFFFFF",
+  });
+  if (!confirmed) return;
+
+  try {
+    const res = await employeeAttendanceStore.deleteAttendance({
+      attendance_id: attendanceId,
+      type,
+    });
+    if (res.success) {
+      await employeeAttendanceStore.fetchEmployeeAttendance();
+    }
+    appStore.showSuccessSnackbar = true;
+    appStore.successMessage = res.message ?? "Absensi berhasil dihapus.";
+  } catch (err: any) {
+    appStore.showErrorSnackbar = true;
+    appStore.errorMessage = err?.message ?? "Terjadi kesalahan.";
+  }
+}
 function isDidntCheckOut(
   createdAt: string,
   timeOut: string | null,
@@ -350,6 +439,20 @@ function hasLeaveCode(item: EmployeeAttendance, code: string): boolean {
 }
 
 async function handleApprovalDiffLoc(attendanceId: number, type: "in" | "out") {
+  const confirmed = await ask({
+    title:
+      type === "in"
+        ? "Approval Beda Lokasi Masuk"
+        : "Approval Beda Lokasi Pulang",
+    message: `Apakah Anda yakin ingin menyetujui absen beda lokasi ${
+      type === "in" ? "masuk" : "pulang"
+    } ini?`,
+    confirmText: "Ya, Setujui",
+    bgColor: "#3B82F6",
+    textColor: "#FFFFFF",
+  });
+  if (!confirmed) return;
+
   try {
     const res = await employeeAttendanceStore.approvalDiffLoc({
       attendance_id: attendanceId,

@@ -27,6 +27,7 @@ export const useEmployeeAttendanceRequestStore = defineStore(
     const isLoadingDetail = ref(false);
     const isLoadingDestroy = ref(false);
     const isLoadingApproval = ref(false);
+    const isLoadingDelete = ref(false);
     const serverErrors = reactive<Record<string, string>>({});
     const recapDates = ref<RecapDate[]>([]);
 
@@ -240,6 +241,19 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       }
     }
 
+    async function deleteAttendance(params: ApprovalDiffLocParams) {
+      isLoadingDelete.value = true;
+      try {
+        const res = await employeeAttendanceRequestApi.approvalDiffLoc({
+          ...params,
+          action: "delete",
+        });
+        return res;
+      } finally {
+        isLoadingDelete.value = false;
+      }
+    }
+
     async function exportToExcel() {
       isLoadingExport.value = true;
       try {
@@ -326,11 +340,13 @@ export const useEmployeeAttendanceRequestStore = defineStore(
       serverErrors,
       recapDates,
       isLoadingApproval,
+      isLoadingDelete,
       isLoadingExport,
       exportToExcel,
       recapExportToExcel,
       approvalDiffLoc,
       destroyAttendance,
+      deleteAttendance,
       modifyAttendance,
       fetchEmployeeAttendance,
       clearpayloadEdit,
