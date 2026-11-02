@@ -822,7 +822,7 @@
             <v-col cols="12" md="6">
               <v-autocomplete
                 v-model="form.location_presensi_id"
-                :items="listAttendanceLocation"
+                :items="getPrimaryOptions()"
                 :loading="attendanceLocationStore.isLoadingData"
                 prepend-inner-icon="mdi-map-marker-outline"
                 item-title="title"
@@ -843,6 +843,64 @@
                   Lokasi Absen<span class="text-red-500">*</span>
                 </template>
               </v-autocomplete>
+            </v-col>
+
+            <!-- Lokasi Presensi Lainnya (dinamis, bisa tambah/hapus) -->
+            <v-col cols="12">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium">Lokasi Presensi Lainnya</span>
+                <v-btn
+                  variant="text"
+                  color="primary"
+                  size="small"
+                  class="text-none"
+                  prepend-icon="mdi-plus"
+                  @click="addLocationPresensi2"
+                >
+                  Tambah
+                </v-btn>
+              </div>
+
+              <div
+                v-if="form.location_presensi_2_id.length === 0"
+                class="text-xs text-gray-400 italic"
+              >
+                Belum ada lokasi. Klik "Tambah" untuk menambahkan.
+              </div>
+
+              <div
+                v-for="(locId, index) in form.location_presensi_2_id"
+                :key="index"
+                class="flex items-start gap-2 mb-2"
+              >
+                <v-autocomplete
+                  v-model="form.location_presensi_2_id[index]"
+                  :items="getPresensi2Options(index)"
+                  :loading="attendanceLocationStore.isLoadingData"
+                  prepend-inner-icon="mdi-map-marker-outline"
+                  item-title="title"
+                  item-value="value"
+                  placeholder="Pilih lokasi absen"
+                  variant="outlined"
+                  density="compact"
+                  color="primary"
+                  class="custom-input flex-1"
+                  hide-details="auto"
+                  clearable
+                  no-filter
+                  :rules="[rules.notSameAsPrimary, rules.notDuplicate(index)]"
+                  @update:search="onSearchAttendanceLocation"
+                ></v-autocomplete>
+
+                <v-btn
+                  icon="mdi-trash-can-outline"
+                  variant="text"
+                  color="error"
+                  size="small"
+                  density="compact"
+                  @click="removeLocationPresensi2(index)"
+                ></v-btn>
+              </div>
             </v-col>
 
             <v-col cols="12" md="6">
@@ -1030,7 +1088,7 @@
 
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user.store";
-import { onMounted, ref, reactive, computed, nextTick } from "vue";
+import { onMounted, ref, reactive, computed, nextTick, watch } from "vue";
 import { useEducationStore } from "@/stores/education.store";
 import { useDebounceFn } from "@/composables/UseDebounce";
 import { useMaritalStatusStore } from "@/stores/maritall-status.store";
@@ -1163,12 +1221,12 @@ const onSearchBranchAlt = (val: any) => {
   searchBranchAlt.value = val ?? "";
 };
 
-const listAttendanceLocation = computed(() => {
-  const keyword = searchAttendanceLocation.value.toLowerCase();
-  return attendanceLocationStore.attendanceLocationData
-    .filter((b) => (keyword ? b.name.toLowerCase().includes(keyword) : true))
-    .map((b) => ({ title: b.name, value: b.id }));
-});
+const allLocationOptions = computed(() =>
+  attendanceLocationStore.attendanceLocationData.map((b) => ({
+    title: b.name,
+    value: b.id,
+  })),
+);
 
 const listBloodType = computed(() => {
   const keyword = searchBloodType.value.toLowerCase();
@@ -1266,8 +1324,31 @@ const onSearchBranch = (val: any) => {
   searchBranch.value = val ?? "";
 };
 const onSearchAttendanceLocation = (val: any) => {
-  searchAttendanceLocation.value = val ?? "";
+  const text = (val ?? "").toString();
+  // Saat user memilih item, v-autocomplete mengirim judul item sebagai teks pencarian.
+  // Abaikan supaya daftar tidak ikut terfilter hanya ke item yang dipilih.
+  const isSelectedTitle = allLocationOptions.value.some(
+    (o) => o.title === text,
+  );
+  searchAttendanceLocation.value = isSelectedTitle ? "" : text;
 };
+
+// Bangun daftar opsi lokasi untuk satu field:
+// - selalu sertakan nilai yang sedang dipilih (supaya tampil nama, bukan angka)
+// - sembunyikan id yang sudah dipakai field lain
+// - terapkan filter pencarian
+function buildLocationOptions(
+  currentValue: number | null | undefined,
+  excludeIds: Array<number | null | undefined>,
+) {
+  const keyword = searchAttendanceLocation.value.toLowerCase();
+  return allLocationOptions.value.filter(
+    (o) =>
+      o.value === currentValue ||
+      (!excludeIds.includes(o.value) &&
+        (keyword ? o.title.toLowerCase().includes(keyword) : true)),
+  );
+}
 const onSearchBloodType = (val: any) => {
   searchBloodType.value = val ?? "";
 };
@@ -1334,6 +1415,7 @@ const form = reactive({
   branch_id: null as number | null,
   branch_alt_id: null as number | null,
   location_presensi_id: null as number | null,
+  location_presensi_2_id: [] as number[],
   remaining_leave: 0,
   status_id: null as number | null,
   effective_start_date: "",
@@ -1357,6 +1439,18 @@ const rules = {
   password: (v: string) => v.length >= 6 || "Password minimal 6 karakter",
   passwordConfirmation: (v: string) =>
     v === form.password || "Konfirmasi password tidak cocok",
+  notSameAsPrimary: (v: any) =>
+    v === null ||
+    v === undefined ||
+    v === "" ||
+    v !== form.location_presensi_id ||
+    "Tidak boleh sama dengan Lokasi Absen",
+  notDuplicate: (index: number) => (v: any) =>
+    v === null ||
+    v === undefined ||
+    v === "" ||
+    !form.location_presensi_2_id.some((x, i) => i !== index && x === v) ||
+    "Lokasi sudah dipilih",
   imageSize: (v: File | File[]) => {
     if (!v) return true;
     const file = Array.isArray(v) ? v[0] : v;
@@ -1366,6 +1460,46 @@ const rules = {
 };
 
 // ── Cascading address handlers ────────────────────────────────────────────────
+// ── Lokasi Presensi Lainnya ───────────────────────────────────────────────────
+function addLocationPresensi2() {
+  form.location_presensi_2_id.push(null as unknown as number);
+}
+
+function removeLocationPresensi2(index: number) {
+  form.location_presensi_2_id.splice(index, 1);
+}
+
+// Opsi Lokasi Absen (tunggal): sembunyikan yang sudah dipilih di Lokasi Presensi Lainnya
+function getPrimaryOptions() {
+  return buildLocationOptions(
+    form.location_presensi_id,
+    form.location_presensi_2_id,
+  );
+}
+
+// Opsi Lokasi Presensi Lainnya per baris: sembunyikan Lokasi Absen (tunggal)
+// dan lokasi yang sudah dipilih di baris lain
+function getPresensi2Options(index: number) {
+  const selectedElsewhere = form.location_presensi_2_id.filter(
+    (_, i) => i !== index,
+  );
+  return buildLocationOptions(form.location_presensi_2_id[index], [
+    form.location_presensi_id,
+    ...selectedElsewhere,
+  ]);
+}
+
+// Kalau Lokasi Absen diganti dan nilainya ada di Lokasi Presensi Lainnya, hapus dari daftar
+watch(
+  () => form.location_presensi_id,
+  (val) => {
+    if (val === null || val === undefined) return;
+    form.location_presensi_2_id = form.location_presensi_2_id.filter(
+      (id) => id !== val,
+    );
+  },
+);
+
 function onProvinceChange() {
   form.master_area_regency_id = null;
   form.master_area_district_id = null;
@@ -1501,6 +1635,24 @@ async function handleSubmit() {
       ? form.imageFile[0]
       : form.imageFile;
 
+    // buang entri kosong / 0 / null dari location_presensi_2_id
+    const cleanedLocations = (form.location_presensi_2_id || []).filter(
+      (v) => v !== null && v !== undefined && Number(v) > 0,
+    );
+
+    if (
+      form.location_presensi_id &&
+      cleanedLocations.includes(form.location_presensi_id)
+    ) {
+      showError("Lokasi Presensi Lainnya tidak boleh sama dengan Lokasi Absen");
+      return;
+    }
+
+    if (new Set(cleanedLocations).size !== cleanedLocations.length) {
+      showError("Lokasi Presensi Lainnya tidak boleh ada yang sama");
+      return;
+    }
+
     let result = await userStore.createUser({
       // required
       employee_id: form.employee_id!,
@@ -1512,6 +1664,8 @@ async function handleSubmit() {
       branch_id: form.branch_id!,
       branch_alt_id: form.branch_alt_id ?? undefined,
       location_presensi_id: form.location_presensi_id!,
+      location_presensi_2_id:
+        cleanedLocations.length > 0 ? cleanedLocations : undefined,
       master_position_id: form.master_position_id!,
       position: form.position,
       level: form.level ?? "",

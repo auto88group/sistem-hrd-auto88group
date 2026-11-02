@@ -84,6 +84,7 @@ export interface UserCreateUpdateParams {
 
   // employment
   location_presensi_id?: number;
+  location_presensi_2_id?: number[] | null;
   primary_approver_id?: number;
   secondary_approver_id?: number;
   status_id?: number;
@@ -114,7 +115,8 @@ export interface UserProspectParams {
 
 export interface UserAccountAccessParams {
   password: string;
-  location_presensi_id: number;
+  location_presensi_id?: number | null;
+  location_presensi_2_id?: number[] | null;
   lock_face_attendance: number;
   lock_device_attendance: number;
 }
@@ -229,6 +231,7 @@ export interface User {
     stock: number;
   };
   location_presensi_id: number;
+  location_presensi_2_id?: number[] | null;
   lock_device_attendance: number;
   lock_face_attendance: number;
   marital_status: {
@@ -317,6 +320,9 @@ export const userApi = {
       if (value === undefined || value === null) return;
       if (value instanceof File) {
         formData.append(key, value);
+      } else if (Array.isArray(value)) {
+        // kirim sebagai JSON string agar backend bisa decode jadi [1,2,3,4]
+        formData.append(key, JSON.stringify(value));
       } else {
         formData.append(key, String(value));
       }
@@ -339,6 +345,8 @@ export const userApi = {
       if (value === undefined || value === null) return;
       if (value instanceof File) {
         formData.append(key, value);
+      } else if (Array.isArray(value)) {
+        formData.append(key, JSON.stringify(value)); // ← array → JSON string
       } else {
         formData.append(key, String(value));
       }

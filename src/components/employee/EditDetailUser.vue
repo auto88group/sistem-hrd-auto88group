@@ -637,14 +637,7 @@
               </v-autocomplete>
             </v-col>
 
-            <v-col
-              cols="12"
-              md="6"
-              v-if="
-                form.level === 'telemarketing' ||
-                form.level === 'admin_telemarketing'
-              "
-            >
+            <v-col cols="12" md="6" v-if="form.level === 'telemarketing'">
               <v-text-field
                 v-model.number="form.sequence"
                 variant="outlined"
@@ -1324,6 +1317,22 @@ const form = reactive({
   warning_end_date: "",
 });
 
+const teleRelation = computed(() => userStore.usersSelected?.telemarketing);
+
+const showInitial = computed(
+  () => form.level === "telemarketing" || !!teleRelation.value?.inisial,
+);
+
+const showSequence = computed(
+  () =>
+    ["telemarketing", "admin_telemarketing"].includes(form.level ?? "") ||
+    teleRelation.value?.urutan != null,
+);
+
+const isInitialRequired = computed(() => form.level === "telemarketing");
+const isSequenceRequired = computed(() =>
+  ["telemarketing", "admin_telemarketing"].includes(form.level ?? ""),
+);
 // ── Validation rules ─────────────────────────────────────────────────────────
 const rules = {
   nik: (v: string) => {
@@ -1377,14 +1386,25 @@ function onDistrictChange() {
   villageStore.villageParams.district_id = form.master_area_district_id ?? "";
   villageStore.fetchVillage();
 }
-function onPositionChange(value: number | null) {
+async function onPositionChange(value: number | null) {
   const selectedItem = listPosition.value.find((item) => item.value === value);
   form.position = selectedItem?.title ?? form.position;
   form.level = selectedItem?.level_name ?? "";
-  form.sequence = null;
 
   if (form.level !== "marketing" && form.level !== "telemarketing") {
     form.branch_alt_id = null;
+  }
+
+  if (form.level === "telemarketing") {
+    const u = userStore.usersSelected;
+
+    form.initial = u?.telemarketing?.inisial || null;
+    form.sequence = u?.telemarketing?.urutan ?? u?.urutan ?? null;
+
+    if (!form.initial) generateInitial();
+    if (form.sequence == null) await generateSequence();
+  } else {
+    form.sequence = null;
   }
 }
 function onStatusChange(value: number | null) {
